@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+from .html_examples import examples
 import os
 from dspy import ChainOfThought, LM, configure, InputField, OutputField, Signature
 
@@ -13,11 +14,31 @@ class CSS_Color_Scheme(Signature):
     description = InputField(desc='The user\'s description of the website')
     color_scheme = OutputField(desc='The CSS color scheme for the website contained within <style> tags')
 
-class HTML_Outline(Signature):
+class HTML_Scaffold(Signature):
+    '''Create a basic HTML scaffold for the website'''
+    description = InputField(desc='The user\'s description of the website')
+    example = InputField(desc='An example of the website')
+    scaffold = OutputField(desc='The HTML scaffold for the website')
+
+class HTML_Navbar(Signature):
+    '''Based on the user's description, generate the HTML for a responsive Bootstrap navigation element. 
+    Please provide the HTML code in the following format: <nav></nav>'''
+    description = InputField(desc='The user\'s description of the website')
+    example = InputField(desc='An example Navbar element')
+    navbar = OutputField(desc='The HTML code for the navbar')
+
+class HTML_Body(Signature):
     '''
-        Given a set of CSS rules and a users description create a website in HTML using the Bootstrap framework
-        For the <script>'s, use this Bootstrap script: <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
-        For the <link>'s, use these Bootstrap CDN links: <linkhref="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"rel="stylesheet"/>, <linkhref="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"rel="stylesheet"integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ"crossorigin="anonymous"/>
+        Please create the body of a website using Bootstrap 5 elements and classes, based on the user's description. 
+        Generate meaningful and relevant text based on the user's description to use in the page.
+
+        Ensure you are using modern Bootstrap elements and classes for the layout.
+        
+        Use the following image source, replacing "portrait" with a keyword related to the user's description:
+        <img src="https://source.unsplash.com/900x600/?portrait">
+
+        Wrap your response with <body></body> tags.
+        The output should contain meaningful content that corresponds to the user's description.
     '''
 
     css_rules = InputField(desc='The CSS color scheme for the website contained within <style> tags')
