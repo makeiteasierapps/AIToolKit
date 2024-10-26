@@ -11,18 +11,33 @@ async function handleSubmitDescription() {
 
     // Send a POST request with the description to the server
     try {
-        const response = await fetch('http://localhost:5000/run_site_prompting', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                'website-description': description,
-            }),
-        });
+        const response = await fetch(
+            'http://localhost:5000/run_site_prompting',
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    'website-description': description,
+                }),
+            }
+        );
 
-        // If the response is OK, update the 'preview' iframe with the generated HTML content
         if (response.ok) {
-            const htmlContent = await response.text();
-            updatePreviewIframe(htmlContent);
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+
+                // Decode the chunk and remove SSE formatting
+                const chunk = decoder.decode(value);
+                const html = chunk.replace(/^data: /, '').trim();
+
+                if (html) {
+                    updatePreviewIframe(html);
+                }
+            }
         } else {
             throw new Error('Error submitting description.');
         }

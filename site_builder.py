@@ -1,17 +1,22 @@
 import re
 import json
+import pprint
 from pydantic import BaseModel
 from typing import List
 from dotenv import load_dotenv
 import requests
 from html_examples import examples
 import os
-from dspy import ChainOfThought, LM, configure, InputField, OutputField, Signature
+from dspy import  LM, configure, InputField, OutputField, Signature, TypedChainOfThought, ChainOfThought
 
 load_dotenv()
 os.environ.get("OPENAI_API_KEY")
 lm = LM('openai/gpt-4o-mini', max_tokens=5000)
 configure(lm=lm)
+
+class ImageQuery(BaseModel):
+    background_image_query: str
+    related_image_query: str
 
 class Images(BaseModel):
     instructions: str
@@ -19,6 +24,15 @@ class Images(BaseModel):
 
 class ImageInstructions(BaseModel):
     image_instructions: List[Images]
+
+class SectionInstruction(BaseModel):
+    section_name: str
+    instructions: str
+    class_name: str
+    style_instructions: str
+
+class SectionInstructions(BaseModel):
+    section_instructions: List[SectionInstruction]
 
 class ClassifyImages(Signature):
     '''You are given a dictionary that contains image descriptions as keys and urls as values.
@@ -30,70 +44,67 @@ class ClassifyImages(Signature):
 
 class CreateInstructions(Signature):
     '''
-        The user is giving you what they want for a website. Your job is to take their description and organize it into a set of instructions.
-        If they don't provide a lot of detail then please expand on what they want. Here is a list of Bootstrap 5 components that you can use:
-        Accordion
-        Alerts
-        Badge
-        Breadcrumb
-        Buttons
-        Button group
-        Card
-        Carousel
-        Close button
-        Collapse
-        Dropdowns
-        List group
-        Modal
-        Navbar
-        Navs & tabs
-        Offcanvas
-        Pagination
-        Placeholders
-        Popovers
-        Progress
-        Scrollspy
-        Spinners
-        Toasts
-        Tooltips
-        Use the image query to find images to be used in the website design.
+        The user will provide a description of the website they want. Your task is to analyze this description and generate a clean, responsive HTML layout using Bootstrap 5 components. 
+        Ensure the site has a visually appealing structure by following established design principles such as hierarchy, spacing, alignment, contrast, and consistency. 
+
+        Here’s how to approach the design:
+        1. Organize the Content Layout:
+        Start by defining the sections needed based on the user's description. These might include a hero section, an about section, services, testimonials, contact, footer, and any other specific requirements the user has mentioned.
+        Responsive Layouts: Ensure each section is responsive, adapting to different screen sizes using Bootstrap’s grid system (e.g., col-lg-6, col-md-4, etc.).
+        
+        2. Use Visual Hierarchy and Contrast:
+        Establish clear section headings, subheadings, and body text. Use h1, h2, h3, and paragraph tags, and style them with Bootstrap's utility classes (e.g., .text-primary, .text-muted) to create visual contrast.
+        3. Bootstrap Components Selection:
+        Choose components that align with the website’s purpose. Here are a few examples based on section type:
+
+        Hero Section: Use a jumbotron or a centered Card component with a large image or background video. Add a title, subtitle, and Button components for calls-to-action.
+        About Section: Use Card components or Accordion to display the company's history, mission, or services. Style with a slight box-shadow (e.g., shadow-sm or shadow-lg) for a polished look.
+        Services Section: Create Cards within a grid layout. Use icons or small images in the cards, Badges for highlights, and Tooltips for additional information on hover.
+        Testimonials Section: Use a Carousel component or Card group to rotate client testimonials. Style each card with soft shadows and use muted backgrounds to make it visually appealing.
+        Contact Section: Utilize Form components for a contact form, and include Alerts for error/success messages. Ensure each form field has form-control for styling consistency.
+        Footer: Structure the footer with columns for links, social media icons, and contact information. Use List group or Nav classes to organize links.
+        
+        4. Add Subtle Enhancements for a Polished Look:
+        Drop Shadows: Use Bootstrap’s built-in shadow classes (shadow-sm, shadow, shadow-lg) on Cards, Buttons, and images to give a soft, professional look.
+        Rounded Corners: Add a subtle border-radius (rounded, rounded-circle for avatars) to buttons, images, and cards to soften the visual impact.
+        Hover Effects: Utilize hover states for interactive elements. For example, :hover effects on buttons can include slight darkening (btn-outline-*) or shadow increase (shadow-lg).
+        Spacing: Use Bootstrap’s spacing utilities (mb-4, mt-3, py-2, etc.) to ensure consistent padding and margins across elements, enhancing readability and visual flow.
+
+        5. Bootstrap Components and Utilities:
+        Below are some Bootstrap 5 components to consider based on the section and function:
+
+        Call-to-Action Buttons: Use Button with .btn-primary for primary actions and .btn-outline-secondary for secondary actions.
+        Icons: Integrate Font Awesome icons for enhanced visual appeal and functionality.
+        Loading Elements: Spinner components for loading states and Progress bars for file uploads or process indicators.
+        Additional Interactions: Add Modal windows for pop-up messages, Toast for notifications, and Tooltip for extra details.
+        6. Images and Media:
+        Image Selection: Use high-quality images that align with the user’s brand or purpose. Images should be responsive (img-fluid) and optionally styled with borders (border) or rounded edges (rounded).
+        Responsive Embeds: For videos or iframes, use Bootstrap’s ratio classes (e.g., ratio-16x9) to maintain a responsive aspect ratio.
     '''
     description = InputField(desc='The user\'s description of the website')
-    image_query = OutputField(desc='1-3 word key phrase used to search for images to be used in the website design.')
+    image_query: ImageQuery = OutputField(desc='1-3 word key phrase used to search images.')
     website_title = OutputField(desc='The title of the website')
-    instructions_list = OutputField()
+    instructions_list: SectionInstructions = OutputField(desc='A list of verbose section instructions that contain the section name, instructions, and class name')
+    color_scheme = OutputField(desc='A guide to the color scheme for the website')
 
-class CSSColorScheme(Signature):
+class CSSRules(Signature):
     '''Create a CSS color scheme based on the user's description.'''
 
-    description = InputField(desc='The user\'s description of the website')
-    color_scheme = OutputField(desc='The CSS color scheme for the website contained within <style> tags')
-
-class HTMLNavbar(Signature):
-    '''Based on the user's description, generate the HTML for a responsive Bootstrap navigation element. 
-    Please provide the HTML code in the following format: <nav></nav>'''
-    description = InputField(desc='The user\'s description of the website')
-
-    navbar = OutputField(desc='The HTML code for the navbar')
+    section_instructions = InputField()
+    color_scheme = InputField()
+    css_rules = OutputField(desc='The CSS color scheme and rules for the website contained within <style> tags')
 
 class HTMLBody(Signature):
     '''
-        Please create the <body> section of a website using Bootstrap 5 elements and classes, based on the user's instructions. 
+        Please create the <section> of a website using Bootstrap 5 elements and classes, based on the user's instructions. 
         Generate meaningful and relevant text based on the user's description to use in the page.
 
-        Ensure you are using modern Bootstrap elements and classes for the layout.
-        
-        If you include images only use the ones provided in the design instructions.
-        Include the following bootstrap cdn in the <body>:     
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
-        Wrap your response with <body></body> tags.
-        The output should contain meaningful content that corresponds to the user's description.
+        - Ensure you are using modern Bootstrap elements and classes for the layout.
+        - The output should contain meaningful content that corresponds to the user's description.
     '''
-
-    css_rules = InputField(desc='The CSS color scheme for the website contained within <style> tags')
     description = InputField(desc='The user\'s description of the website')
-    html = OutputField(desc='The HTML code for the website')
+    class_name = InputField(desc='The class name for the section')
+    html = OutputField(desc='The HTML code for the given section')
 
 def query_unsplash(query, per_page=10, page=1):
     url = "https://api.unsplash.com/search/photos"
@@ -124,85 +135,52 @@ def extract_image_data(response):
         
     return image_dict
 
-def replace_keys_with_values(image_instructions, image_dict):
-    print('Image Instructions: ', image_instructions)
-    # Iterate over the dictionary and replace each description (key) with its corresponding URL (value)
-    for title, url in image_dict.items():
-        print('Title: ', title)
-        if title in image_instructions:
-            print('Title: ', title)
-            image_instructions = image_instructions.replace(title, url)
-    return image_instructions
-
 def clean_html(html):
     clean_text = re.sub(r'```html|```', '', html)
     return clean_text
 
 def promptify(prompt):
     # Create instructions
-    create_instructions = ChainOfThought(CreateInstructions)
+    create_instructions = TypedChainOfThought(CreateInstructions)
     instructions_response = create_instructions(description=prompt)
     website_instructions = instructions_response.instructions_list
+    style_instructions = instructions_response.color_scheme
+    website_dict = website_instructions.model_dump()
+    section_instructions = website_dict['section_instructions']
+    pprint.pprint(section_instructions)
+    section_instructions_str = json.dumps(section_instructions)
+    
+    css_rules = ChainOfThought(CSSRules)
+    css_rules_response = css_rules(section_instructions=section_instructions_str, color_scheme=style_instructions)
+    css_style_element = css_rules_response.css_rules
+
     website_title = instructions_response.website_title
     image_query = instructions_response.image_query
+    image_query_dict = image_query.model_dump()
+    background_image_query = image_query_dict['background_image_query']
+    related_image_query = image_query_dict['related_image_query']
     
-    # Get images
-    image_results = query_unsplash(image_query)
-    image_dict = extract_image_data(image_results)
-    image_dict_str = json.dumps(image_dict)
-    classify_images = ChainOfThought(ClassifyImages)
-    classify_imgs_response = classify_images(image_descriptions=image_dict_str, design_instructions=website_instructions)
-    image_instructions = classify_imgs_response.image_instructions
-    image_instructions_json = json.dumps(image_instructions.model_dump())
-    print('Image Instructions', image_instructions_json)
-    final_instructions = website_instructions + '\nImage Instructions: \n' + image_instructions_json
-    print('Final Instructions: ', final_instructions)
-
-    # Create CSS color scheme
-    color_scheme = ChainOfThought(CSSColorScheme)
-    css_rules = color_scheme(description=final_instructions)
-
+    # # Get images
+    # image_results = query_unsplash(image_query)
+    # image_dict = extract_image_data(image_results)
+    # image_dict_str = json.dumps(image_dict)
+    # classify_images = ChainOfThought(ClassifyImages)
+    # classify_imgs_response = classify_images(image_descriptions=image_dict_str, design_instructions=website_instructions)
+    # image_instructions = classify_imgs_response.image_instructions
+    # image_instructions_json = json.dumps(image_instructions.model_dump())
+    
     # Create HTML scaffold
     html_scaffold = examples['scaffold']
-    scaffold = html_scaffold.format(website_title=website_title)
-
-    # Create HTML navbar
-    html_navbar = ChainOfThought(HTMLNavbar)
-    navbar = html_navbar(description=final_instructions)
-    html_body = ChainOfThought(HTMLBody)
-    body = html_body(css_rules=css_rules.color_scheme, description=final_instructions)
-
-    # Remove any nav elements from the body content
-    body_content = re.sub(r'<nav\b[^>]*>.*?</nav>', '', body.html, flags=re.DOTALL)
-
-    # Find or create head section
-    head_start = scaffold.find('<head>')
-    head_end = scaffold.find('</head>')
+    current_html = html_scaffold.format(website_title=website_title, css_style_element=css_style_element, body='')
     
-    if head_start == -1 or head_end == -1:
-        # If no head tags exist, create them after html tag
-        html_tag_end = scaffold.find('>') + 1
-        scaffold = scaffold[:html_tag_end] + '\n<head>\n</head>' + scaffold[html_tag_end:]
-        head_start = scaffold.find('<head>')
-        head_end = scaffold.find('</head>')
-    
-    # Insert CSS rules into head
-    head_content_insert = head_start + len('<head>')
-    scaffold = (
-        scaffold[:head_content_insert] +
-        f'\n{css_rules.color_scheme}\n' +
-        scaffold[head_content_insert:]
-    )
-    
-    # Find or create body section
-    body_tag_pos = scaffold.find('</head>') + len('</head>')
-    final_html = (
-        scaffold[:body_tag_pos] +
-        '\n<body>\n' +
-        f'{navbar.navbar}\n' +
-        f'{body_content}\n' +
-        '</body>\n' +
-        scaffold[body_tag_pos:]
-    )
-    final_html = clean_html(final_html)
-    return final_html
+    # Build and insert each section progressively
+    for section in section_instructions:
+        section_html = TypedChainOfThought(HTMLBody)
+        section_html_response = section_html(css_rules=style_instructions, description=section['instructions'], class_name=section['class_name'])
+        clean_section = clean_html(section_html_response.html)
+        
+        # Find the closing body tag and insert the new section before it
+        body_end_pos = current_html.find('</body>')
+        current_html = current_html[:body_end_pos] + clean_section + current_html[body_end_pos:]
+
+        yield current_html

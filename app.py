@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, Response, stream_with_context
 from flask_cors import CORS
 from json_parser import get_parsed_data
 from site_builder import promptify
@@ -36,14 +36,19 @@ def run_parser_code():
 def site_builder():
     return render_template('AiCreate/site_builder02.html')
 
-# Site Prompting Routes
 @app.route('/run_site_prompting', methods=['POST'])
 def run_site_prompting():
     data = request.get_json()
     description = data.get('website-description')
-    # Process the description as needed
-    print("Received description:", description)
-    return promptify(description)
+    
+    def generate():
+        for html_update in promptify(description):
+            yield f"data: {html_update}\n\n"
+    
+    return Response(
+        stream_with_context(generate()),
+        mimetype='text/event-stream'
+    )
 
 # Agent Search
 @app.route('/agent_search')
