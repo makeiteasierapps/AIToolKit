@@ -1,16 +1,53 @@
 // Function to handle submitting the description
+function showProgressOverlay() {
+    document.getElementById('progress-overlay').classList.remove('d-none');
+}
+
+function hideProgressOverlay() {
+    document.getElementById('progress-overlay').classList.add('d-none');
+}
+
+function addProgressMessage(message) {
+    const messagesContainer = document.getElementById('progress-messages');
+    const messageElement = document.createElement('div');
+    messageElement.className = 'mb-2';
+    messageElement.textContent = message;
+    messagesContainer.appendChild(messageElement);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function addProgressImage(url, description) {
+    const imagesContainer = document.getElementById('progress-images');
+    const imageWrapper = document.createElement('div');
+    imageWrapper.className = 'progress-image';
+    imageWrapper.style.width = '150px';
+
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = description;
+    img.style.width = '100%';
+    img.style.height = '100px';
+    img.style.objectFit = 'cover';
+    img.style.borderRadius = '4px';
+
+    imageWrapper.appendChild(img);
+    imagesContainer.appendChild(imageWrapper);
+}
+
 async function handleSubmitDescription() {
-    // Get the value of the 'website-description' input field
     const description = document.getElementById('website-description').value;
 
-    // Check if the description is empty, show an alert if it is
     if (!description) {
         alert('Please enter a description.');
         return;
     }
 
-    // Send a POST request with the description to the server
     try {
+        // Reset progress containers
+        document.getElementById('progress-messages').innerHTML = '';
+        document.getElementById('progress-images').innerHTML = '';
+        showProgressOverlay();
+
         const response = await fetch(
             'http://localhost:5000/run_site_prompting',
             {
@@ -30,12 +67,29 @@ async function handleSubmitDescription() {
                 const { value, done } = await reader.read();
                 if (done) break;
 
-                // Decode the chunk and remove SSE formatting
                 const chunk = decoder.decode(value);
-                const html = chunk.replace(/^data: /, '').trim();
+                // Split the chunk into individual SSE messages
+                const messages = chunk
+                    .split('data: ')
+                    .filter((msg) => msg.trim());
 
-                if (html) {
-                    updatePreviewIframe(html);
+                for (const msg of messages) {
+                    try {
+                        const jsonData = JSON.parse(msg.trim());
+                        if (jsonData.type === 'progress') {
+                            addProgressMessage(jsonData.message);
+                        } else if (jsonData.type === 'image') {
+                            addProgressImage(
+                                jsonData.url,
+                                jsonData.description
+                            );
+                        } else if (jsonData.type === 'html') {
+                            updatePreviewIframe(jsonData.content);
+                        }
+                    } catch (e) {
+                        // If not JSON, treat as HTML
+                        updatePreviewIframe(msg.trim());
+                    }
                 }
             }
         } else {
@@ -43,9 +97,10 @@ async function handleSubmitDescription() {
         }
     } catch (error) {
         alert('Error submitting description. Please try again.');
+    } finally {
+        hideProgressOverlay();
     }
 }
-
 // Function to update the 'preview' iframe with given HTML content
 function updatePreviewIframe(htmlContent) {
     const iframe = document.getElementById('preview');

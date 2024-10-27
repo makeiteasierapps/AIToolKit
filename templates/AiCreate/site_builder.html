@@ -68,10 +68,64 @@
         </div>
         <div
             id="preview-container"
-            style="padding: 20px 30px; box-sizing: border-box; width: 100%"
+            style="
+                padding: 20px 30px;
+                box-sizing: border-box;
+                width: 100%;
+                position: relative;
+            "
         >
             <button id="save-html" class="btn btn-success">Save HTML</button>
             <button id="save-page" class="btn btn-info">Save Page</button>
+            <div
+                id="progress-overlay"
+                class="d-none"
+                style="
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.8);
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 20px;
+                    z-index: 1000;
+                "
+            >
+                <div
+                    class="progress-content"
+                    style="
+                        max-width: 600px;
+                        width: 100%;
+                        background: #343a40;
+                        border-radius: 8px;
+                        padding: 20px;
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+                    "
+                >
+                    <h3 class="text-center mb-4">Building Your Website</h3>
+                    <div
+                        id="progress-messages"
+                        style="
+                            max-height: 300px;
+                            overflow-y: auto;
+                            margin-bottom: 20px;
+                        "
+                    ></div>
+                    <div
+                        id="progress-images"
+                        style="
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 10px;
+                            justify-content: center;
+                        "
+                    ></div>
+                </div>
+            </div>
             <iframe
                 id="preview"
                 style="

@@ -1,13 +1,12 @@
 import re
-import json
-import pprint
-from pydantic import BaseModel
 from typing import List
+import json
+import os
+from dspy import  LM, configure, InputField, OutputField, Signature, TypedChainOfThought, ChainOfThought, context
+from pydantic import BaseModel
 from dotenv import load_dotenv
 import requests
 from html_examples import examples
-import os
-from dspy import  LM, configure, InputField, OutputField, Signature, TypedChainOfThought, ChainOfThought, context
 
 load_dotenv()
 os.environ.get("OPENAI_API_KEY")
@@ -163,6 +162,8 @@ def clean_html(html):
     return clean_text
 
 def promptify(prompt):
+    def format_sse(data):
+        return f"data: {json.dumps(data)}\n\n"
     print(prompt)
     # Create HTML scaffold
     html_scaffold = examples['scaffold']
@@ -170,6 +171,10 @@ def promptify(prompt):
     yield current_html
     
     # Create instructions
+    yield format_sse({
+        "type": "progress",
+        "message": "📝 Generating website instructions and design guidelines..."
+    })
     with context(lm=strong_lm):    
         create_instructions = TypedChainOfThought(CreateInstructions)
         instructions_response = create_instructions(description=prompt)
@@ -177,6 +182,10 @@ def promptify(prompt):
     website_instructions = instructions_response.instructions_list
     style_instructions = instructions_response.color_scheme
     website_title = instructions_response.website_title
+    yield format_sse({
+        "type": "progress",
+        "message": f"🏷️ Website Title: {website_title}"
+    })
     image_query = instructions_response.image_query
     need_nav = instructions_response.need_nav.need_nav
     website_dict = website_instructions.model_dump()
@@ -184,6 +193,10 @@ def promptify(prompt):
     section_instructions = website_dict['section_instructions']
     section_instructions_str = json.dumps(section_instructions)
     
+    yield format_sse({
+        "type": "progress",
+        "message": "🎨 Generating CSS styling..."
+    })
     css_rules = ChainOfThought(CSSRules)
     css_rules_response = css_rules(section_instructions=section_instructions_str, color_scheme=style_instructions)
     css_style_element = css_rules_response.css_rules
@@ -194,6 +207,10 @@ def promptify(prompt):
     theme_related_image_query = image_query_dict['theme_related_image']
     
     # Get images
+    yield format_sse({
+        "type": "progress",
+        "message": f"🔍 Searching for images related to: {theme_related_image_query}"
+    })
     theme_related_image_results = query_unsplash(theme_related_image_query)
     theme_related_image_dict = extract_image_data(theme_related_image_results)
     
@@ -206,20 +223,47 @@ def promptify(prompt):
     # Get image instructions as a dictionary for easier lookup
     image_lookup = {img.section_name: img.url for img in image_instructions.image_instructions}
     
+    # Preview some of the found images
+    preview_images = list(theme_related_image_dict.items())[:3]  # Show first 3 images
+    yield format_sse({
+        "type": "progress",
+        "message": f"📸 Found {len(theme_related_image_dict)} images. Here are some examples:"
+    })
+    for desc, url in preview_images:
+        yield format_sse({
+            "type": "image",
+            "url": url,
+            "description": desc
+        })
+
     if need_nav:
+        yield format_sse({
+            "type": "progress",
+            "message": "🧭 Adding navigation menu..."
+        })
         nav_instructions = TypedChainOfThought(NavInstuctions)
         nav_instructions_response = nav_instructions(section_instructions=section_instructions_str)
         section_instructions = nav_instructions_response.updated_instructions.model_dump()['section_instructions']
     # Build and insert each section progressively
     
+    yield format_sse({
+        "type": "progress",
+        "message": f"🏗️ Building {len(section_instructions)} sections..."
+    })
     with context(lm=strong_lm):
-        for section in section_instructions:
+        for i, section in enumerate(section_instructions, 1):
+            yield format_sse({
+                "type": "progress",
+                "message": f"📄 Creating section {i}/{len(section_instructions)}: {section['section_name']}"
+            })
             section_html = TypedChainOfThought(HTMLElement)
             section_html_response = section_html(css_rules=style_instructions, description=section['instructions'], class_name=section['class_name'], images=image_lookup.get(section['section_name'], 'None'))
             clean_section = clean_html(section_html_response.html)
             
-            # Find the closing body tag and insert the new section before it
             body_end_pos = current_html.find('</body>')
             current_html = current_html[:body_end_pos] + clean_section + current_html[body_end_pos:]
 
-            yield current_html
+            yield format_sse({
+                "type": "html",
+                "content": current_html
+            })
