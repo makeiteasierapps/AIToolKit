@@ -11,30 +11,28 @@ CORS(app, resources={r"/*": {
 }})
 @app.route('/')
 def index():
-    ai_toolkit_names = [
-        'JSON Parser',
-        'Website Builder',
-        'Test Route',
-        'AgentSearch',
+    tools = [
+        {'name': 'JSON Parser', 'url': 'json_parser'},
+        {'name': 'Website Builder', 'url': 'site_builder'},
+        {'name': 'AgentSearch', 'url': 'agent_search'},
     ]
-    ai_toolkit_urls = ['json_parser', 'site_builder', 'test_route', 'agent_search']
-    return render_template('index.html', ai_toolkit_names=ai_toolkit_names, ai_toolkit_urls=ai_toolkit_urls)
+    
+    return render_template('index.html', tools=tools)
 # Json Parser routes
 @app.route('/json_parser')
 def json_parser():
     return render_template('json_parser.html')
+
+# Site Builder routes
+@app.route('/site_builder')
+def site_builder():
+    return render_template('site_builder.html')
 
 @app.route('/run_parser_code', methods=['POST'])
 def run_parser_code():
     json_data = request.form.get('json_data') #This receives the data sent from the form
     parsed_data = get_parsed_data(json_data)
     return parsed_data
-
-
-# SiteBuilder routes
-@app.route('/site_builder')
-def site_builder():
-    return render_template('AiCreate/site_builder02.html')
 
 @app.route('/run_site_prompting', methods=['POST'])
 def run_site_prompting():
