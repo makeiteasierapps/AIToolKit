@@ -49,7 +49,7 @@ async function handleSubmitDescription() {
         showProgressOverlay();
 
         const response = await fetch(
-            'http://localhost:5000/run_site_prompting',
+            'http://127.0.0.1:5000/run_site_prompting',
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

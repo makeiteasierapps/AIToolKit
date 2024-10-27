@@ -6,7 +6,22 @@ from dspy import  LM, configure, InputField, OutputField, Signature, TypedChainO
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import requests
-from html_examples import examples
+HTML_SCAFFOLD = '''<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{website_title}</title>
+        {css_style_element}
+        <!-- Bootstrap CSS & JS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        
+        <!-- Font Awesome CSS -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    </head>
+    <body>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    </body>
+    </html>'''
 
 load_dotenv()
 os.environ.get("OPENAI_API_KEY")
@@ -166,8 +181,7 @@ def promptify(prompt):
         return f"data: {json.dumps(data)}\n\n"
     print(prompt)
     # Create HTML scaffold
-    html_scaffold = examples['scaffold']
-    current_html = html_scaffold.format(website_title='', css_style_element='', body='')
+    current_html = HTML_SCAFFOLD.format(website_title='', css_style_element='')
     yield current_html
     
     # Create instructions
@@ -201,7 +215,7 @@ def promptify(prompt):
     css_rules_response = css_rules(section_instructions=section_instructions_str, color_scheme=style_instructions)
     css_style_element = css_rules_response.css_rules
     
-    current_html = html_scaffold.format(website_title=website_title, css_style_element=css_style_element, body='')
+    current_html = HTML_SCAFFOLD.format(website_title=website_title, css_style_element=css_style_element)
     
     image_query_dict = image_query.model_dump()
     theme_related_image_query = image_query_dict['theme_related_image']

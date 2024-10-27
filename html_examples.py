@@ -1,4 +1,3 @@
-import pprint
 
 examples = {
 'scaffold': '''
