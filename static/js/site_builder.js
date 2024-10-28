@@ -7,31 +7,58 @@ function hideProgressOverlay() {
     document.getElementById('progress-overlay').classList.add('d-none');
 }
 
-function addProgressMessage(message) {
-    const messagesContainer = document.getElementById('progress-messages');
-    const messageElement = document.createElement('div');
-    messageElement.className = 'mb-2';
-    messageElement.textContent = message;
-    messagesContainer.appendChild(messageElement);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+let pendingImageLoads = Promise.resolve();
+
+async function addProgressItem(type, content, imageUrl = null) {
+    const streamContainer = document.getElementById('progress-stream');
+
+    if (type === 'message') {
+        if (!currentMessageGroup) {
+            currentMessageGroup = document.createElement('div');
+            currentMessageGroup.className = 'progress-item mb-3';
+            streamContainer.appendChild(currentMessageGroup);
+        }
+
+        const messageDiv = document.createElement('div');
+        messageDiv.textContent = content;
+        currentMessageGroup.appendChild(messageDiv);
+    } else if (type === 'image') {
+        if (!currentMessageGroup.imageContainer) {
+            currentMessageGroup.imageContainer = document.createElement('div');
+            currentMessageGroup.imageContainer.className = 'image-grid mt-2';
+            currentMessageGroup.imageContainer.style.display = 'grid';
+            currentMessageGroup.imageContainer.style.gridTemplateColumns =
+                'repeat(auto-fill, minmax(150px, 1fr))';
+            currentMessageGroup.imageContainer.style.gap = '8px';
+            currentMessageGroup.appendChild(currentMessageGroup.imageContainer);
+        }
+
+        const imageLoadPromise = new Promise((resolve, reject) => {
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.alt = content;
+            img.style.width = '100%';
+            img.style.height = '100px';
+            img.style.objectFit = 'cover';
+            img.style.borderRadius = '4px';
+
+            img.onload = () => {
+                currentMessageGroup.imageContainer.appendChild(img);
+                resolve();
+            };
+            img.onerror = reject;
+        });
+
+        pendingImageLoads = pendingImageLoads.then(() => imageLoadPromise);
+        return pendingImageLoads;
+    }
+
+    // Auto-scroll to the bottom
+    streamContainer.scrollTop = streamContainer.scrollHeight;
 }
 
-function addProgressImage(url, description) {
-    const imagesContainer = document.getElementById('progress-images');
-    const imageWrapper = document.createElement('div');
-    imageWrapper.className = 'progress-image';
-    imageWrapper.style.width = '150px';
-
-    const img = document.createElement('img');
-    img.src = url;
-    img.alt = description;
-    img.style.width = '100%';
-    img.style.height = '100px';
-    img.style.objectFit = 'cover';
-    img.style.borderRadius = '4px';
-
-    imageWrapper.appendChild(img);
-    imagesContainer.appendChild(imageWrapper);
+function startNewMessageGroup() {
+    currentMessageGroup = null;
 }
 
 async function handleSubmitDescription() {
@@ -44,8 +71,8 @@ async function handleSubmitDescription() {
 
     try {
         // Reset progress containers
-        document.getElementById('progress-messages').innerHTML = '';
-        document.getElementById('progress-images').innerHTML = '';
+        document.getElementById('progress-stream').innerHTML = '';
+        startNewMessageGroup();
         showProgressOverlay();
 
         const response = await fetch(
@@ -58,7 +85,6 @@ async function handleSubmitDescription() {
                 }),
             }
         );
-
         if (response.ok) {
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
@@ -76,18 +102,23 @@ async function handleSubmitDescription() {
                 for (const msg of messages) {
                     try {
                         const jsonData = JSON.parse(msg.trim());
+                        console.log(jsonData);
                         if (jsonData.type === 'progress') {
-                            addProgressMessage(jsonData.message);
+                            await pendingImageLoads; // Wait for any pending images
+                            await addProgressItem('message', jsonData.message);
                         } else if (jsonData.type === 'image') {
-                            addProgressImage(
-                                jsonData.url,
-                                jsonData.description
+                            await addProgressItem(
+                                'image',
+                                jsonData.description,
+                                jsonData.url
                             );
                         } else if (jsonData.type === 'html') {
+                            await pendingImageLoads;
                             updatePreviewIframe(jsonData.content);
                         }
                     } catch (e) {
                         // If not JSON, treat as HTML
+                        await pendingImageLoads;
                         updatePreviewIframe(msg.trim());
                     }
                 }
@@ -101,6 +132,7 @@ async function handleSubmitDescription() {
         hideProgressOverlay();
     }
 }
+
 // Function to update the 'preview' iframe with given HTML content
 function updatePreviewIframe(htmlContent) {
     const iframe = document.getElementById('preview');
@@ -147,13 +179,10 @@ async function createThumbnail(iframe, htmlContent) {
 
     thumbnail.classList.add('thumbnail');
     thumbnailImg.classList.add('thumbnail-img');
+    thumbnailTitle.classList.add('thumbnail-title');
 
     // Add the title and style it
     thumbnailTitle.innerText = title;
-    thumbnailTitle.style.textAlign = 'center';
-    thumbnailTitle.style.marginTop = '5px';
-    thumbnailTitle.style.fontSize = '14px';
-    thumbnailTitle.style.color = '#fff';
 
     thumbnailWrapper.appendChild(thumbnailTitle);
     thumbnail.appendChild(thumbnailImg);

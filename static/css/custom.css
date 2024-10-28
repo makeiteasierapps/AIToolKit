@@ -3,3 +3,179 @@
     --bs-primary-rgb: 46, 204, 113;
     --bs-secondary-rgb: 52, 152, 219;
 }
+
+body {
+    background-color: #343a40;
+    color: #fff;
+}
+.container {
+    max-width: 960px;
+}
+
+.thumbnail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 220px;  
+    height: 150px; 
+    margin: 8px;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: rgba(33, 37, 41, 0.95);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.delete-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: rgba(220, 53, 69, 0.9); 
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 10;
+}
+
+.thumbnail:hover .delete-button {
+    opacity: 1;
+}
+
+.thumbnail:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.thumbnail-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+    border-radius: 4px;
+    margin-top: 0;
+}
+
+.thumbnail-title {
+    width: 100%;
+    text-align: center;
+    margin: 4px 0 0 0; 
+    font-size: 14px;
+    color: #fff;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0;
+}
+
+#thumbnails-container {
+    display: flex;  /* Change to flex instead of grid */
+    flex-wrap: nowrap;  /* Prevent wrapping */
+    gap: 16px;
+    height: 200px;
+    max-height: 200px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    background: rgba(33, 37, 41, 0.5);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    
+    /* For smoother scrolling */
+    scroll-behavior: smooth;
+    
+    /* Hide scrollbar for cleaner look while maintaining functionality */
+    scrollbar-width: thin;  /* Firefox */
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;  /* Firefox */
+    
+    /* Hide scrollbar for Chrome/Safari/Opera */
+    &::-webkit-scrollbar {
+        height: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 3px;
+    }
+}
+
+#progress-overlay {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 400px;
+    background: rgba(33, 37, 41, 0.95);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    pointer-events: auto;
+}
+
+.progress-content {
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.action-buttons {
+    position: sticky;
+    top: 20px;
+    z-index: 999;
+    background: rgba(33, 37, 41, 0.95);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+#progress-messages {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
+#progress-images img {
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#preview-container {
+    margin-top: 20px;
+    padding: 0 30px;
+    box-sizing: border-box;
+    width: 100%;
+    position: relative;
+}
+
+#preview {
+    border: 1px solid #fff;
+    width: 100%;
+    height: 100vh;
+    background-color: #333;
+}
+
+.progress-item {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
+#progress-stream {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 10px;
+}

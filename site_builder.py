@@ -33,9 +33,9 @@ model_dict = {
     '4o-mini': 'openai/gpt-4o-mini',
     '4o': 'openai/gpt-4o',
 }
-lm = LM(model_dict['haiku'], max_tokens=4096)
+lm = LM(model_dict['4o-mini'], max_tokens=4096)
 configure(lm=lm)
-strong_lm = LM(model_dict['sonnet'], max_tokens=8000)
+strong_lm = LM(model_dict['4o'], max_tokens=8000)
 
 class Nav(BaseModel):
     need_nav: bool
@@ -46,7 +46,7 @@ class ImageQuery(BaseModel):
 
 class Images(BaseModel):
     section_name: str
-    url: str
+    urls: List[str]
 
 class ImageInstructions(BaseModel):
     image_instructions: List[Images]
@@ -55,7 +55,6 @@ class SectionInstruction(BaseModel):
     section_name: str
     instructions: str
     class_name: str
-    style_instructions: str
 
 class SectionInstructions(BaseModel):
     section_instructions: List[SectionInstruction]
@@ -66,52 +65,41 @@ class ClassifyImages(Signature):
     '''
     image_descriptions = InputField()
     section_names = InputField()
-    image_instructions: ImageInstructions = OutputField()
+    image_instructions: ImageInstructions = OutputField(desc="A list of images that contain the section name, and urls for 3-4 images")
 
 class CreateInstructions(Signature):
-    '''
-        The user will provide a description of the website they want. Your task is to analyze this description and generate a clean, responsive HTML layout using Bootstrap 5 components. 
-        Ensure the site has a visually appealing structure by following established design principles such as hierarchy, spacing, alignment, contrast, and consistency. 
+    '''Analyze the website description and generate a clean, responsive HTML layout using Bootstrap 5 components.
+    Focus on creating a logical structure that matches the website's purpose.
 
-        Here’s how to approach the design:
-        1. Organize the Content Layout:
-        Start by defining the sections needed based on the user's description. These might include a hero section, an about section, services, testimonials, contact, footer, and any other specific requirements the user has mentioned.
-        Responsive Layouts: Ensure each section is responsive, adapting to different screen sizes using Bootstrap’s grid system (e.g., col-lg-6, col-md-4, etc.).
-        
-        2. Use Visual Hierarchy and Contrast:
-        Establish clear section headings, subheadings, and body text. Use h1, h2, h3, and paragraph tags, and style them with Bootstrap's utility classes (e.g., .text-primary, .text-muted) to create visual contrast.
-        3. Bootstrap Components Selection:
-        Choose components that align with the website’s purpose. Here are a few examples based on section type:
-
-        Hero Section: Use a jumbotron or a centered Card component with a large image or background video. Add a title, subtitle, and Button components for calls-to-action.
-        About Section: Use Card components or Accordion to display the company's history, mission, or services. Style with a slight box-shadow (e.g., shadow-sm or shadow-lg) for a polished look.
-        Services Section: Create Cards within a grid layout. Use icons or small images in the cards, Badges for highlights, and Tooltips for additional information on hover.
-        Testimonials Section: Use a Carousel component or Card group to rotate client testimonials. Style each card with soft shadows and use muted backgrounds to make it visually appealing.
-        Contact Section: Utilize Form components for a contact form, and include Alerts for error/success messages. Ensure each form field has form-control for styling consistency.
-        Footer: Structure the footer with columns for links, social media icons, and contact information. Use List group or Nav classes to organize links.
-        
-        4. Add Subtle Enhancements for a Polished Look:
-        Drop Shadows: Use Bootstrap’s built-in shadow classes (shadow-sm, shadow, shadow-lg) on Cards, Buttons, and images to give a soft, professional look.
-        Rounded Corners: Add a subtle border-radius (rounded, rounded-circle for avatars) to buttons, images, and cards to soften the visual impact.
-        Hover Effects: Utilize hover states for interactive elements. For example, :hover effects on buttons can include slight darkening (btn-outline-*) or shadow increase (shadow-lg).
-        Spacing: Use Bootstrap’s spacing utilities (mb-4, mt-3, py-2, etc.) to ensure consistent padding and margins across elements, enhancing readability and visual flow.
-
-        5. Bootstrap Components and Utilities:
-        Below are some Bootstrap 5 components to consider based on the section and function:
-
-        Call-to-Action Buttons: Use Button with .btn-primary for primary actions and .btn-outline-secondary for secondary actions.
-        Icons: Integrate Font Awesome icons for enhanced visual appeal and functionality.
-        Loading Elements: Spinner components for loading states and Progress bars for file uploads or process indicators.
-        Additional Interactions: Add Modal windows for pop-up messages, Toast for notifications, and Tooltip for extra details.
-        6. Images and Media:
-        Image Selection: Use high-quality images that align with the user’s brand or purpose. Images should be responsive (img-fluid) and optionally styled with borders (border) or rounded edges (rounded).
-        Responsive Embeds: For videos or iframes, use Bootstrap’s ratio classes (e.g., ratio-16x9) to maintain a responsive aspect ratio.
+    Guidelines:
+    1. Identify Core Components:
+    - For content-heavy sites: Include hero, about, services, testimonials, contact sections as needed
+    - For functional pages (login, signup, etc.): Focus on the primary component only
+    - Add navigation if multiple sections are present
+    
+    2. Component Structure:
+    - Each section should serve a distinct purpose
+    - IMPORTANT: Never split single functional components (forms, pricing tables, etc.) into multiple sections
+    - Use appropriate Bootstrap components (Cards, Forms, Carousel, etc.)
+    
+    3. Design Principles:
+    - Ensure responsive layouts using Bootstrap's grid system
+    - Maintain visual hierarchy with proper heading levels
+    - Use consistent spacing and alignment
+    - Apply appropriate shadows and borders for depth
+    
+    4. Component Examples:
+    - Landing Page: Hero (with CTA) → About → Services → Contact
+    - Login Page: Single form section with header and inputs
+    - Product Page: Product showcase → Details → Related items
+    
+    Remember: Keep the structure as simple as possible while meeting all functional requirements.
     '''
     description = InputField(desc='The user\'s description of the website')
     image_query: ImageQuery = OutputField(desc='usually 1-3 words')
     website_title = OutputField(desc='The title of the website')
     need_nav: Nav = OutputField()
-    instructions_list: SectionInstructions = OutputField(desc='A list of verbose section instructions that contain the section name, instructions, and class name')
+    instructions_list: SectionInstructions = OutputField()
     color_scheme = OutputField(desc='A guide to the color scheme for the website')
 
 class CSSRules(Signature):
@@ -134,7 +122,7 @@ class HTMLElement(Signature):
         Use Bootstrap 5 elements and classes, based on the user's instructions. 
         Generate meaningful and relevant text based on the user's description to use in the page.
 
-        - Use the image url provided in the images field if it exists.
+        - If you use images only use the urls provided.
         - Ensure you are using modern Bootstrap elements and classes for the layout.
         - The output should contain meaningful content that corresponds to the user's description.
     '''
@@ -227,7 +215,7 @@ def promptify(prompt):
     })
     theme_related_image_results = query_unsplash(theme_related_image_query)
     theme_related_image_dict = extract_image_data(theme_related_image_results)
-    
+
     theme_related_image_dict_str = json.dumps(theme_related_image_dict)
     classify_images = TypedChainOfThought(ClassifyImages)
     section_names_str = json.dumps([section['section_name'] for section in section_instructions])
@@ -235,7 +223,7 @@ def promptify(prompt):
     image_instructions = classify_imgs_response.image_instructions
     
     # Get image instructions as a dictionary for easier lookup
-    image_lookup = {img.section_name: img.url for img in image_instructions.image_instructions}
+    image_lookup = {img.section_name: img.urls for img in image_instructions.image_instructions}
     
     # Preview some of the found images
     preview_images = list(theme_related_image_dict.items())[:3]  # Show first 3 images
@@ -264,6 +252,8 @@ def promptify(prompt):
         "type": "progress",
         "message": f"🏗️ Building {len(section_instructions)} sections..."
     })
+
+    print(section_instructions)
     with context(lm=strong_lm):
         for i, section in enumerate(section_instructions, 1):
             yield format_sse({
@@ -271,7 +261,7 @@ def promptify(prompt):
                 "message": f"📄 Creating section {i}/{len(section_instructions)}: {section['section_name']}"
             })
             section_html = TypedChainOfThought(HTMLElement)
-            section_html_response = section_html(css_rules=style_instructions, description=section['instructions'], class_name=section['class_name'], images=image_lookup.get(section['section_name'], 'None'))
+            section_html_response = section_html(css_rules=style_instructions, description=section['instructions'], class_name=section['class_name'], images=','.join(image_lookup.get(section['section_name'], 'None')))
             clean_section = clean_html(section_html_response.html)
             
             body_end_pos = current_html.find('</body>')
