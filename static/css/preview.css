@@ -10,7 +10,6 @@
 }
 
 #preview-container {
-    margin-top: 20px;
     padding: 0;
     box-sizing: border-box;
     width: 100%;
@@ -24,12 +23,10 @@
 @media screen and (max-width: 768px) {
     #preview-container {
         height: calc(90vh - 150px); 
-        margin-top: 10px;
-        padding: 16px;
     }
 
     .action-buttons {
-        padding: 5px;
+        padding: 7px;
     }
 }
 
@@ -39,9 +36,7 @@
     }
 
     .action-buttons {
-        padding: 5px;
-        top: 20px;
-        right: 20px;
+        padding: 7px;
     }
 }
 
@@ -59,4 +54,11 @@
     /* Make iframe fill container exactly */
     height: 100%;
     flex: 1;
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .action-buttons {
+        opacity: 1;
+        pointer-events: auto;
+    }
 }
