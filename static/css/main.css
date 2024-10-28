@@ -1,0 +1,14 @@
+/* Set the primary and secondary Bootstrap colors */
+:root {
+    --bs-primary-rgb: 46, 204, 113;
+    --bs-secondary-rgb: 52, 152, 219;
+}
+
+body {
+    background-color: #343a40;
+    color: #fff;
+}
+.container {
+    max-width: 960px;
+}
+

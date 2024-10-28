@@ -1,0 +1,65 @@
+.input-group {
+    position: relative;
+    border-radius: 15px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+}
+
+.input-group:focus-within {
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+}
+
+#website-description {
+    border: none;
+    width: 100%;
+    box-sizing: border-box;  /* Include padding in width calculation */
+    line-height: 1.5;  /* Optimize line height */
+    min-height: 60px; 
+    padding: 20px;
+    padding-right: 30px;
+    font-size: 1.1rem;
+    resize: none;
+    flex: 1;  /* Take up remaining space */
+}
+
+#website-description:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+#submit-description {
+    position: absolute;
+    right: 8px;
+    z-index: 5;
+    border: none;
+    color: #666;
+    padding: 12px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#submit-description:hover {
+    background-color: #e8e8e8;
+    color: #333;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+#submit-description:active {
+    transform: translateY(-50%) translateX(2px) scale(0.97);  /* Combine transforms */
+}
+
+#submit-description i {
+    font-size: 1.25rem;
+    transition: transform 0.2s ease;
+}
+
+#submit-description:hover i {
+    transform: translateX(1px);
+}

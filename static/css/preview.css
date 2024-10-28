@@ -1,0 +1,62 @@
+.action-buttons {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 999;
+    padding: 10px;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    pointer-events: none;
+}
+
+#preview-container {
+    margin-top: 20px;
+    padding: 0;
+    box-sizing: border-box;
+    width: 100%;
+    position: relative;
+    height: calc(90vh - 200px);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Add media queries for different screen sizes */
+@media screen and (max-width: 768px) {
+    #preview-container {
+        height: calc(90vh - 150px); 
+        margin-top: 10px;
+        padding: 16px;
+    }
+
+    .action-buttons {
+        padding: 5px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    #preview-container {
+        height: calc(90vh - 120px); /* Even smaller height offset for small phones */
+    }
+
+    .action-buttons {
+        padding: 5px;
+        top: 20px;
+        right: 20px;
+    }
+}
+
+#preview-container:hover .action-buttons {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#preview {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 100%;
+    background-color: #333;
+    /* Make iframe fill container exactly */
+    height: 100%;
+    flex: 1;
+}

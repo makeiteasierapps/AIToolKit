@@ -1,0 +1,85 @@
+#progress-overlay {
+    position: fixed;
+    background: rgba(33, 37, 41, 0.95);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    pointer-events: auto;
+    
+    /* Desktop default */
+    top: 20px;
+    right: 20px;
+    width: 400px;
+    max-width: calc(100vw - 40px); /* Prevent overflow on smaller screens */
+}
+
+.progress-content {
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+
+#progress-messages {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
+#progress-images img {
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.progress-item {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
+#progress-stream {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* Media Queries */
+@media screen and (max-width: 768px) {
+    #progress-overlay {
+        width: calc(100vw - 40px);
+        top: 50%;
+        right: 50%;
+        transform: translate(50%, -50%);
+    }
+
+    #progress-stream {
+        max-height: 300px; /* Smaller height on tablets */
+    }
+}
+
+@media screen and (max-width: 480px) {
+    #progress-overlay {
+        top: auto;
+        bottom: 0;
+        right: 0;
+        width: 100%;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .progress-content {
+        padding: 12px;
+    }
+
+    #progress-stream {
+        max-height: 250px; /* Even smaller height on phones */
+    }
+
+    .progress-item {
+        padding: 8px;
+        font-size: 0.8em;
+    }
+}
