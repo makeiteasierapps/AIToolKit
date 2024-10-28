@@ -182,8 +182,10 @@ function handleSaveHtml() {
 }
 
 // Function to create a thumbnail of the current page
-async function createThumbnail(iframe, htmlContent, title) {
-    const thumbnailId = 'thumbnail-' + Date.now(); // Create unique ID
+async function createThumbnail(iframe, htmlContent, title, thumbnailId = null) {
+    if (!thumbnailId) {
+        thumbnailId = 'thumbnail-' + Date.now(); // Create unique ID
+    }
     const thumbnailWrapper = document.createElement('div');
     thumbnailWrapper.id = thumbnailId;
 
@@ -242,6 +244,7 @@ async function loadSavedThumbnails() {
     const container = document.getElementById('thumbnails-container');
 
     for (const thumbnailData of savedThumbnails) {
+        console.log(thumbnailData.id);
         // Create a temporary iframe to generate the thumbnail
         const iframe = document.createElement('iframe');
         document.body.appendChild(iframe);
@@ -250,7 +253,8 @@ async function loadSavedThumbnails() {
         const thumbnail = await createThumbnail(
             iframe,
             thumbnailData.html,
-            thumbnailData.title
+            thumbnailData.title,
+            thumbnailData.id
         );
 
         iframe.contentWindow.document.close();

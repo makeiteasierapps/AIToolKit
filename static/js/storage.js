@@ -33,6 +33,7 @@ export function saveThumbnail(thumbnailData) {
 }
 
 export function deleteThumbnail(thumbnailId) {
+    console.log('deleteThumbnail', thumbnailId);
     const savedThumbnails = JSON.parse(localStorage.getItem(STORAGE_KEYS.THUMBNAILS) || '[]');
     const updatedThumbnails = savedThumbnails.filter(t => t.id !== thumbnailId);
     localStorage.setItem(STORAGE_KEYS.THUMBNAILS, JSON.stringify(updatedThumbnails));
