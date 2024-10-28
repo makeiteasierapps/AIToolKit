@@ -1,0 +1,162 @@
+.thumbnail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 220px;  
+    height: 150px; 
+    margin: 8px;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: rgba(33, 37, 41, 0.95);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+
+.thumbnail:hover .delete-button {
+    opacity: 1;
+}
+
+.thumbnails-toggle {
+    position: absolute;
+    background: rgba(33, 37, 41, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    color: #fff;
+    padding: 4px 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+.thumbnails-toggle i {
+    transition: transform 0.3s ease;
+    transform: rotate(-90deg);
+}
+
+.thumbnail:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.thumbnail-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+    border-radius: 4px;
+    margin-top: 0;
+}
+
+.thumbnail-title {
+    width: 100%;
+    text-align: center;
+    margin: 4px 0 0 0; 
+    font-size: 14px;
+    color: #fff;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0;
+}
+
+.thumbnails-wrapper {
+    min-height: 0;
+    position: relative;
+    margin-bottom: 1rem;
+    overflow: visible; 
+}
+
+.thumbnails-wrapper.collapsed {
+    height: 0;
+    margin: 0;
+    min-height: 40px;
+}
+
+#thumbnails-container {
+    display: flex;
+    flex-wrap: nowrap; 
+    gap: 16px;
+    height: 200px;
+    max-height: 200px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    background: rgba(33, 37, 41, 0.5);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    
+    /* Animation properties */
+    transform-origin: left;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    transform: scaleX(1);
+    opacity: 1;
+
+    /* For smoother scrolling */
+    scroll-behavior: smooth;
+    
+    /* Hide scrollbar for cleaner look while maintaining functionality */
+    scrollbar-width: thin;  /* Firefox */
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;  /* Firefox */
+    
+    /* Hide scrollbar for Chrome/Safari/Opera */
+    &::-webkit-scrollbar {
+        height: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 3px;
+    }
+}
+
+.thumbnails-wrapper.collapsed #thumbnails-container {
+    transform: scaleX(0);
+    opacity: 0;
+}
+
+.thumbnails-wrapper:not(.collapsed) .thumbnails-toggle {
+    position: absolute;
+    right: -33px; /* Position half the button width outside */
+    top: 50%;
+    left: auto;
+    transform: translateY(-50%);
+    padding: 8px;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    justify-content: center;
+    background: rgba(33, 37, 41, 0.95); /* Make background more visible */
+    box-shadow: -4px 0 8px rgba(0, 0, 0, 0.2); /* Add shadow only on left side */
+    border-left: none; /* Remove left border for seamless overlap */
+    border-top-left-radius: 0; /* Square off left side */
+    border-bottom-left-radius: 0;
+}
+
+.thumbnails-wrapper:not(.collapsed) .thumbnails-toggle span {
+    display: none;
+}
+
+.thumbnails-wrapper.collapsed .thumbnails-toggle i {
+    transform: rotate(90deg);
+    
+}
+
+/* Collapsed state - button in center */
+.thumbnails-wrapper.collapsed .thumbnails-toggle {
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    padding: 8px 16px;
+    background: rgba(33, 37, 41, 0.95);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}

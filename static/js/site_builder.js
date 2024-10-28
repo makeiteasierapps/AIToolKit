@@ -296,4 +296,8 @@ document
     .addEventListener('click', handleSubmitDescription);
 document.getElementById('save-html').addEventListener('click', handleSaveHtml);
 document.getElementById('save-page').addEventListener('click', handleSavePage);
+document.querySelector('.thumbnails-toggle').addEventListener('click', function() {
+    const wrapper = this.closest('.thumbnails-wrapper');
+    wrapper.classList.toggle('collapsed');
+});
 loadSavedThumbnails();

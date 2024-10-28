@@ -35,7 +35,7 @@ model_dict = {
 }
 lm = LM(model_dict['haiku'], max_tokens=4096)
 configure(lm=lm)
-strong_lm = LM(model_dict['sonnet'], max_tokens=8000)
+strong_lm = LM(model_dict['4o-mini'], max_tokens=4096)
 
 class Nav(BaseModel):
     need_nav: bool
