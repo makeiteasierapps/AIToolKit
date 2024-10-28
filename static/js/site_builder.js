@@ -1,3 +1,13 @@
+import {
+    checkRequestLimit,
+    incrementRequestCount,
+    saveThumbnail,
+    deleteThumbnail,
+    getSavedThumbnails,
+} from './storage.js';
+
+let currentMessageGroup = null;
+
 // Function to handle submitting the description
 function showProgressOverlay() {
     document.getElementById('progress-overlay').classList.remove('d-none');
@@ -62,6 +72,11 @@ function startNewMessageGroup() {
 }
 
 async function handleSubmitDescription() {
+    console.log('handleSubmitDescription');
+    if (!checkRequestLimit()) {
+        return;
+    }
+
     const description = document.getElementById('website-description').value;
 
     if (!description) {
@@ -70,6 +85,7 @@ async function handleSubmitDescription() {
     }
 
     try {
+        incrementRequestCount();
         // Reset progress containers
         document.getElementById('progress-stream').innerHTML = '';
         startNewMessageGroup();
@@ -102,7 +118,6 @@ async function handleSubmitDescription() {
                 for (const msg of messages) {
                     try {
                         const jsonData = JSON.parse(msg.trim());
-                        console.log(jsonData);
                         if (jsonData.type === 'progress') {
                             await pendingImageLoads; // Wait for any pending images
                             await addProgressItem('message', jsonData.message);
@@ -127,6 +142,7 @@ async function handleSubmitDescription() {
             throw new Error('Error submitting description.');
         }
     } catch (error) {
+        console.error('Error submitting description:', error);
         alert('Error submitting description. Please try again.');
     } finally {
         hideProgressOverlay();
@@ -166,27 +182,37 @@ function handleSaveHtml() {
 }
 
 // Function to create a thumbnail of the current page
-async function createThumbnail(iframe, htmlContent) {
-    const title = prompt('Enter title for the current page: ');
-    if (title === null) {
-        return;
-    }
-
+async function createThumbnail(iframe, htmlContent, title) {
+    const thumbnailId = 'thumbnail-' + Date.now(); // Create unique ID
     const thumbnailWrapper = document.createElement('div');
+    thumbnailWrapper.id = thumbnailId;
+
     const thumbnail = document.createElement('div');
     const thumbnailImg = document.createElement('img');
     const thumbnailTitle = document.createElement('p');
+    const deleteButton = document.createElement('button');
+
+    // Setup delete button
+    deleteButton.classList.add('delete-button');
+    deleteButton.innerHTML = '×'; // Using × character as delete icon
+    deleteButton.title = 'Delete thumbnail';
+    deleteButton.onclick = (e) => {
+        e.stopPropagation(); // Prevent thumbnail click event
+        if (confirm('Are you sure you want to delete this thumbnail?')) {
+            thumbnailWrapper.remove();
+            deleteThumbnail(thumbnailId);
+        }
+    };
 
     thumbnail.classList.add('thumbnail');
     thumbnailImg.classList.add('thumbnail-img');
     thumbnailTitle.classList.add('thumbnail-title');
-
-    // Add the title and style it
     thumbnailTitle.innerText = title;
 
-    thumbnailWrapper.appendChild(thumbnailTitle);
     thumbnail.appendChild(thumbnailImg);
+    thumbnail.appendChild(deleteButton);
     thumbnailWrapper.appendChild(thumbnail);
+    thumbnailWrapper.appendChild(thumbnailTitle);
 
     thumbnail.addEventListener('click', () => {
         const mainIframe = document.getElementById('preview');
@@ -196,6 +222,8 @@ async function createThumbnail(iframe, htmlContent) {
     });
 
     const iframeDocument = iframe.contentWindow.document;
+    iframe.style.width = '1024px';
+    iframe.style.height = '768px';
     const canvas = await html2canvas(iframeDocument.documentElement, {
         scale: 0.25,
     });
@@ -208,12 +236,47 @@ async function createThumbnail(iframe, htmlContent) {
     return thumbnailWrapper;
 }
 
-// Function to save the current page and create a thumbnail
+// Add this function to load saved thumbnails
+async function loadSavedThumbnails() {
+    const savedThumbnails = getSavedThumbnails();
+    const container = document.getElementById('thumbnails-container');
+
+    for (const thumbnailData of savedThumbnails) {
+        // Create a temporary iframe to generate the thumbnail
+        const iframe = document.createElement('iframe');
+        document.body.appendChild(iframe);
+        iframe.contentWindow.document.open();
+        iframe.contentWindow.document.write(thumbnailData.html);
+        const thumbnail = await createThumbnail(
+            iframe,
+            thumbnailData.html,
+            thumbnailData.title
+        );
+
+        iframe.contentWindow.document.close();
+        thumbnail.id = thumbnailData.id;
+        container.appendChild(thumbnail);
+        document.body.removeChild(iframe);
+    }
+}
+
 async function handleSavePage() {
+    const title = prompt('Enter title for the current page: ');
+    if (title === null) {
+        return;
+    }
     const iframe = document.getElementById('preview');
     const htmlContent = iframe.contentWindow.document.documentElement.outerHTML;
-    const thumbnail = await createThumbnail(iframe, htmlContent);
+    const thumbnail = await createThumbnail(iframe, htmlContent, title);
     document.getElementById('thumbnails-container').appendChild(thumbnail);
+
+    // Save thumbnail data
+    saveThumbnail({
+        id: thumbnail.id,
+        title: title,
+        html: htmlContent,
+        timestamp: Date.now(),
+    });
 
     // Clear the description input field and iframe
     document.getElementById('website-description').value = 'Go Again?';
@@ -224,9 +287,9 @@ async function handleSavePage() {
     iframe.contentWindow.document.close();
 }
 
-// Add event listeners to the respective buttons
 document
     .getElementById('submit-description')
     .addEventListener('click', handleSubmitDescription);
 document.getElementById('save-html').addEventListener('click', handleSaveHtml);
 document.getElementById('save-page').addEventListener('click', handleSavePage);
+loadSavedThumbnails();

@@ -40,6 +40,11 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 20px;
+    line-height: 0;        
+    padding: 0;
+    font-family: Arial;
+    font-weight: bold; 
     cursor: pointer;
     opacity: 0;
     transition: opacity 0.2s;
@@ -48,6 +53,10 @@ body {
 
 .thumbnail:hover .delete-button {
     opacity: 1;
+}
+
+.delete-button:hover {
+    background-color: rgb(220, 53, 69);
 }
 
 .thumbnail:hover {
