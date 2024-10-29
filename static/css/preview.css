@@ -1,4 +1,6 @@
 .action-buttons {
+    display: flex;
+    gap: 1rem;
     position: absolute;
     top: 0;
     right: 0;
@@ -7,6 +9,17 @@
     opacity: 0;
     transition: opacity 0.2s ease-in-out;
     pointer-events: none;
+}
+
+.action-buttons .btn {
+    height: 32px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 12px;
+    white-space: nowrap;
+    min-width: 160px;  /* Set consistent width for both buttons */
+    justify-content: center;  /* Center the content within the button */
 }
 
 #preview-container {
