@@ -18,8 +18,8 @@
     gap: 4px;
     padding: 0 12px;
     white-space: nowrap;
-    min-width: 160px;  /* Set consistent width for both buttons */
-    justify-content: center;  /* Center the content within the button */
+    min-width: 160px;
+    justify-content: center;
 }
 
 #preview-container {
@@ -63,7 +63,6 @@
     border-radius: 12px;
     width: 100%;
     max-width: 100%;
-    background-color: #333;
     /* Make iframe fill container exactly */
     height: 100%;
     flex: 1;

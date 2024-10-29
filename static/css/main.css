@@ -38,6 +38,7 @@ body {
     background-color: var(--primary-bg);
     color: var(--primary-text);
     font-family: 'Roboto', sans-serif;
+    padding-top: 56px;
 }
 
 h1, .main-heading {
@@ -56,28 +57,14 @@ p, .body-text {
 
 /* Updated Primary Button */
 .btn-primary {
-    background-color: #3BBFBF;
-    color: var(--primary-bg);
-    border: none;
-    transition: background-color 0.3s ease;
+    background: rgba(47, 255, 209, 0.1);
+    border: 1px solid rgba(47, 255, 209, 0.2);
+    color: var(--accent-1);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .btn-primary:hover,
 .btn-primary:focus {
-    background-color: #1FAFAA; 
-    color: var(--primary-bg);
-}
-
-/* Secondary Button */
-.btn-secondary {
-    background-color: var(--primary-bg);
-    color: var(--accent-1);
-    border: 1px solid var(--accent-1);
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.btn-secondary:hover,
-.btn-secondary:focus {
     background-color: var(--accent-1);
     color: var(--primary-bg);
 }

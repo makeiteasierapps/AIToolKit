@@ -1,0 +1,135 @@
+:root {
+    --bg-dark: #121212;
+}
+
+html, body {
+    background-color: var(--bg-dark);
+    min-height: 100vh;
+}
+
+body {
+    background: radial-gradient(circle at 50% -20%, rgba(47, 255, 209, 0.01), transparent 800px), var(--bg-dark);
+}
+
+/* Hero Section */
+.hero-section {
+    text-align: center;
+    padding: 6rem 0;
+}
+
+
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background: radial-gradient(circle at 50% 50%, rgba(47, 255, 209, 0.03), transparent 50%);
+    pointer-events: none;
+}
+
+.hero-section h1 {
+    font-size: 4.5rem;
+    background: linear-gradient(45deg, var(--accent-1), #2fffd1);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 80px rgba(47, 255, 209, 0.2);
+}
+
+/* Feature Cards */
+.feature-card {
+    background: linear-gradient(145deg, rgba(18, 18, 18, 0.8), rgba(18, 18, 18, 0.6));
+    border: 1px solid rgba(47, 255, 209, 0.2);
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    height: 100%;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.feature-card h2 {
+    color: var(--accent-1);
+    font-size: 1.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.contact-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 2.5rem 0;
+}
+
+/* Section Headers */
+.contact-section h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(45deg, var(--accent-1), #2fffd1);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* Media query for smaller screens */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 0;
+    }
+    
+    .hero-section h1 {
+        font-size: 3rem;
+    }
+}
+
+.social-links {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+}
+
+.social-links a {
+    color: var(--accent-1);
+    transition: transform 0.3s ease, color 0.3s ease;
+    position: relative;
+}
+
+.social-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #2fffd1;
+    transition: width 0.3s ease;
+}
+
+.social-links a:hover::after {
+    width: 100%;
+}
+
+.social-links a:hover {
+    color: #2fffd1;
+    transform: translateY(-3px);
+}
+
+.social-links i {
+    /* This prevents the animation from playing until hover */
+    --fa-animation-duration: 0s;
+}
+
+.social-links a:hover i {
+    /* This enables the animation on hover */
+    --fa-animation-duration: 2s;
+}
+
+.cta-buttons .btn i {
+    margin-right: 0.5rem;
+}

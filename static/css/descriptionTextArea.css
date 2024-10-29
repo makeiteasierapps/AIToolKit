@@ -26,6 +26,7 @@
     font-size: 1.1rem;
     resize: none;
     flex: 1;
+    background-color: rgba(224, 253, 255, 0.6);
 }
 
 #website-description:focus {
