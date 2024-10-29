@@ -21,6 +21,11 @@
         {% block extra_css %}{% endblock %}
     </head>
     <body>
+        <div class="error-container d-none" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span class="error-message"></span>
+            <button type="button" class="btn-close" aria-label="Close"></button>
+        </div>
         <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
             <a class="navbar-brand" href="{{ url_for('index') }}">AI ToolKit</a>
             <button
@@ -48,6 +53,7 @@
         </nav>
 
         {% block content %}{% endblock %}
+        <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
 
         <script
             src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"

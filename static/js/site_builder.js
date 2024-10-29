@@ -72,83 +72,98 @@ function startNewMessageGroup() {
 }
 
 async function handleSubmitDescription() {
-    console.log('handleSubmitDescription');
-    if (!checkRequestLimit()) {
-        return;
-    }
-
-    const description = document.getElementById('website-description').value;
-
-    if (!description) {
-        alert('Please enter a description.');
-        return;
-    }
-
+    hideError();
     try {
+        const description = document.getElementById(
+            'website-description'
+        ).value;
+
+        if (!description) {
+            showError('Please enter a description.');
+            return;
+        }
+
+        if (!checkRequestLimit()) {
+            showError(
+                'You have reached the maximum number of requests. Thank you for trying it out!'
+            );
+            return;
+        }
+
         incrementRequestCount();
         // Reset progress containers
         document.getElementById('progress-stream').innerHTML = '';
         startNewMessageGroup();
+
+        const response = await fetch('http://127.0.0.1:5000/page_builder', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                'website-description': description,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(
+                `Server returned ${response.status}: ${response.statusText}`
+            );
+        }
+
         showProgressOverlay();
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
 
-        const response = await fetch(
-            'http://127.0.0.1:5000/run_site_prompting',
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    'website-description': description,
-                }),
-            }
-        );
-        if (response.ok) {
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
 
-            while (true) {
-                const { value, done } = await reader.read();
-                if (done) break;
+            const chunk = decoder.decode(value);
+            // Split the chunk into individual SSE messages
+            const messages = chunk.split('data: ').filter((msg) => msg.trim());
 
-                const chunk = decoder.decode(value);
-                // Split the chunk into individual SSE messages
-                const messages = chunk
-                    .split('data: ')
-                    .filter((msg) => msg.trim());
+            for (const msg of messages) {
+                try {
+                    const jsonData = JSON.parse(msg.trim());
 
-                for (const msg of messages) {
-                    try {
-                        const jsonData = JSON.parse(msg.trim());
-                        if (jsonData.type === 'progress') {
-                            await pendingImageLoads; // Wait for any pending images
-                            await addProgressItem('message', jsonData.message);
-                        } else if (jsonData.type === 'image') {
-                            await addProgressItem(
-                                'image',
-                                jsonData.description,
-                                jsonData.url
-                            );
-                        } else if (jsonData.type === 'html') {
-                            await pendingImageLoads;
-                            updatePreviewIframe(jsonData.content);
-                        }
-                    } catch (e) {
-                        // If not JSON, treat as HTML
+                    // Handle error messages from server
+                    if (jsonData.type === 'error') {
+                        showError(jsonData.message);
+                        return;
+                    }
+
+                    if (jsonData.type === 'progress') {
+                        await pendingImageLoads; // Wait for any pending images
+                        await addProgressItem('message', jsonData.message);
+                    } else if (jsonData.type === 'image') {
+                        await addProgressItem(
+                            'image',
+                            jsonData.description,
+                            jsonData.url
+                        );
+                    } else if (jsonData.type === 'html') {
                         await pendingImageLoads;
-                        updatePreviewIframe(msg.trim());
+                        updatePreviewIframe(jsonData.content);
+                    }
+                } catch (e) {
+                    // If parsing fails, check if it's HTML content
+                    const trimmedMsg = msg.trim();
+                    if (trimmedMsg.startsWith('<')) {
+                        await pendingImageLoads;
+                        updatePreviewIframe(trimmedMsg);
+                    } else {
+                        console.error('Error parsing message:', e);
+                        showError('Error processing server response');
                     }
                 }
             }
-        } else {
-            throw new Error('Error submitting description.');
         }
     } catch (error) {
         console.error('Error submitting description:', error);
-        alert('Error submitting description. Please try again.');
+        showError(`Failed to generate website: ${error.message}`);
     } finally {
         hideProgressOverlay();
     }
 }
-
 // Function to update the 'preview' iframe with given HTML content
 function updatePreviewIframe(htmlContent) {
     const iframe = document.getElementById('preview');
@@ -290,13 +305,40 @@ async function handleSavePage() {
     iframe.contentWindow.document.close();
 }
 
+function handleServerSentEvent(event) {
+    try {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'error') {
+            showError(data.message);
+            // Hide progress overlay if it's showing
+            const progressOverlay = document.getElementById('progress-overlay');
+            progressOverlay.classList.add('d-none');
+            return;
+        }
+
+        // Hide any existing errors when receiving non-error events
+        hideError();
+
+        // Rest of your event handling code...
+    } catch (error) {
+        showError('Error processing server response');
+        console.error('Error processing event:', error);
+    }
+}
+
 document
     .getElementById('submit-description')
     .addEventListener('click', handleSubmitDescription);
 document.getElementById('save-html').addEventListener('click', handleSaveHtml);
 document.getElementById('save-page').addEventListener('click', handleSavePage);
-document.querySelector('.thumbnails-toggle').addEventListener('click', function() {
-    const wrapper = this.closest('.thumbnails-wrapper');
-    wrapper.classList.toggle('collapsed');
-});
+document
+    .querySelector('.thumbnails-toggle')
+    .addEventListener('click', function () {
+        const wrapper = this.closest('.thumbnails-wrapper');
+        wrapper.classList.toggle('collapsed');
+    });
+document
+    .querySelector('.error-container .btn-close')
+    .addEventListener('click', hideError);
 loadSavedThumbnails();

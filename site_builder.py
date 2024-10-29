@@ -34,8 +34,8 @@ model_dict = {
     '4o': 'openai/gpt-4o',
 }
 lm = LM(model_dict['haiku'], max_tokens=4096)
-configure(lm=lm)
 strong_lm = LM(model_dict['4o-mini'], max_tokens=4096)
+configure(lm=lm)
 
 class Nav(BaseModel):
     need_nav: bool
@@ -132,142 +132,248 @@ class HTMLElement(Signature):
     html = OutputField(desc='The HTML code for the given section')
 
 def query_unsplash(query, per_page=30, page=1):
-    url = "https://api.unsplash.com/search/photos"
-    headers = {
-        "Authorization": f"Client-ID {os.environ.get('UNSPLASH_ACCESS_KEY')}"
-    }
-    params = {
-        "query": query,
-        "per_page": per_page,
-        "page": page
-    }
-    
-    response = requests.get(url, headers=headers, params=params, timeout=60)
+    try:
+        api_key = os.environ.get('UNSPLASH_ACCESS_KEY')
+        if not api_key:
+            raise ValueError("Unsplash API key not found in environment variables")
 
-    if response.status_code == 200:
+        url = "https://api.unsplash.com/search/photos"
+        headers = {"Authorization": f"Client-ID {api_key}"}
+        params = {
+            "query": query,
+            "per_page": per_page,
+            "page": page
+        }
+        
+        response = requests.get(url, headers=headers, params=params, timeout=60)
+        response.raise_for_status()  # Raises HTTPError for bad status codes
+        
         return response.json()
-    else:
-        response.raise_for_status()
+        
+    except requests.Timeout:
+        raise Exception("Timeout while connecting to Unsplash API")
+    except requests.RequestException as e:
+        raise Exception(f"Error fetching images from Unsplash: {str(e)}")
 
 def extract_image_data(response):
-    image_dict = {}
-    for result in response.get('results', []):
-        description = result.get('alt_description')  # Ensure description is a string
-        url = result.get('urls', {}).get('full')  # Handle case where 'urls' or 'full' could be missing
+    try:
+        if not response or not isinstance(response, dict):
+            raise ValueError("Invalid response format")
 
-        if description and url:  # Only add if both description and url are not None
-            image_dict[description] = url
+        results = response.get('results', [])
+        if not results:
+            raise ValueError("No images found in response")
+
+        image_dict = {}
+        for result in results:
+            description = result.get('alt_description')
+            url = result.get('urls', {}).get('full')
+
+            if description and url:
+                image_dict[description] = url
         
-    return image_dict
+        if not image_dict:
+            raise ValueError("No valid images found in response")
+            
+        return image_dict
+        
+    except (AttributeError, TypeError) as e:
+        raise ValueError(f"Error processing image data: {str(e)}")
 
 def clean_html(html):
-    clean_text = re.sub(r'```html|```', '', html)
-    return clean_text
+    try:
+        if not isinstance(html, str):
+            raise ValueError("Input must be a string")
+        if not html.strip():
+            raise ValueError("Input string is empty")
+            
+        clean_text = re.sub(r'```html|```', '', html)
+        return clean_text.strip()
+        
+    except re.error as e:
+        raise ValueError(f"Error cleaning HTML: {str(e)}")
 
-def promptify(prompt):
+def generate_initial_instructions(prompt):
+    """Generate website instructions and initial setup"""
+    try:
+        with context(lm=strong_lm):
+            create_instructions = TypedChainOfThought(CreateInstructions)
+            instructions_response = create_instructions(description=prompt)
+
+        return {
+            'website_instructions': instructions_response.instructions_list,
+            'style_instructions': instructions_response.color_scheme,
+            'website_title': instructions_response.website_title,
+            'image_query': instructions_response.image_query,
+            'need_nav': instructions_response.need_nav.need_nav,
+            'section_instructions': instructions_response.instructions_list.model_dump()['section_instructions']
+        }
+    except Exception as e:
+        raise Exception(f"Error generating instructions: {str(e)}")
+
+def generate_css(section_instructions_str, style_instructions):
+    """Generate CSS styling for the website"""
+    try:
+        css_rules = ChainOfThought(CSSRules)
+        css_rules_response = css_rules(
+            section_instructions=section_instructions_str, 
+            color_scheme=style_instructions
+        )
+        return css_rules_response.css_rules
+    except Exception as e:
+        raise Exception(f"Error generating CSS: {str(e)}")
+
+def process_images(theme_related_image_query, section_instructions):
+    """Handle image fetching and classification"""
+    try:
+        theme_related_image_results = query_unsplash(theme_related_image_query)
+        theme_related_image_dict = extract_image_data(theme_related_image_results)
+        theme_related_image_dict_str = json.dumps(theme_related_image_dict)
+        
+        classify_images = TypedChainOfThought(ClassifyImages)
+        section_names_str = json.dumps([section['section_name'] for section in section_instructions])
+        classify_imgs_response = classify_images(
+            image_descriptions=theme_related_image_dict_str, 
+            section_names=section_names_str
+        )
+        
+        return {
+            'image_dict': theme_related_image_dict,
+            'image_lookup': {
+                img.section_name: img.urls 
+                for img in classify_imgs_response.image_instructions.image_instructions
+            }
+        }
+    except Exception as e:
+        raise Exception(f"Error processing images: {str(e)}")
+
+def add_navigation(section_instructions_str):
+    """Add navigation menu if needed"""
+    try:
+        nav_instructions = TypedChainOfThought(NavInstuctions)
+        nav_response = nav_instructions(section_instructions=section_instructions_str)
+        return nav_response.updated_instructions.model_dump()['section_instructions']
+    except Exception as e:
+        raise Exception(f"Error adding navigation: {str(e)}")
+
+def build_section(section, style_instructions, image_lookup):
+    """Build individual HTML section"""
+    try:
+        with context(lm=strong_lm):
+            section_html = TypedChainOfThought(HTMLElement)
+            section_html_response = section_html(
+            css_rules=style_instructions,
+            description=section['instructions'],
+            class_name=section['class_name'],
+            images=','.join(image_lookup.get(section['section_name'], 'None'))
+            )
+        return clean_html(section_html_response.html)
+    except Exception as e:
+        raise Exception(f"Error building section {section['section_name']}: {str(e)}")
+
+def page_builder_pipeline(prompt):
     def format_sse(data):
         return f"data: {json.dumps(data)}\n\n"
-    print(prompt)
-    # Create HTML scaffold
+
     current_html = HTML_SCAFFOLD.format(website_title='', css_style_element='')
     yield current_html
-    
-    # Create instructions
-    yield format_sse({
-        "type": "progress",
-        "message": "📝 Generating website instructions and design guidelines..."
-    })
-    with context(lm=strong_lm):    
-        create_instructions = TypedChainOfThought(CreateInstructions)
-        instructions_response = create_instructions(description=prompt)
 
-    website_instructions = instructions_response.instructions_list
-    style_instructions = instructions_response.color_scheme
-    website_title = instructions_response.website_title
-    yield format_sse({
-        "type": "progress",
-        "message": f"🏷️ Website Title: {website_title}"
-    })
-    image_query = instructions_response.image_query
-    need_nav = instructions_response.need_nav.need_nav
-    website_dict = website_instructions.model_dump()
-
-    section_instructions = website_dict['section_instructions']
-    section_instructions_str = json.dumps(section_instructions)
-    
-    yield format_sse({
-        "type": "progress",
-        "message": "🎨 Generating CSS styling..."
-    })
-    css_rules = ChainOfThought(CSSRules)
-    css_rules_response = css_rules(section_instructions=section_instructions_str, color_scheme=style_instructions)
-    css_style_element = css_rules_response.css_rules
-    
-    current_html = HTML_SCAFFOLD.format(website_title=website_title, css_style_element=css_style_element)
-    
-    image_query_dict = image_query.model_dump()
-    theme_related_image_query = image_query_dict['theme_related_image']
-    
-    # Get images
-    yield format_sse({
-        "type": "progress",
-        "message": f"🔍 Searching for images related to: {theme_related_image_query}"
-    })
-    theme_related_image_results = query_unsplash(theme_related_image_query)
-    theme_related_image_dict = extract_image_data(theme_related_image_results)
-
-    theme_related_image_dict_str = json.dumps(theme_related_image_dict)
-    classify_images = TypedChainOfThought(ClassifyImages)
-    section_names_str = json.dumps([section['section_name'] for section in section_instructions])
-    classify_imgs_response = classify_images(image_descriptions=theme_related_image_dict_str, section_names=section_names_str)
-    image_instructions = classify_imgs_response.image_instructions
-    
-    # Get image instructions as a dictionary for easier lookup
-    image_lookup = {img.section_name: img.urls for img in image_instructions.image_instructions}
-    
-    # Preview some of the found images
-    preview_images = list(theme_related_image_dict.items())[:3]  # Show first 3 images
-    yield format_sse({
-        "type": "progress",
-        "message": f"📸 Found {len(theme_related_image_dict)} images. Here are some examples:"
-    })
-    for desc, url in preview_images:
-        yield format_sse({
-            "type": "image",
-            "url": url,
-            "description": desc
-        })
-
-    if need_nav:
+    # 1. Initial Setup & Instructions Generation
+    try:
+        yield format_sse({"type": "progress", "message": "📝 Generating website instructions..."})
+        instruction_data = generate_initial_instructions(prompt)
+        
         yield format_sse({
             "type": "progress",
-            "message": "🧭 Adding navigation menu..."
+            "message": f"🏷️ Website Title: {instruction_data['website_title']}"
         })
-        nav_instructions = TypedChainOfThought(NavInstuctions)
-        nav_instructions_response = nav_instructions(section_instructions=section_instructions_str)
-        section_instructions = nav_instructions_response.updated_instructions.model_dump()['section_instructions']
-    # Build and insert each section progressively
-    
-    yield format_sse({
-        "type": "progress",
-        "message": f"🏗️ Building {len(section_instructions)} sections..."
-    })
+    except Exception as e:
+        yield format_sse({"type": "error", "message": str(e)})
+        return
 
-    print(section_instructions)
-    with context(lm=strong_lm):
+    # 2. CSS Generation
+    try:
+        yield format_sse({"type": "progress", "message": "🎨 Generating CSS styling..."})
+        css_style_element = generate_css(
+            json.dumps(instruction_data['section_instructions']), 
+            instruction_data['style_instructions']
+        )
+        current_html = HTML_SCAFFOLD.format(
+            website_title=instruction_data['website_title'], 
+            css_style_element=css_style_element
+        )
+    except Exception as e:
+        yield format_sse({"type": "error", "message": str(e)})
+        return
+
+    # 3. Image Processing
+    image_lookup = {}
+    try:
+        yield format_sse({
+            "type": "progress",
+            "message": f"🔍 Searching for images..."
+        })
+        
+        image_data = process_images(
+            instruction_data['image_query'].model_dump()['theme_related_image'],
+            instruction_data['section_instructions']
+        )
+        image_lookup = image_data['image_lookup']
+
+        # Preview images
+        preview_images = list(image_data['image_dict'].items())[:3]
+        yield format_sse({
+            "type": "progress",
+            "message": f"📸 Found {len(image_data['image_dict'])} images. Here are some examples:"
+        })
+        for desc, url in preview_images:
+            yield format_sse({
+                "type": "image",
+                "url": url,
+                "description": desc
+            })
+    except Exception as e:
+        yield format_sse({"type": "error", "message": str(e)})
+        # Continue without images
+
+    # 4. Navigation Addition
+    section_instructions = instruction_data['section_instructions']
+    if instruction_data['need_nav']:
+        try:
+            yield format_sse({"type": "progress", "message": "🧭 Adding navigation menu..."})
+            section_instructions = add_navigation(json.dumps(section_instructions))
+        except Exception as e:
+            yield format_sse({"type": "error", "message": str(e)})
+
+    # 5. Section Building
+    try:
+        yield format_sse({
+            "type": "progress",
+            "message": f"🏗️ Building {len(section_instructions)} sections..."
+        })
+
         for i, section in enumerate(section_instructions, 1):
-            yield format_sse({
-                "type": "progress",
-                "message": f"📄 Creating section {i}/{len(section_instructions)}: {section['section_name']}"
-            })
-            section_html = TypedChainOfThought(HTMLElement)
-            section_html_response = section_html(css_rules=style_instructions, description=section['instructions'], class_name=section['class_name'], images=','.join(image_lookup.get(section['section_name'], 'None')))
-            clean_section = clean_html(section_html_response.html)
-            
-            body_end_pos = current_html.find('</body>')
-            current_html = current_html[:body_end_pos] + clean_section + current_html[body_end_pos:]
+            try:
+                yield format_sse({
+                    "type": "progress",
+                    "message": f"📄 Creating section {i}/{len(section_instructions)}: {section['section_name']}"
+                })
+                
+                clean_section = build_section(
+                    section, 
+                    instruction_data['style_instructions'], 
+                    image_lookup
+                )
+                
+                body_end_pos = current_html.find('</body>')
+                current_html = current_html[:body_end_pos] + clean_section + current_html[body_end_pos:]
 
-            yield format_sse({
-                "type": "html",
-                "content": current_html
-            })
+                yield format_sse({
+                    "type": "html",
+                    "content": current_html
+                })
+            except Exception as e:
+                yield format_sse({"type": "error", "message": str(e)})
+                continue
+    except Exception as e:
+        yield format_sse({"type": "error", "message": str(e)})

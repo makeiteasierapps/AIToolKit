@@ -17,9 +17,7 @@ export function incrementRequestCount() {
 
 export function checkRequestLimit() {
     const currentCount = getRequestCount();
-    console.log('checkRequestLimit', currentCount);
     if (currentCount >= MAX_API_REQUESTS) {
-        alert(`This is a demo version limited to ${MAX_API_REQUESTS} requests. Thank you for trying it out!`);
         return false;
     }
     return true;
@@ -33,7 +31,6 @@ export function saveThumbnail(thumbnailData) {
 }
 
 export function deleteThumbnail(thumbnailId) {
-    console.log('deleteThumbnail', thumbnailId);
     const savedThumbnails = JSON.parse(localStorage.getItem(STORAGE_KEYS.THUMBNAILS) || '[]');
     const updatedThumbnails = savedThumbnails.filter(t => t.id !== thumbnailId);
     localStorage.setItem(STORAGE_KEYS.THUMBNAILS, JSON.stringify(updatedThumbnails));
