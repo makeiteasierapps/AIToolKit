@@ -244,7 +244,6 @@ async function loadSavedThumbnails() {
     const container = document.getElementById('thumbnails-container');
 
     for (const thumbnailData of savedThumbnails) {
-        console.log(thumbnailData.id);
         // Create a temporary iframe to generate the thumbnail
         const iframe = document.createElement('iframe');
         document.body.appendChild(iframe);

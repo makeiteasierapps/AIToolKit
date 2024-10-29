@@ -10,35 +10,32 @@ extra_css %}
     href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
 />
 {% endblock %} {% block content %}
-<div class="container main-container">
-    <h1 class="text-center my-4">Page Builder</h1>
+<div class="main-container">
+    <h1>Page Builder</h1>
 
     <!-- Description Input Section -->
-    <div class="w-100">
-        <div class="input-group">
-            <textarea
-                class="form-control"
-                id="website-description"
-                rows="3"
-                required
-                placeholder="Describe your page..."
-            ></textarea>
-            <button id="submit-description" class="btn" title="Generate">
-                <i class="bi bi-arrow-right"></i>
-            </button>
-        </div>
+
+    <div class="input-group description-input-group">
+        <textarea
+            class="form-control"
+            id="website-description"
+            rows="3"
+            required
+            placeholder="Describe your page..."
+        ></textarea>
+        <button id="submit-description" class="btn" title="Generate">
+            <i class="bi bi-arrow-right"></i>
+        </button>
     </div>
 
     <!-- Thumbnails Section -->
-    <div class="w-100">
-        <div class="thumbnails-wrapper collapsed">
-            <button class="thumbnails-toggle" aria-label="Toggle thumbnails">
-                <i class="bi bi-chevron-up"></i>
-                <span>Saved Pages</span>
-            </button>
-            <div id="thumbnails-container">
-                <!-- thumbnails content -->
-            </div>
+    <div class="thumbnails-wrapper collapsed">
+        <button class="thumbnails-toggle" aria-label="Toggle thumbnails">
+            <i class="bi bi-chevron-up"></i>
+            <span>Saved Pages</span>
+        </button>
+        <div id="thumbnails-container">
+            <!-- thumbnails content -->
         </div>
     </div>
 

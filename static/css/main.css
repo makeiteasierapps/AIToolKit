@@ -1,15 +1,10 @@
 /* Set the primary and secondary Bootstrap colors */
 :root {
-    --bs-primary-rgb: 46, 204, 113;
-    --bs-secondary-rgb: 52, 152, 219;
-}
-
-body {
-    background-color: #343a40;
-    color: #fff;
-}
-.container {
-    max-width: 960px;
+    --primary-bg: #121212;
+    --primary-text: #e0e0e0;
+    --accent-1: #00f5d4;
+    --accent-2: #00b4d8;
+    --secondary-text: #b3b3b3;
 }
 
 .main-container {
@@ -18,4 +13,71 @@ body {
     align-items: center;
     min-height: 100vh;
     padding-top: 2rem;
+}
+
+.navbar {
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    padding-left: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.navbar a {
+    color: var(--primary-text);
+    text-decoration: none;
+    margin-right: 1rem;
+    transition: color 0.3s ease;
+}
+
+.navbar a:hover {
+    color: var(--accent-1);
+}
+
+
+body {
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    font-family: 'Roboto', sans-serif;
+}
+
+h1, .main-heading {
+    color: var(--accent-1);
+    font-family: 'Orbitron', sans-serif;
+}
+
+h2, .sub-heading, button {
+    color: var(--accent-2);
+    font-family: 'Exo 2', sans-serif;
+}
+
+p, .body-text {
+    color: var(--secondary-text);
+}
+
+/* Updated Primary Button */
+.btn-primary {
+    background-color: #3BBFBF;
+    color: var(--primary-bg);
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #1FAFAA; 
+    color: var(--primary-bg);
+}
+
+/* Secondary Button */
+.btn-secondary {
+    background-color: var(--primary-bg);
+    color: var(--accent-1);
+    border: 1px solid var(--accent-1);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus {
+    background-color: var(--accent-1);
+    color: var(--primary-bg);
 }

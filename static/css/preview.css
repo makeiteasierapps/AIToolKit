@@ -25,7 +25,7 @@
 #preview-container {
     padding: 0;
     box-sizing: border-box;
-    width: 100%;
+    width: 90%;
     position: relative;
     height: calc(90vh - 200px);
     display: flex;

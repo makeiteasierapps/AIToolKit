@@ -11,17 +11,21 @@
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
 }
 
+.description-input-group {
+    width: 50%;
+}
+
 #website-description {
     border: none;
     width: 100%;
-    box-sizing: border-box;  /* Include padding in width calculation */
-    line-height: 1.5;  /* Optimize line height */
+    box-sizing: border-box;
+    line-height: 1.5;
     min-height: 60px; 
     padding: 20px;
     padding-right: 30px;
     font-size: 1.1rem;
     resize: none;
-    flex: 1;  /* Take up remaining space */
+    flex: 1;
 }
 
 #website-description:focus {
@@ -49,10 +53,6 @@
     background-color: #e8e8e8;
     color: #333;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-#submit-description:active {
-    transform: translateY(-50%) translateX(2px) scale(0.97);  /* Combine transforms */
 }
 
 #submit-description i {
