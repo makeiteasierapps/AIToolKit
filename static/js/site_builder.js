@@ -2,9 +2,9 @@ import {
     checkRequestLimit,
     incrementRequestCount,
     saveThumbnail,
-    deleteThumbnail,
-    getSavedThumbnails,
 } from './storage.js';
+
+import { createThumbnail, loadSavedThumbnails } from './thumbnailManager.js';
 
 let currentMessageGroup = null;
 
@@ -194,87 +194,6 @@ function handleSaveHtml() {
     download('website-description.html', htmlContent);
 }
 
-async function createThumbnail(iframe, htmlContent, title, thumbnailId = null) {
-    if (!thumbnailId) {
-        thumbnailId = 'thumbnail-' + Date.now(); // Create unique ID
-    }
-    const thumbnailWrapper = document.createElement('div');
-    thumbnailWrapper.id = thumbnailId;
-
-    const thumbnail = document.createElement('div');
-    const thumbnailImg = document.createElement('img');
-    const thumbnailTitle = document.createElement('p');
-    const deleteButton = document.createElement('button');
-
-    // Setup delete button
-    deleteButton.classList.add('delete-button');
-    deleteButton.innerHTML = '×';
-    deleteButton.title = 'Delete thumbnail';
-    deleteButton.onclick = (e) => {
-        e.stopPropagation(); // Prevent thumbnail click event
-        if (confirm('Are you sure you want to delete this thumbnail?')) {
-            thumbnailWrapper.remove();
-            deleteThumbnail(thumbnailId);
-        }
-    };
-
-    thumbnail.classList.add('thumbnail');
-    thumbnailImg.classList.add('thumbnail-img');
-    thumbnailTitle.classList.add('thumbnail-title');
-    thumbnailTitle.innerText = title;
-
-    thumbnail.appendChild(thumbnailImg);
-    thumbnail.appendChild(deleteButton);
-    thumbnailWrapper.appendChild(thumbnail);
-    thumbnailWrapper.appendChild(thumbnailTitle);
-
-    thumbnail.addEventListener('click', () => {
-        const mainIframe = document.getElementById('preview');
-        mainIframe.contentWindow.document.open();
-        mainIframe.contentWindow.document.write(htmlContent);
-        mainIframe.contentWindow.document.close();
-    });
-
-    const iframeDocument = iframe.contentWindow.document;
-    iframe.style.width = '1024px';
-    iframe.style.height = '768px';
-    const canvas = await html2canvas(iframeDocument.documentElement, {
-        scale: 0.25,
-    });
-    const dataURL = canvas.toDataURL();
-
-    thumbnailImg.width = 180;
-    thumbnailImg.height = 135;
-    thumbnailImg.src = dataURL;
-
-    return thumbnailWrapper;
-}
-
-// Add this function to load saved thumbnails
-async function loadSavedThumbnails() {
-    const savedThumbnails = getSavedThumbnails();
-    const container = document.getElementById('thumbnails-container');
-
-    for (const thumbnailData of savedThumbnails) {
-        // Create a temporary iframe to generate the thumbnail
-        const iframe = document.createElement('iframe');
-        document.body.appendChild(iframe);
-        iframe.contentWindow.document.open();
-        iframe.contentWindow.document.write(thumbnailData.html);
-        const thumbnail = await createThumbnail(
-            iframe,
-            thumbnailData.html,
-            thumbnailData.title,
-            thumbnailData.id
-        );
-
-        iframe.contentWindow.document.close();
-        thumbnail.id = thumbnailData.id;
-        container.appendChild(thumbnail);
-        document.body.removeChild(iframe);
-    }
-}
-
 async function handleSavePage() {
     const title = prompt('Enter title for the current page: ');
     if (title === null) {
@@ -300,28 +219,6 @@ async function handleSavePage() {
         `<html><head></head><body style="display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif; font-size: 24px; color: #fff;">Let's Create Your Next Page</body></html>`
     );
     iframe.contentWindow.document.close();
-}
-
-function handleServerSentEvent(event) {
-    try {
-        const data = JSON.parse(event.data);
-
-        if (data.type === 'error') {
-            showError(data.message);
-            // Hide progress overlay if it's showing
-            const progressOverlay = document.getElementById('progress-overlay');
-            progressOverlay.classList.add('d-none');
-            return;
-        }
-
-        // Hide any existing errors when receiving non-error events
-        hideError();
-
-        // Rest of your event handling code...
-    } catch (error) {
-        showError('Error processing server response');
-        console.error('Error processing event:', error);
-    }
 }
 
 document
