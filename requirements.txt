@@ -1,0 +1,4 @@
+dspy_ai==2.5.15
+Flask==3.0.3
+python-dotenv==1.0.1
+Requests==2.32.3
