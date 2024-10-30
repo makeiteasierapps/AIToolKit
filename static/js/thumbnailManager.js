@@ -69,8 +69,8 @@ export async function createThumbnail(
 
     // Capture thumbnail image from iframe
     const iframeDocument = iframe.contentWindow.document;
-    iframe.style.width = '100vw';
-    iframe.style.height = '100vh';
+    iframe.style.width = '1920px';
+    iframe.style.height = '1080px';
 
     // Wait for iframe content to fully load
     await new Promise((resolve) => {
@@ -92,8 +92,8 @@ export async function createThumbnail(
 
     const canvas = await html2canvas(iframeDocument.documentElement, {
         scale: 0.25,
-        windowWidth: window.innerWidth,
-        windowHeight: window.innerHeight,
+        windowWidth: 1920,
+        windowHeight: 1080,
         useCORS: true, // Allow cross-origin images
         allowTaint: true, // Allow cross-origin images to taint canvas
     });
