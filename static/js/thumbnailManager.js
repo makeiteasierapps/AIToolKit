@@ -1,5 +1,11 @@
 import { deleteThumbnail, getSavedThumbnails } from './storage.js';
 
+const SPINNER_TEMPLATE = `
+    <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+`;
+
 export async function createThumbnail(
     iframe,
     htmlContent,
@@ -18,10 +24,15 @@ export async function createThumbnail(
     thumbnailImg.classList.add('thumbnail-img');
     thumbnailImg.width = 180;
     thumbnailImg.height = 135;
+    thumbnailImg.style.display = 'none';
 
-    const thumbnailTitle = document.createElement('p');
-    thumbnailTitle.classList.add('thumbnail-title');
-    thumbnailTitle.innerText = title;
+    thumbnail.insertAdjacentHTML('afterbegin', SPINNER_TEMPLATE);
+    const spinner = thumbnail.querySelector('.spinner-border');
+
+    thumbnailImg.onload = () => {
+        spinner.remove();
+        thumbnailImg.style.display = 'block';
+    };
 
     const deleteButton = document.createElement('button');
     deleteButton.classList.add('delete-button');
@@ -36,7 +47,13 @@ export async function createThumbnail(
     };
 
     thumbnail.append(thumbnailImg, deleteButton);
+
+    const thumbnailTitle = document.createElement('p');
+    thumbnailTitle.classList.add('thumbnail-title');
+    thumbnailTitle.innerText = title;
+
     thumbnailWrapper.append(thumbnail, thumbnailTitle);
+
     fragment.appendChild(thumbnailWrapper);
 
     // Thumbnail click to update iframe
@@ -52,10 +69,33 @@ export async function createThumbnail(
 
     // Capture thumbnail image from iframe
     const iframeDocument = iframe.contentWindow.document;
-    iframe.style.width = '1024px';
-    iframe.style.height = '768px';
+    iframe.style.width = '100vw';
+    iframe.style.height = '100vh';
+
+    // Wait for iframe content to fully load
+    await new Promise((resolve) => {
+        iframe.onload = resolve;
+        // Also wait for all images to load
+        Promise.all(
+            Array.from(iframeDocument.images).map((img) => {
+                if (img.complete) return Promise.resolve();
+                return new Promise((resolve) => {
+                    img.onload = resolve;
+                    img.onerror = resolve; // Handle failed image loads
+                });
+            })
+        ).then(resolve);
+    });
+
+    // Add a small delay to ensure everything is rendered
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const canvas = await html2canvas(iframeDocument.documentElement, {
         scale: 0.25,
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight,
+        useCORS: true, // Allow cross-origin images
+        allowTaint: true, // Allow cross-origin images to taint canvas
     });
     thumbnailImg.src = canvas.toDataURL();
 

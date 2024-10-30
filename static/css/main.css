@@ -122,3 +122,22 @@ p, .body-text {
     transform: translateX(-50%);
     opacity: 1;
 }
+
+
+.spinner-border {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2rem;
+    height: 2rem;
+    border: 0.25em solid var(--accent-1);
+    border-right-color: transparent;
+    animation: spinner-animation 0.75s linear infinite;
+}
+
+@keyframes spinner-animation {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
