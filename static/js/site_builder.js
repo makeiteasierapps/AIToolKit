@@ -95,7 +95,7 @@ async function handleSubmitDescription() {
         document.getElementById('progress-stream').innerHTML = '';
         startNewMessageGroup();
 
-        const response = await fetch('http://127.0.0.1:5000/page_builder', {
+        const response = await fetch('/page_builder', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -164,7 +164,7 @@ async function handleSubmitDescription() {
         hideProgressOverlay();
     }
 }
-// Function to update the 'preview' iframe with given HTML content
+
 function updatePreviewIframe(htmlContent) {
     const iframe = document.getElementById('preview');
     iframe.contentWindow.document.open();
@@ -172,7 +172,6 @@ function updatePreviewIframe(htmlContent) {
     iframe.contentWindow.document.close();
 }
 
-// Function to download the generated HTML content as a file
 function download(filename, text) {
     const element = document.createElement('a');
     element.setAttribute(
@@ -189,14 +188,12 @@ function download(filename, text) {
     document.body.removeChild(element);
 }
 
-// Function to save the generated HTML content as a file
 function handleSaveHtml() {
     const iframe = document.getElementById('preview');
     const htmlContent = iframe.contentWindow.document.documentElement.outerHTML;
     download('website-description.html', htmlContent);
 }
 
-// Function to create a thumbnail of the current page
 async function createThumbnail(iframe, htmlContent, title, thumbnailId = null) {
     if (!thumbnailId) {
         thumbnailId = 'thumbnail-' + Date.now(); // Create unique ID
@@ -211,7 +208,7 @@ async function createThumbnail(iframe, htmlContent, title, thumbnailId = null) {
 
     // Setup delete button
     deleteButton.classList.add('delete-button');
-    deleteButton.innerHTML = '×'; // Using × character as delete icon
+    deleteButton.innerHTML = '×';
     deleteButton.title = 'Delete thumbnail';
     deleteButton.onclick = (e) => {
         e.stopPropagation(); // Prevent thumbnail click event
