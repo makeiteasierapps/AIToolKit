@@ -1,0 +1,57 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy to server
+      uses: appleboy/ssh-action@master
+      with:
+        host: paxxium.com
+        username: gravitaskillis
+        port: 22
+        key: ${{ secrets.SERVER_SSH_KEY }}
+        script: |
+          cd ~/projects/AIToolKit
+          
+          # Store the old requirements.txt hash
+          OLD_HASH=$(md5sum requirements.txt 2>/dev/null | awk '{ print $1 }')
+          
+          git pull
+          
+          # Check if requirements.txt has changed
+          NEW_HASH=$(md5sum requirements.txt | awk '{ print $1 }')
+          
+          if [ "$OLD_HASH" != "$NEW_HASH" ]; then
+            echo "requirements.txt has changed. Rebuilding virtual environment."
+            
+            # Remove existing venv if it exists
+            rm -rf venv
+            
+            # Create a new virtual environment
+            python3 -m venv venv
+            
+            # Activate the virtual environment
+            source venv/bin/activate
+            
+            # Upgrade pip
+            pip install --upgrade pip
+            
+            # Install packages from requirements.txt
+            pip install -r requirements.txt
+            
+            # Deactivate the virtual environment
+            deactivate
+            
+            echo "Virtual environment rebuilt with updated packages."
+          else
+            echo "No changes in requirements.txt. Skipping package updates."
+          fi
+          
+          # Restart the service
+          sudo /bin/systemctl restart toolkit.service
