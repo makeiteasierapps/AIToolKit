@@ -64,3 +64,16 @@
 #submit-description:hover i {
     transform: translateX(1px);
 }
+
+@media screen and (max-width: 768px) {
+    .description-input-group {
+        width: 70%;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .description-input-group {
+        width: 90%;
+        height: 90px;
+    }
+}

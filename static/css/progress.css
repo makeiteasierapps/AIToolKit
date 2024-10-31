@@ -11,7 +11,7 @@
     top: 20px;
     right: 20px;
     width: 400px;
-    max-width: calc(100vw - 40px); /* Prevent overflow on smaller screens */
+    max-width: calc(100vw - 40px); 
 }
 
 .progress-content {
@@ -65,8 +65,6 @@
 @media screen and (max-width: 480px) {
     #progress-overlay {
         top: auto;
-        bottom: 0;
-        right: 0;
         width: 100%;
         border-radius: 8px 8px 0 0;
     }

@@ -89,4 +89,16 @@ document.addEventListener('DOMContentLoaded', () => {
     closeButton.addEventListener('click', () => {
         hideError();
     });
+
+    document.querySelectorAll('.nav-link').forEach((link) => {
+        link.addEventListener('click', (e) => {
+            const currentPath = window.location.pathname;
+            const targetPath = link.getAttribute('href');
+
+            // If we're already on this page, prevent navigation
+            if (currentPath === targetPath) {
+                e.preventDefault();
+            }
+        });
+    });
 });
