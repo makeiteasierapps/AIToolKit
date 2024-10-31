@@ -1,65 +1,47 @@
-from flask import Flask, render_template, request, jsonify, Response, stream_with_context
+from fastapi import FastAPI, Request, Response
+from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
 from site_builder import page_builder_pipeline
 
-app = Flask(__name__)
+app = FastAPI()
 
-@app.route('/')
-def home():
-    tools = [
-        {'name': 'Website Builder', 'url': 'site_builder'},
-        {'name': 'AgentSearch', 'url': 'agent_search'},
-    ]
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
-    return render_template('home.html', tools=tools)
+class WebsiteDescription(BaseModel):
+    website_description: str
 
-# Site Builder routes
-@app.route('/site_builder')
-def site_builder():
-    return render_template('site_builder.html')
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse("home.html", {"request": request})
 
-@app.route('/page_builder', methods=['POST'])
-def start_pipeline():
-    try:
-        data = request.get_json()
-        description = data.get('website-description', '').strip()
-        if not description:
-            return Response(
-                'data: {"type": "error", "message": "Please provide a website description"}\n\n',
-                mimetype='text/event-stream'
-            )
-        
-        def generate():
-            try:
-                for html_update in page_builder_pipeline(description):
-                    yield f"data: {html_update}\n\n"
-            except Exception as e:
-                yield f'data: {{"type": "error", "message": "Pipeline error: {str(e)}"}}\n\n'
-        
-        return Response(
-            stream_with_context(generate()),
-            mimetype='text/event-stream'
-        )
-        
-    except Exception as e:
-        return Response(
-            f'data: {{"type": "error", "message": "Server error: {str(e)}"}}\n\n',
-            mimetype='text/event-stream'
+@app.get("/site_builder", response_class=HTMLResponse)
+async def site_builder(request: Request):
+    return templates.TemplateResponse("site_builder.html", {"request": request})
+
+@app.post("/page_builder")
+async def start_pipeline(description: WebsiteDescription):
+    if not description.website_description.strip():
+        return StreamingResponse(
+            iter(['data: {"type": "error", "message": "Please provide a website description"}\n\n']),
+            media_type="text/event-stream"
         )
 
-# Agent Search
-@app.route('/agent_search')
-def agent_search():
-    return render_template('agent_search.html')
+    async def generate():
+        try:
+            for html_update in page_builder_pipeline(description.website_description):
+                yield f"data: {html_update}\n\n"
+        except Exception as e:
+            yield f'data: {{"type": "error", "message": "Pipeline error: {str(e)}"}}\n\n'
 
-@app.route('/submit_brand', methods=['POST'])
-def submit_brand():
-    data = request.get_json()
-    brand = data.get('brand', '')
-    if brand:
-        response = f"Received brand: {brand}"
-    else:
-        response = "No brand received"
-    return jsonify(response)
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream"
+    )
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

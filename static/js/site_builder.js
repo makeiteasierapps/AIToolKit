@@ -99,7 +99,7 @@ async function handleSubmitDescription() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                'website-description': description,
+                'website_description': description,
             }),
         });
 

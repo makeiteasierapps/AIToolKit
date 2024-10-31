@@ -27,7 +27,7 @@
             <button type="button" class="btn-close" aria-label="Close"></button>
         </div>
         <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-            <a class="navbar-brand" href="{{ url_for('home') }}">AI ToolKit</a>
+            <a class="navbar-brand" href="/">AI ToolKit</a>
             <button
                 class="navbar-toggler"
                 type="button"
@@ -39,13 +39,8 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('site_builder') }}"
+                        <a class="nav-link" href="/site_builder"
                             >Website Builder</a
-                        >
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('agent_search') }}"
-                            >AgentSearch</a
                         >
                     </li>
                 </ul>
@@ -53,7 +48,7 @@
         </nav>
 
         {% block content %}{% endblock %}
-        <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+        <script src="/static/js/utils.js"></script>
 
         <script
             src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
