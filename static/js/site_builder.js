@@ -211,14 +211,6 @@ async function handleSavePage() {
         html: htmlContent,
         timestamp: Date.now(),
     });
-
-    // Clear the description input field and iframe
-    document.getElementById('website-description').value = 'Go Again?';
-    iframe.contentWindow.document.open();
-    iframe.contentWindow.document.write(
-        `<html><head></head><body style="display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif; font-size: 24px; color: #fff;">Let's Create Your Next Page</body></html>`
-    );
-    iframe.contentWindow.document.close();
 }
 
 document
