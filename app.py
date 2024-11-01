@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -33,15 +35,50 @@ async def start_pipeline(description: WebsiteDescription):
     async def generate():
         try:
             for html_update in page_builder_pipeline(description.website_description):
+                # FastAPI will handle the yielding appropriately
                 yield f"data: {html_update}\n\n"
         except Exception as e:
             yield f'data: {{"type": "error", "message": "Pipeline error: {str(e)}"}}\n\n'
 
     return StreamingResponse(
         generate(),
-        media_type="text/event-stream"
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
     )
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    load_dotenv()
+    IS_LOCAL_DEV = os.getenv("IS_LOCAL_DEV", "false") == "true"
+
+    if IS_LOCAL_DEV:
+        import uvicorn
+        uvicorn.run(
+            app,
+            host="0.0.0.0",
+            port=8000,
+            reload=True  # Enable auto-reload for development
+        )
+    else:
+        import gunicorn.app.base
+
+        class StandaloneApplication(gunicorn.app.base.BaseApplication):
+            def __init__(self, app, options=None):
+                self.options = options or {}
+                self.application = app
+                super().__init__()
+
+            def load_config(self):
+                for key, value in self.options.items():
+                    self.cfg.set(key.lower(), value)
+
+            def load(self):
+                return self.application
+
+        options = {
+            "bind": "0.0.0.0:8000",
+            "worker_class": "uvicorn.workers.UvicornWorker",
+            "workers": 4,
+            "timeout": 120
+        }
+
+        StandaloneApplication(app, options).run()
