@@ -53,10 +53,10 @@ if __name__ == "__main__":
     if IS_LOCAL_DEV:
         import uvicorn
         uvicorn.run(
-            app,
+            "app:app",
             host="0.0.0.0",
             port=8000,
-            reload=True  # Enable auto-reload for development
+            reload=True
         )
     else:
         import gunicorn.app.base
