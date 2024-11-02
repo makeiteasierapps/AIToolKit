@@ -27,14 +27,14 @@ load_dotenv()
 os.environ.get("OPENAI_API_KEY")
 os.environ.get("ANTHROPIC_API_KEY")
 model_dict = {
-    'sonnet': 'anthropic/claude-3-5-sonnet-latest',
-    'haiku': 'anthropic/claude-3-haiku-20240307',
-    'opus': 'anthropic/claude-3-opus-latest',
-    '4o-mini': 'openai/gpt-4o-mini',
-    '4o': 'openai/gpt-4o',
+    'sonnet': {'model': 'anthropic/claude-3-5-sonnet-latest', 'max_tokens': 8192},
+    'haiku': {'model': 'anthropic/claude-3-haiku-20240307', 'max_tokens': 4096},
+    'opus': {'model': 'anthropic/claude-3-opus-latest', 'max_tokens': 4096},
+    '4o-mini': {'model': 'openai/gpt-4o-mini', 'max_tokens': 4096},
+    '4o': {'model': 'openai/gpt-4o', 'max_tokens': 4096},
 }
-lm = LM(model_dict['haiku'], max_tokens=4096)
-strong_lm = LM(model_dict['4o-mini'], max_tokens=4096)
+lm = LM(model_dict['haiku']['model'], max_tokens=model_dict['haiku']['max_tokens'])
+strong_lm = LM(model_dict['sonnet']['model'], max_tokens=model_dict['sonnet']['max_tokens'])
 configure(lm=lm)
 
 class Nav(BaseModel):
@@ -317,7 +317,7 @@ def page_builder_pipeline(prompt):
         image_lookup = image_data['image_lookup']
 
         # Preview images
-        preview_images = list(image_data['image_dict'].items())[:3]
+        preview_images = list(image_data['image_dict'].items())[:4]
         yield format_sse({
             "type": "progress",
             "message": f"📸 Found {len(image_data['image_dict'])} images. Here are some examples:"

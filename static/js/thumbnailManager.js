@@ -12,32 +12,26 @@ export async function createThumbnail(
     title,
     thumbnailId = 'thumbnail-' + Date.now()
 ) {
-    const fragment = document.createDocumentFragment();
-
-    const thumbnailWrapper = document.createElement('div');
+    // Clone the template
+    const template = document.getElementById('thumbnail-template');
+    const thumbnailWrapper = template.content
+        .cloneNode(true)
+        .querySelector('.thumbnail-wrapper');
     thumbnailWrapper.id = thumbnailId;
 
-    const thumbnail = document.createElement('div');
-    thumbnail.classList.add('thumbnail');
+    // Get elements
+    const thumbnailImg = thumbnailWrapper.querySelector('.thumbnail-img');
+    const spinner = thumbnailWrapper.querySelector('.spinner-border');
+    const deleteButton = thumbnailWrapper.querySelector('.delete-button');
+    const thumbnailTitle = thumbnailWrapper.querySelector('.thumbnail-title');
 
-    const thumbnailImg = document.createElement('img');
-    thumbnailImg.classList.add('thumbnail-img');
-    thumbnailImg.width = 180;
-    thumbnailImg.height = 135;
-    thumbnailImg.style.display = 'none';
-
-    thumbnail.insertAdjacentHTML('afterbegin', SPINNER_TEMPLATE);
-    const spinner = thumbnail.querySelector('.spinner-border');
-
+    // Set up image load handler
     thumbnailImg.onload = () => {
         spinner.remove();
         thumbnailImg.style.display = 'block';
     };
 
-    const deleteButton = document.createElement('button');
-    deleteButton.classList.add('delete-button');
-    deleteButton.innerHTML = '×';
-    deleteButton.title = 'Delete thumbnail';
+    // Set up delete handler
     deleteButton.onclick = (e) => {
         e.stopPropagation();
         if (confirm('Are you sure you want to delete this thumbnail?')) {
@@ -46,26 +40,23 @@ export async function createThumbnail(
         }
     };
 
-    thumbnail.append(thumbnailImg, deleteButton);
-
-    const thumbnailTitle = document.createElement('p');
-    thumbnailTitle.classList.add('thumbnail-title');
+    // Set title
     thumbnailTitle.innerText = title;
 
-    thumbnailWrapper.append(thumbnail, thumbnailTitle);
+    // Set up click handler
+    thumbnailWrapper
+        .querySelector('.thumbnail')
+        .addEventListener('click', () => {
+            const mainIframe = document.getElementById('preview');
+            mainIframe.contentWindow.document.open();
+            mainIframe.contentWindow.document.write(htmlContent);
+            mainIframe.contentWindow.document.close();
+        });
 
-    fragment.appendChild(thumbnailWrapper);
-
-    // Thumbnail click to update iframe
-    thumbnail.addEventListener('click', () => {
-        const mainIframe = document.getElementById('preview');
-        mainIframe.contentWindow.document.open();
-        mainIframe.contentWindow.document.write(htmlContent);
-        mainIframe.contentWindow.document.close();
-    });
-
-    // Add to DOM all at once
-    document.getElementById('thumbnails-container').appendChild(fragment);
+    // Add to DOM
+    document
+        .getElementById('thumbnails-container')
+        .appendChild(thumbnailWrapper);
 
     // Capture thumbnail image from iframe
     const iframeDocument = iframe.contentWindow.document;

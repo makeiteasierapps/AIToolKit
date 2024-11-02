@@ -34,7 +34,26 @@ extra_css %}
             <span>Saved Pages</span>
         </button>
         <div id="thumbnails-container">
-            <!-- thumbnails content -->
+            <!-- Add the template here -->
+            <template id="thumbnail-template">
+                <div class="thumbnail-wrapper">
+                    <span class="thumbnail-title"></span>
+                    <div class="thumbnail">
+                        <img
+                            class="thumbnail-img"
+                            width="180"
+                            height="135"
+                            style="display: none"
+                        />
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <button class="delete-button" title="Delete thumbnail">
+                            ×
+                        </button>
+                    </div>
+                </div>
+            </template>
         </div>
     </div>
 
