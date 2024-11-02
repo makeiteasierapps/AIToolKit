@@ -35,7 +35,6 @@ async def start_pipeline(description: WebsiteDescription):
     async def generate():
         try:
             for html_update in page_builder_pipeline(description.website_description):
-                # FastAPI will handle the yielding appropriately
                 yield f"data: {html_update}\n\n"
         except Exception as e:
             yield f'data: {{"type": "error", "message": "Pipeline error: {str(e)}"}}\n\n'

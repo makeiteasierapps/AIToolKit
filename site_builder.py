@@ -275,9 +275,6 @@ def page_builder_pipeline(prompt):
     def format_sse(data):
         return f"data: {json.dumps(data)}\n\n"
 
-    current_html = HTML_SCAFFOLD.format(website_title='', css_style_element='')
-    yield current_html
-
     # 1. Initial Setup & Instructions Generation
     try:
         yield format_sse({"type": "progress", "message": "📝 Generating website instructions..."})
