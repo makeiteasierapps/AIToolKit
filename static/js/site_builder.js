@@ -4,7 +4,11 @@ import {
     saveThumbnail,
 } from './storage.js';
 
-import { createThumbnail, loadSavedThumbnails } from './thumbnailManager.js';
+import {
+    createThumbnail,
+    loadSavedThumbnails,
+    SPINNER_TEMPLATE,
+} from './thumbnailManager.js';
 
 let currentMessageGroup = null;
 
@@ -72,6 +76,8 @@ function startNewMessageGroup() {
 }
 
 async function handleSubmitDescription() {
+    const submitButton = document.getElementById('submit-description');
+    submitButton.disabled = true;
     hideError();
     try {
         const description = document.getElementById(
@@ -99,7 +105,7 @@ async function handleSubmitDescription() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                'website_description': description,
+                website_description: description,
             }),
         });
 
@@ -161,6 +167,8 @@ async function handleSubmitDescription() {
         console.error('Error submitting description:', error);
         showError(`Failed to generate website: ${error.message}`);
     } finally {
+        submitButton.disabled = false;
+        document.getElementById('website-description').value = '';
         hideProgressOverlay();
     }
 }
@@ -199,32 +207,67 @@ async function handleSavePage() {
     if (title === null) {
         return;
     }
-    const iframe = document.getElementById('preview');
-    const htmlContent = iframe.contentWindow.document.documentElement.outerHTML;
-    const thumbnail = await createThumbnail(iframe, htmlContent, title);
-    document.getElementById('thumbnails-container').appendChild(thumbnail);
 
-    // Save thumbnail data
-    saveThumbnail({
-        id: thumbnail.id,
-        title: title,
-        html: htmlContent,
-        timestamp: Date.now(),
-    });
+    const saveOverlay = document.getElementById('save-overlay');
+    saveOverlay.classList.remove('d-none');
+
+    try {
+        const iframe = document.getElementById('preview');
+        const htmlContent =
+            iframe.contentWindow.document.documentElement.outerHTML;
+        const thumbnail = await createThumbnail(iframe, htmlContent, title);
+        document.getElementById('thumbnails-container').appendChild(thumbnail);
+
+        saveThumbnail({
+            id: thumbnail.id,
+            title: title,
+            html: htmlContent,
+            timestamp: Date.now(),
+        });
+
+        updatePreviewIframe('');
+    } finally {
+        saveOverlay.classList.add('d-none');
+    }
 }
 
-document
-    .getElementById('submit-description')
-    .addEventListener('click', handleSubmitDescription);
-document.getElementById('save-html').addEventListener('click', handleSaveHtml);
-document.getElementById('save-page').addEventListener('click', handleSavePage);
-document
-    .querySelector('.thumbnails-toggle')
-    .addEventListener('click', function () {
-        const wrapper = this.closest('.thumbnails-wrapper');
-        wrapper.classList.toggle('collapsed');
-    });
-document
-    .querySelector('.error-container .btn-close')
-    .addEventListener('click', hideError);
-loadSavedThumbnails();
+function handleDescriptionInput() {
+    const description = document.getElementById('website-description').value;
+    const submitButton = document.getElementById('submit-description');
+    const shouldBeDisabled = !description.trim();
+    submitButton.disabled = shouldBeDisabled;
+}
+
+function initializeEventListeners() {
+    const textarea = document.getElementById('website-description');
+    if (textarea) {
+        textarea.addEventListener('input', handleDescriptionInput);
+        handleDescriptionInput();
+    } else {
+        console.error('Textarea not found!');
+    }
+
+    document
+        .getElementById('submit-description')
+        .addEventListener('click', handleSubmitDescription);
+    document
+        .getElementById('save-html')
+        .addEventListener('click', handleSaveHtml);
+    document
+        .getElementById('save-page')
+        .addEventListener('click', handleSavePage);
+    document
+        .querySelector('.thumbnails-toggle')
+        .addEventListener('click', function () {
+            const wrapper = this.closest('.thumbnails-wrapper');
+            wrapper.classList.toggle('collapsed');
+        });
+    document
+        .querySelector('.error-container .btn-close')
+        .addEventListener('click', hideError);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initializeEventListeners();
+    loadSavedThumbnails();
+});

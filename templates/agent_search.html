@@ -1,0 +1,61 @@
+{% extends "base.html" %} {% block title %}Agent Search{% endblock %} {% block
+extra_css %}
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-md-6 offset-md-3">
+            <h1 class="text-center mb-4">Enter Brand</h1>
+            <div class="input-group mb-3">
+                <input
+                    type="text"
+                    class="form-control"
+                    id="brand-input"
+                    placeholder="Enter brand name"
+                />
+                <button
+                    class="btn btn-primary"
+                    type="button"
+                    onclick="submitBrand()"
+                >
+                    Submit
+                </button>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Response:</h5>
+                    <pre id="response-area" class="card-text"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+    async function submitBrand() {
+        const brandInput = document.getElementById('brand-input');
+        const brand = brandInput.value;
+
+        if (!brand.trim()) {
+            alert('Please enter a brand before submitting.');
+            return;
+        }
+
+        const response = await fetch('/submit_brand', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ brand: brand }),
+        });
+
+        const result = await response.text();
+
+        const responseArea = document.getElementById('response-area');
+        if (responseArea.innerHTML !== '') {
+            responseArea.innerHTML += '<br>';
+        }
+        responseArea.innerHTML += result;
+
+        brandInput.value = '';
+    }
+</script>
+{% endblock %}

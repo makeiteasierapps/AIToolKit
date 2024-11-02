@@ -51,7 +51,6 @@
 }
 
 #submit-description:hover {
-    background-color: #e8e8e8;
     color: #333;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
@@ -63,6 +62,15 @@
 
 #submit-description:hover i {
     transform: translateX(1px);
+}
+
+#submit-description:disabled {
+    color: #999;
+    cursor: not-allowed;
+}
+
+#submit-description:disabled:hover {
+    box-shadow: none;
 }
 
 @media screen and (max-width: 768px) {

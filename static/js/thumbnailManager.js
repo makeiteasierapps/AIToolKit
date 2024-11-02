@@ -1,6 +1,6 @@
 import { deleteThumbnail, getSavedThumbnails } from './storage.js';
 
-const SPINNER_TEMPLATE = `
+export const SPINNER_TEMPLATE = `
     <div class="spinner-border" role="status">
         <span class="visually-hidden">Loading...</span>
     </div>
@@ -102,7 +102,6 @@ export async function createThumbnail(
     return thumbnailWrapper;
 }
 
-// Add this function to load saved thumbnails
 export async function loadSavedThumbnails() {
     const savedThumbnails = getSavedThumbnails();
     const container = document.getElementById('thumbnails-container');

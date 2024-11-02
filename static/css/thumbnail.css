@@ -18,18 +18,23 @@
 }
 
 .thumbnails-toggle {
-    background: rgba(33, 37, 41, 0.9);
+    background: rgba(33, 37, 41, 0.7);  /* Make slightly more transparent */
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
-    color: #fff;
-    padding: 4px 12px;
-    font-size: 0.9rem;
+    padding: 4px 16px;
+    font-size: 0.85rem;
+    opacity: 0.8;
+    transition: all 0.3s ease;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 4px;
     z-index: 1;
-    transition: all 0.3s ease;
+}
+
+.thumbnails-toggle:hover {
+    opacity: 1;
+    background: rgba(33, 37, 41, 0.9);
 }
 
 .thumbnails-toggle i {
@@ -93,7 +98,7 @@
     
     /* Animation properties */
     transform-origin: left;
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    transition: transform 0.3s ease, opacity 0.3s ease, height 0.3s ease, max-height 0.3s ease;
     transform: scaleX(1);
     opacity: 1;
 
@@ -122,7 +127,12 @@
 .thumbnails-wrapper.collapsed #thumbnails-container {
     transform: scaleX(0);
     opacity: 0;
+    height: 0;
+    max-height: 0;
+    padding: 0;
+    margin: 0; 
 }
+
 
 .thumbnails-wrapper:not(.collapsed) .thumbnails-toggle {
     position: absolute;

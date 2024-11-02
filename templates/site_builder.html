@@ -14,7 +14,6 @@ extra_css %}
     <h1>Page Builder</h1>
 
     <!-- Description Input Section -->
-
     <div class="input-group description-input-group">
         <textarea
             class="form-control"
@@ -27,7 +26,6 @@ extra_css %}
             <i class="bi bi-arrow-right"></i>
         </button>
     </div>
-    
 
     <!-- Thumbnails Section -->
     <div class="thumbnails-wrapper collapsed">
@@ -61,6 +59,12 @@ extra_css %}
             </button>
         </div>
 
+        <div id="save-overlay" class="d-none">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Saving...</span>
+            </div>
+        </div>
+
         <div id="progress-overlay" class="d-none">
             <div class="progress-content">
                 <h5 class="text-center">Building Your Website</h5>
@@ -73,12 +77,6 @@ extra_css %}
 </div>
 {% endblock %} {% block extra_js %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.3/html2canvas.min.js"></script>
-<script
-    type="module"
-    src="/static/js/storage.js"
-></script>
-<script
-    type="module"
-    src="/static/js/site_builder.js"
-></script>
+<script type="module" src="/static/js/storage.js"></script>
+<script type="module" src="/static/js/site_builder.js"></script>
 {% endblock %}
