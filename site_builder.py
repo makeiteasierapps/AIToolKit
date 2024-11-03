@@ -1,4 +1,7 @@
 import re
+import logging
+import time
+from functools import wraps
 from typing import List
 import json
 import os
@@ -36,6 +39,7 @@ model_dict = {
 lm = LM(model_dict['haiku']['model'], max_tokens=model_dict['haiku']['max_tokens'])
 strong_lm = LM(model_dict['sonnet']['model'], max_tokens=model_dict['sonnet']['max_tokens'])
 configure(lm=lm)
+logger = logging.getLogger('app.site_builder')
 
 class Nav(BaseModel):
     need_nav: bool
@@ -131,7 +135,7 @@ class HTMLElement(Signature):
     images = InputField(desc='List of images or None')
     html = OutputField(desc='The HTML code for the given section')
 
-def query_unsplash(query, per_page=30, page=1):
+def query_unsplash(query, per_page=10, page=1):
     try:
         api_key = os.environ.get('UNSPLASH_ACCESS_KEY')
         if not api_key:
@@ -274,37 +278,51 @@ def build_section(section, style_instructions, image_lookup):
 def page_builder_pipeline(prompt):
     def format_sse(data):
         return f"data: {json.dumps(data)}\n\n"
+    
+    pipeline_start = time.time()
+    logger.info(f"Starting page builder pipeline with prompt: {prompt[:100]}...")
+    
     # 1. Initial Setup & Instructions Generation
     try:
+        step_start = time.time()
         yield format_sse({"type": "progress", "message": "📝 Generating website instructions..."})
         instruction_data = generate_initial_instructions(prompt)
+        logger.info(f"Step 1 - Instructions generated in {time.time() - step_start:.2f} seconds")
         
         yield format_sse({
             "type": "progress",
             "message": f"🏷️ Website Title: {instruction_data['website_title']}"
         })
     except Exception as e:
+        elapsed = time.time() - pipeline_start
+        logger.error(f"Pipeline failed in step 1 after {elapsed:.2f} seconds: {str(e)}", exc_info=True)
         yield format_sse({"type": "error", "message": str(e)})
         return
 
     # 2. CSS Generation
     try:
+        step_start = time.time()
         yield format_sse({"type": "progress", "message": "🎨 Generating CSS styling..."})
         css_style_element = generate_css(
             json.dumps(instruction_data['section_instructions']), 
             instruction_data['style_instructions']
         )
+        logger.info(f"Step 2 - CSS generated in {time.time() - step_start:.2f} seconds")
+        
         current_html = HTML_SCAFFOLD.format(
             website_title=instruction_data['website_title'], 
             css_style_element=css_style_element
         )
     except Exception as e:
+        elapsed = time.time() - pipeline_start
+        logger.error(f"Pipeline failed in step 2 after {elapsed:.2f} seconds: {str(e)}", exc_info=True)
         yield format_sse({"type": "error", "message": str(e)})
         return
 
     # 3. Image Processing
     image_lookup = {}
     try:
+        step_start = time.time()
         yield format_sse({
             "type": "progress",
             "message": f"🔍 Searching for images..."
@@ -314,6 +332,9 @@ def page_builder_pipeline(prompt):
             instruction_data['image_query'].model_dump()['theme_related_image'],
             instruction_data['section_instructions']
         )
+
+        logger.info(f"Step 3 - Images processed in {time.time() - step_start:.2f} seconds")
+
         image_lookup = image_data['image_lookup']
 
         # Preview images
@@ -329,30 +350,38 @@ def page_builder_pipeline(prompt):
                 "description": desc
             })
     except Exception as e:
+        elapsed = time.time() - pipeline_start
+        logger.error(f"Pipeline failed in step 3 after {elapsed:.2f} seconds: {str(e)}", exc_info=True)
         yield format_sse({"type": "error", "message": str(e)})
-        # Continue without images
 
     # 4. Navigation Addition
     section_instructions = instruction_data['section_instructions']
     if instruction_data['need_nav']:
         try:
+            step_start = time.time()
             yield format_sse({"type": "progress", "message": "🧭 Adding navigation menu..."})
             section_instructions = add_navigation(json.dumps(section_instructions))
+            logger.info(f"Step 4 - Navigation added in {time.time() - step_start:.2f} seconds")
         except Exception as e:
+            elapsed = time.time() - pipeline_start
+            logger.error(f"Pipeline failed in step 4 after {elapsed:.2f} seconds: {str(e)}", exc_info=True)
             yield format_sse({"type": "error", "message": str(e)})
 
     # 5. Section Building
     try:
+        step_start = time.time()
+        total_sections = len(section_instructions)
         yield format_sse({
             "type": "progress",
-            "message": f"🏗️ Building {len(section_instructions)} sections..."
+            "message": f"🏗️ Building {total_sections} sections..."
         })
 
         for i, section in enumerate(section_instructions, 1):
+            section_start = time.time()
             try:
                 yield format_sse({
                     "type": "progress",
-                    "message": f"📄 Creating section {i}/{len(section_instructions)}: {section['section_name']}"
+                    "message": f"📄 Creating section {i}/{total_sections}: {section['section_name']}"
                 })
                 
                 clean_section = build_section(
@@ -363,13 +392,24 @@ def page_builder_pipeline(prompt):
                 
                 body_end_pos = current_html.find('</body>')
                 current_html = current_html[:body_end_pos] + clean_section + current_html[body_end_pos:]
+                
+                logger.info(f"Section {i}/{total_sections} ({section['section_name']}) built in {time.time() - section_start:.2f} seconds")
 
                 yield format_sse({
                     "type": "html",
                     "content": current_html
                 })
             except Exception as e:
+                logger.error(f"Failed building section {i}/{total_sections} after {time.time() - section_start:.2f} seconds: {str(e)}", exc_info=True)
                 yield format_sse({"type": "error", "message": str(e)})
                 continue
+        
+        logger.info(f"Step 5 - All sections built in {time.time() - step_start:.2f} seconds")
+        
     except Exception as e:
+        elapsed = time.time() - pipeline_start
+        logger.error(f"Pipeline failed in step 5 after {elapsed:.2f} seconds: {str(e)}", exc_info=True)
         yield format_sse({"type": "error", "message": str(e)})
+
+    total_time = time.time() - pipeline_start
+    logger.info(f"Pipeline completed in {total_time:.2f} seconds")

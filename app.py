@@ -1,4 +1,6 @@
 import os
+import logging
+from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
@@ -7,7 +9,34 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from site_builder import page_builder_pipeline
 
-app = FastAPI()
+# Configure logging only for our application modules
+logging.basicConfig(
+    level=logging.INFO,  # Default level
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler('app.log')
+    ]
+)
+
+# Set specific level for our application loggers
+app_logger = logging.getLogger('app')  # Root logger for our application
+app_logger.setLevel(logging.DEBUG if os.getenv("IS_LOCAL_DEV", "false") == "true" else logging.INFO)
+
+# Set higher level for third-party libraries
+logging.getLogger('uvicorn').setLevel(logging.WARNING)
+logging.getLogger('fastapi').setLevel(logging.WARNING)
+logging.getLogger('LiteLLM').setLevel(logging.WARNING)
+
+logger = logging.getLogger('app.main') 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("Starting up the application...")
+    logger.info(f"Environment: {'Development' if os.getenv('IS_LOCAL_DEV') == 'true' else 'Production'}")
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
