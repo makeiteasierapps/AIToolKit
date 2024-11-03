@@ -1,4 +1,8 @@
 .env
 *__pycache__*
-/venv*.log
+/venv
+*.log
 logs/
+
+app.log
+
