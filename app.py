@@ -77,7 +77,8 @@ if __name__ == "__main__":
             "bind": "0.0.0.0:8000",
             "worker_class": "uvicorn.workers.UvicornWorker",
             "workers": 4,
-            "timeout": 600
+            "timeout": 600,
+            "loglevel": "info",
         }
 
         StandaloneApplication(app, options).run()
