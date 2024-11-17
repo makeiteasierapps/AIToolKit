@@ -1,8 +1,7 @@
 import re
 import logging
 import time
-from functools import wraps
-from typing import List
+from typing import List, Dict, Literal
 import json
 import os
 from dspy import  LM, configure, InputField, OutputField, Signature, TypedChainOfThought, ChainOfThought, context
@@ -36,32 +35,10 @@ model_dict = {
     '4o-mini': {'model': 'openai/gpt-4o-mini', 'max_tokens': 4096},
     '4o': {'model': 'openai/gpt-4o', 'max_tokens': 4096},
 }
-lm = LM(model_dict['haiku']['model'], max_tokens=model_dict['haiku']['max_tokens'])
-strong_lm = LM(model_dict['sonnet']['model'], max_tokens=model_dict['sonnet']['max_tokens'])
+lm = LM(model_dict['4o-mini']['model'], max_tokens=model_dict['4o-mini']['max_tokens'])
+strong_lm = LM(model_dict['4o-mini']['model'], max_tokens=model_dict['4o-mini']['max_tokens'])
 configure(lm=lm)
 logger = logging.getLogger('app.site_builder')
-
-class Nav(BaseModel):
-    need_nav: bool
-
-class ImageQuery(BaseModel):
-    design_related_image: str
-    theme_related_image: str
-
-class Images(BaseModel):
-    section_name: str
-    urls: List[str]
-
-class ImageInstructions(BaseModel):
-    image_instructions: List[Images]
-
-class SectionInstruction(BaseModel):
-    section_name: str
-    instructions: str
-    class_name: str
-
-class SectionInstructions(BaseModel):
-    section_instructions: List[SectionInstruction]
 
 class ClassifyImages(Signature):
     '''You are given a dictionary that contains image descriptions as keys and urls as values.
@@ -69,7 +46,7 @@ class ClassifyImages(Signature):
     '''
     image_descriptions = InputField()
     section_names = InputField()
-    image_instructions: ImageInstructions = OutputField(desc="A list of images that contain the section name, and urls for 3-4 images")
+    image_instructions: List[Dict[Literal["section_name", "urls"], str | List[str]]] = OutputField(desc="A list of images that contain the section name, and urls for 3-4 images")
 
 class CreateInstructions(Signature):
     '''Analyze the website description and generate a clean, responsive HTML layout using Bootstrap 5 components.
@@ -100,10 +77,10 @@ class CreateInstructions(Signature):
     Remember: Keep the structure as simple as possible while meeting all functional requirements.
     '''
     description = InputField(desc='The user\'s description of the website')
-    image_query: ImageQuery = OutputField(desc='usually 1-3 words')
+    image_query = OutputField(desc='usually 1-3 words')
     website_title = OutputField(desc='The title of the website')
-    need_nav: Nav = OutputField()
-    instructions_list: SectionInstructions = OutputField()
+    need_nav: bool = OutputField()
+    instructions_list: List[Dict[Literal["section_name", "instructions", "class_name"], str]] = OutputField()
     color_scheme = OutputField(desc='A guide to the color scheme for the website')
 
 class CSSRules(Signature):
@@ -118,7 +95,7 @@ class NavInstuctions(Signature):
     You are given JSON of section instructions. Please return the updated list with a navigation section added to the beginning.
     '''
     section_instructions = InputField(desc='The JSON of section instructions')
-    updated_instructions: SectionInstructions = OutputField()
+    updated_instructions: List[Dict[Literal["section_name", "instructions", "class_name"], str]] = OutputField()
 
 class HTMLElement(Signature):
     '''
@@ -209,8 +186,8 @@ def generate_initial_instructions(prompt):
             'style_instructions': instructions_response.color_scheme,
             'website_title': instructions_response.website_title,
             'image_query': instructions_response.image_query,
-            'need_nav': instructions_response.need_nav.need_nav,
-            'section_instructions': instructions_response.instructions_list.model_dump()['section_instructions']
+            'need_nav': instructions_response.need_nav,
+            'section_instructions': instructions_response.instructions_list
         }
     except Exception as e:
         raise Exception(f"Error generating instructions: {str(e)}")
@@ -240,12 +217,14 @@ def process_images(theme_related_image_query, section_instructions):
             image_descriptions=theme_related_image_dict_str, 
             section_names=section_names_str
         )
+
+        print(classify_imgs_response)
         
         return {
             'image_dict': theme_related_image_dict,
             'image_lookup': {
-                img.section_name: img.urls 
-                for img in classify_imgs_response.image_instructions.image_instructions
+                img['section_name']: img['urls'] 
+                for img in classify_imgs_response.image_instructions
             }
         }
     except Exception as e:
@@ -256,7 +235,7 @@ def add_navigation(section_instructions_str):
     try:
         nav_instructions = TypedChainOfThought(NavInstuctions)
         nav_response = nav_instructions(section_instructions=section_instructions_str)
-        return nav_response.updated_instructions.model_dump()['section_instructions']
+        return nav_response.updated_instructions
     except Exception as e:
         raise Exception(f"Error adding navigation: {str(e)}")
 
@@ -329,7 +308,7 @@ def page_builder_pipeline(prompt):
         })
         
         image_data = process_images(
-            instruction_data['image_query'].model_dump()['theme_related_image'],
+            instruction_data['image_query'],
             instruction_data['section_instructions']
         )
 
