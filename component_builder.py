@@ -1,4 +1,5 @@
 import re
+import pprint
 import logging
 import time
 from typing import List, Dict, Literal, Any
@@ -92,15 +93,6 @@ class ComponentStructure(Signature):
     markup = OutputField(desc='HTML structure for the section')
     container_class = OutputField(desc='Main container class for the section')
     image_placeholders: List[Dict[Literal["id", "alt", "dimensions"], str]] = OutputField(desc='Details for image placeholders') 
-class ComponentSection(Signature):
-    """Generate a specific section of the component"""
-    component_type = InputField()
-    section_details = InputField()
-    visual_theme = InputField()
-    media_assets = InputField()
-    section_markup = OutputField(desc='HTML structure for the section')
-    section_style = OutputField(desc='Specific styles for this section')
-    section_logic = OutputField(desc='JavaScript for this section') 
 class ImagePromptGenerator(Signature):
     """Generate detailed prompts for AI image generation"""
     section_purpose = InputField()
@@ -110,21 +102,36 @@ class ImagePromptGenerator(Signature):
     image_prompt = OutputField(desc='Detailed prompt for image generation')
     image_style = OutputField(desc='Style parameters for the image generator') 
 
-def clean_html(html):
+def clean_markup(markup):
     try:
-        if not isinstance(html, str):
+        if not isinstance(markup, str):
             raise ValueError("Input must be a string")
-        if not html.strip():
+        if not markup.strip():
             raise ValueError("Input string is empty")
-        clean_text = re.sub(r'```html|```', '', html)
+        clean_text = re.sub(r'```html|css|javascript|```', '', markup)
         return clean_text.strip()
         
     except re.error as e:
         raise ValueError(f"Error cleaning HTML: {str(e)}")
 
+def create_component_scaffold(component_type: str, styles: str, markup: List[str], image_placeholders: Dict) -> str:
+    cleaned_styles = clean_markup(styles)
+    cleaned_markup = [clean_markup(section) for section in markup] 
+    return COMPONENT_SCAFFOLD.format(
+        component_title=f"Component: {component_type}",
+        resource_links="",
+        component_styles=cleaned_styles,
+        component_markup="\n".join(cleaned_markup),
+        script_imports="",
+        component_scripts=generate_image_loading_script(image_placeholders)
+    )
+
 def transform_image_placeholders(placeholders):
     """Transform list of image placeholders into a dictionary keyed by 'id'"""
     return {placeholder["id"]: {k: v for k, v in placeholder.items() if k != "id"} for placeholder in placeholders}
+
+def format_sse(data):
+    return f"data: {json.dumps(data)}\n\n"
 
 def generate_section_style(section, component_type, visual_theme):
     """Generate styles for a specific section"""
@@ -243,8 +250,6 @@ def generate_image_loading_script(image_placeholders):
     '''
 
 def component_builder_pipeline(prompt):
-    def format_sse(data):
-        return f"data: {json.dumps(data)}\n\n" 
     pipeline_start = time.time()
     logger.info(f"Starting component builder pipeline with prompt: {prompt[:100]}...") 
     
@@ -266,31 +271,15 @@ def component_builder_pipeline(prompt):
         yield format_sse({"type": "error", "message": str(e)})
         return 
 
-    # Generate Image Prompts
-    image_prompts = {}
-    try:
-        step_start = time.time()
-        yield format_sse({"type": "progress", "message": "🎨 Generating image prompts..."}) 
-        for section in component_data.sections:
-            if 'image_requirements' in section and section['image_requirements']:
-                image_prompt_data = generate_image_prompt(
-                    section,
-                    component_data.component_type,
-                    component_data.visual_theme
-                )
-                image_prompts[section['section_name']] = image_prompt_data 
-                yield format_sse({
-                    "type": "image_prompt",
-                    "section": section['section_name'],
-                    "prompt": image_prompt_data['prompt'],
-                    "style": image_prompt_data['style']
-                }) 
-        logger.info(f"Image prompts generated in {time.time() - step_start:.2f} seconds")
-    except Exception as e:
-        logger.warning(f"Image prompt generation warning: {str(e)}")
-        yield format_sse({"type": "warning", "message": "Some image prompts could not be generated"})
 
+    # Initialize collection structures
+    image_prompts = {}
+    section_styles = {}
+    section_logic = {}
+    section_states = []
+    accumulated_markup = []
     all_image_placeholders = {}
+    combined_styles = []    
     
     # Style Generation
     try:
@@ -302,52 +291,15 @@ def component_builder_pipeline(prompt):
         global_style_response = style(
             visual_theme=component_data.visual_theme,
             component_type=component_data.component_type
-        ) 
-        
-        # Generate section-specific styles
-        section_styles = {}
-        combined_styles = [] 
-        
-        # Add global styles first
-        combined_styles.append(f'''
+        )
+        pprint.pprint(global_style_response)
+        combined_styles = [f'''
             /* Global Styles */
             {global_style_response.global_css} 
             /* Global Animations */
             {global_style_response.global_animations}
-        ''') 
-        
-        # Generate styles for each section
-        for section in component_data.sections:
-            try:
-                section_style_content = generate_section_style(
-                    section,
-                    component_data.component_type,
-                    component_data.visual_theme
-                ) 
-                # Store section style information
-                section_styles[section['section_name']] = section_style_content 
-                # Add scoped section styles
-                combined_styles.append(f'''
-                    /* Styles for section: {section['section_name']} */
-                    .{section_style_content['scoped_class']} {{
-                        {section_style_content['css']}
-                    }} 
-                    /* Animations for section: {section['section_name']} */
-                    @keyframes {section_style_content['scoped_class']}-animations {{
-                        {section_style_content['animations']}
-                    }}
-                ''') 
-                yield format_sse({
-                    "type": "progress",
-                    "message": f"Generated styles for section: {section['section_name']}"
-                }) 
-            except Exception as e:
-                logger.error(f"Error generating styles for section {section['section_name']}: {str(e)}")
-                yield format_sse({
-                    "type": "warning",
-                    "message": f"Issues with styles for {section['section_name']}: {str(e)}"
-                }) 
-        
+        ''']
+
         # Create final style element
         joined_styles = "\n".join(combined_styles)
         final_styles = f'''
@@ -369,146 +321,120 @@ def component_builder_pipeline(prompt):
         return
     
     # Section Building Loop
-    try:
-        sections = component_data.sections
-        total_sections = len(sections)
-        accumulated_markup = []
-        all_image_placeholders = {} 
-        yield format_sse({
-            "type": "progress",
-            "message": f"🏗️ Building {total_sections} sections..."
-        }) 
-        for i, section in enumerate(sections, 1):
-            section_start = time.time()
-            try:
-                yield format_sse({
-                    "type": "progress",
-                    "message": f"📄 Creating section {i}/{total_sections}: {section['section_name']}"
-                }) 
-                # Get image prompt for this section
-                section_image_prompt = image_prompts.get(section['section_name']) 
-                # Build section with image placeholders
-                section_content = build_component_section(
+    # Single Main Loop Through Sections
+    total_sections = len(component_data.sections)
+    for i, section in enumerate(component_data.sections, 1):
+        section_start = time.time()
+        section_name = section['section_name'] 
+        try:
+            yield format_sse({
+                "type": "progress",
+                "message": f"🏗️ Building section {i}/{total_sections}: {section_name}"
+            }) 
+            # 1. Generate Image Prompts
+            if 'image_requirements' in section and section['image_requirements']:
+                image_prompt_data = generate_image_prompt(
                     section,
                     component_data.component_type,
-                    component_data.visual_theme,
-                    section_image_prompt,
-                    section_styles[section['section_name']]  # Pass section-specific styles
+                    component_data.visual_theme
                 )
-                print(section_content['image_placeholders'])
-                # Track image placeholders
-                transformed_placeholders = transform_image_placeholders(section_content['image_placeholders'])
-                all_image_placeholders.update(transformed_placeholders)
-                accumulated_markup.append(section_content['markup']) 
-                # Create intermediate component to show progress
-                intermediate_component = COMPONENT_SCAFFOLD.format(
-                    component_title=f"Component: {component_data.component_type}",
-                    resource_links="",
-                    component_styles=final_styles,  # Use the styles generated earlier
-                    component_markup="\n".join(accumulated_markup),
-                    script_imports="",
-                    component_scripts=generate_image_loading_script(all_image_placeholders)
-                ) 
-                # Send progress update with current state of component
+                image_prompts[section_name] = image_prompt_data
                 yield format_sse({
-                    "type": "section_complete",
-                    "section_name": section['section_name'],
-                    "current_component": intermediate_component,
-                    "image_placeholders": section_content['image_placeholders'],
-                    "progress": {
-                        "current": i,
-                        "total": total_sections,
-                        "section_build_time": time.time() - section_start
-                    }
+                    "type": "image_prompt",
+                    "section": section_name,
+                    "prompt": image_prompt_data['prompt'],
+                    "style": image_prompt_data['style']
                 }) 
-                logger.info(f"Section {i}/{total_sections} ({section['section_name']}) built in {time.time() - section_start:.2f} seconds") 
-            except Exception as e:
-                logger.error(f"Failed building section {i}/{total_sections}: {str(e)}", exc_info=True)
-                yield format_sse({
-                    "type": "error",
-                    "message": str(e),
-                    "section": section['section_name']
-                })
-                continue 
+            # 2. Generate Section Styles
+            section_style_content = generate_section_style(
+                section,
+                component_data.component_type,
+                component_data.visual_theme
+            )
+            pprint.pprint(section_style_content)
+            section_styles[section_name] = section_style_content
+            combined_styles.append(f'''
+                /* Styles for section: {section_name} */
+                {section_style_content['scoped_class']} {{
+                    {section_style_content['css']}
+                }} 
+                /* Animations for section: {section_name} */
+                @keyframes {section_style_content['scoped_class']}-animations {{
+                    {section_style_content['animations']}
+                }}
+            ''')
+            print(f"Combined Styles: {combined_styles}")
+            # 3. Build Section Content
+            section_content = build_component_section(
+                section,
+                component_data.component_type,
+                component_data.visual_theme,
+                image_prompts.get(section_name),
+                section_styles[section_name]
+            ) 
+            # Track image placeholders
+            transformed_placeholders = transform_image_placeholders(
+                section_content['image_placeholders']
+            )
+            all_image_placeholders.update(transformed_placeholders)
+            accumulated_markup.append(section_content['markup']) 
+            # 4. Generate Section Logic
+            section_logic_content = build_section_logic(
+                section,
+                component_data.component_type,
+                component_data.global_interactions
+            )
+            section_logic[section_name] = section_logic_content['javascript']
+            section_states.append({
+                'section': section_name,
+                'state': section_logic_content['state_requirements']
+            }) 
+            # Create and yield intermediate component state
+            joined_styles = "\n".join(combined_styles)
+            final_styles = f"<style>{joined_styles}</style>"
+            intermediate_component = create_component_scaffold(
+                component_data.component_type,
+                final_styles,
+                accumulated_markup,
+                all_image_placeholders
+            )
+            yield format_sse({
+                "type": "section_complete",
+                "section_name": section_name,
+                "current_component": intermediate_component,
+                "image_placeholders": section_content['image_placeholders'],
+                "progress": {
+                    "current": i,
+                    "total": total_sections,
+                    "section_build_time": time.time() - section_start
+                }
+            }) 
+        except Exception as e:
+            logger.error(f"Error processing section {section_name}: {str(e)}")
+            yield format_sse({
+                "type": "warning",
+                "message": f"Issues with section {section_name}: {str(e)}"
+            })
+            continue
     
-        # Construct final component
-        final_component = COMPONENT_SCAFFOLD.format(
-            component_title=f"Component: {component_data.component_type}",
-            resource_links="",  # Add any needed resources
-            component_styles=final_styles,  # Include the final styles
-            component_markup="\n".join(accumulated_markup),
-            script_imports="",  # Add any needed scripts
-            component_scripts=generate_image_loading_script(all_image_placeholders)
-        ) 
-        # Send complete component with image placeholder information
-        yield format_sse({
-            "type": "component_complete",
-            "content": final_component,
-            "image_placeholders": all_image_placeholders
-        }) 
-    except Exception as e:
-        elapsed = time.time() - pipeline_start
-        logger.error(f"Pipeline failed in section building: {str(e)}", exc_info=True)
-        yield format_sse({"type": "error", "message": str(e)}) 
+    final_component = create_component_scaffold(
+        component_data.component_type,
+        final_styles,
+        accumulated_markup,
+        all_image_placeholders
+    )
 
-    # Component Logic Generation
-    try:
-        step_start = time.time()
-        yield format_sse({"type": "progress", "message": "⚡ Generating component logic..."}) 
-        # Track section-specific logic and state requirements
-        section_logic = {}
-        section_states = [] 
-        # Generate logic for each section
-        for section in component_data.sections:
-            try:
-                section_logic_content = build_section_logic(
-                    section,
-                    component_data.component_type,
-                    component_data.global_interactions
-                ) 
-                section_logic[section['section_name']] = section_logic_content['javascript']
-                section_states.append({
-                    'section': section['section_name'],
-                    'state': section_logic_content['state_requirements']
-                }) 
-                yield format_sse({
-                    "type": "progress",
-                    "message": f"Generated logic for section: {section['section_name']}"
-                }) 
-            except Exception as e:
-                logger.error(f"Error in section logic generation: {str(e)}")
-                yield format_sse({
-                    "type": "warning",
-                    "message": f"Issues with logic for {section['section_name']}: {str(e)}"
-                }) 
-        # Generate global component logic
-        component_logic_content = build_component_logic(
-            component_data.component_type,
-            component_data.global_interactions,
-            section_states
-        ) 
-        # Combine all JavaScript
-        section_specific_logic = '\n'.join(section_logic.values())
-        final_javascript = f'''
-                    // Component Initialization
-                    {component_logic_content['init_code']} 
-                    // Global Component Logic
-                    {component_logic_content['global_javascript']} 
-                    // Section-Specific Logic
-                    {section_specific_logic}
-                '''
-        logger.info(f"Step 2 - Logic generated in {time.time() - step_start:.2f} seconds")  
-        # Store logic data for later use
-        logic_data = {
-            'section_logic': section_logic,
-            'global_logic': component_logic_content,
-            'combined_javascript': final_javascript
-        } 
-    except Exception as e:
-        elapsed = time.time() - pipeline_start
-        logger.error(f"Pipeline failed in logic step: {str(e)}", exc_info=True)
-        yield format_sse({"type": "error", "message": str(e)})
-        return
+    # Send complete component with image placeholder information
+    yield format_sse({
+        "type": "component_complete",
+        "content": final_component,
+        "image_placeholders": all_image_placeholders
+    }) 
+    
+    elapsed = time.time() - pipeline_start
+    logger.error(f"Pipeline failed in section building: {str(e)}", exc_info=True)
+    yield format_sse({"type": "error", "message": str(e)}) 
+
 
     total_time = time.time() - pipeline_start
     logger.info(f"Component pipeline completed in {total_time:.2f} seconds") 
