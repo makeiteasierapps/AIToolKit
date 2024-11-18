@@ -4,8 +4,7 @@ import time
 from typing import List, Dict, Literal
 import json
 import os
-from dspy import  LM, configure, InputField, OutputField, Signature, TypedChainOfThought, ChainOfThought, context
-from pydantic import BaseModel
+from dspy import  LM, configure, InputField, OutputField, Signature, ChainOfThought, context, Predict
 from dotenv import load_dotenv
 import requests
 HTML_SCAFFOLD = '''<!DOCTYPE html>
@@ -178,7 +177,7 @@ def generate_initial_instructions(prompt):
     """Generate website instructions and initial setup"""
     try:
         with context(lm=strong_lm):
-            create_instructions = TypedChainOfThought(CreateInstructions)
+            create_instructions = ChainOfThought(CreateInstructions)
             instructions_response = create_instructions(description=prompt)
 
         return {
@@ -195,7 +194,7 @@ def generate_initial_instructions(prompt):
 def generate_css(section_instructions_str, style_instructions):
     """Generate CSS styling for the website"""
     try:
-        css_rules = ChainOfThought(CSSRules)
+        css_rules = Predict(CSSRules)
         css_rules_response = css_rules(
             section_instructions=section_instructions_str, 
             color_scheme=style_instructions
@@ -211,7 +210,7 @@ def process_images(theme_related_image_query, section_instructions):
         theme_related_image_dict = extract_image_data(theme_related_image_results)
         theme_related_image_dict_str = json.dumps(theme_related_image_dict)
         
-        classify_images = TypedChainOfThought(ClassifyImages)
+        classify_images = ChainOfThought(ClassifyImages)
         section_names_str = json.dumps([section['section_name'] for section in section_instructions])
         classify_imgs_response = classify_images(
             image_descriptions=theme_related_image_dict_str, 
@@ -233,7 +232,7 @@ def process_images(theme_related_image_query, section_instructions):
 def add_navigation(section_instructions_str):
     """Add navigation menu if needed"""
     try:
-        nav_instructions = TypedChainOfThought(NavInstuctions)
+        nav_instructions = Predict(NavInstuctions)
         nav_response = nav_instructions(section_instructions=section_instructions_str)
         return nav_response.updated_instructions
     except Exception as e:
@@ -243,7 +242,7 @@ def build_section(section, style_instructions, image_lookup):
     """Build individual HTML section"""
     try:
         with context(lm=strong_lm):
-            section_html = TypedChainOfThought(HTMLElement)
+            section_html = ChainOfThought(HTMLElement)
             section_html_response = section_html(
             css_rules=style_instructions,
             description=section['instructions'],
