@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from site_builder import page_builder_pipeline
+from component_builder import component_builder_pipeline
 
 # Configure logging only for our application modules
 logging.basicConfig(
@@ -63,7 +64,7 @@ async def start_pipeline(description: WebsiteDescription):
 
     async def generate():
         try:
-            for html_update in page_builder_pipeline(description.website_description):
+            for html_update in component_builder_pipeline(description.website_description):
                 yield f"data: {html_update}\n\n"
         except Exception as e:
             yield f'data: {{"type": "error", "message": "Pipeline error: {str(e)}"}}\n\n'

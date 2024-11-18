@@ -7,6 +7,7 @@ import os
 from dspy import  LM, configure, InputField, OutputField, Signature, ChainOfThought, context, Predict
 from dotenv import load_dotenv
 import requests
+
 HTML_SCAFFOLD = '''<!DOCTYPE html>
     <html>
     <head>
@@ -55,7 +56,6 @@ class CreateInstructions(Signature):
     1. Identify Core Components:
     - For content-heavy sites: Include hero, about, services, testimonials, contact sections as needed
     - For functional pages (login, signup, etc.): Focus on the primary component only
-    - Add navigation if multiple sections are present
     
     2. Component Structure:
     - Each section should serve a distinct purpose
@@ -78,7 +78,6 @@ class CreateInstructions(Signature):
     description = InputField(desc='The user\'s description of the website')
     image_query = OutputField(desc='usually 1-3 words')
     website_title = OutputField(desc='The title of the website')
-    need_nav: bool = OutputField()
     instructions_list: List[Dict[Literal["section_name", "instructions", "class_name"], str]] = OutputField()
     color_scheme = OutputField(desc='A guide to the color scheme for the website')
 
@@ -88,13 +87,6 @@ class CSSRules(Signature):
     section_instructions = InputField()
     color_scheme = InputField()
     css_rules = OutputField(desc='The CSS color scheme and rules for the website contained within <style> tags')
-
-class NavInstuctions(Signature):
-    '''
-    You are given JSON of section instructions. Please return the updated list with a navigation section added to the beginning.
-    '''
-    section_instructions = InputField(desc='The JSON of section instructions')
-    updated_instructions: List[Dict[Literal["section_name", "instructions", "class_name"], str]] = OutputField()
 
 class HTMLElement(Signature):
     '''
@@ -185,7 +177,6 @@ def generate_initial_instructions(prompt):
             'style_instructions': instructions_response.color_scheme,
             'website_title': instructions_response.website_title,
             'image_query': instructions_response.image_query,
-            'need_nav': instructions_response.need_nav,
             'section_instructions': instructions_response.instructions_list
         }
     except Exception as e:
@@ -228,15 +219,6 @@ def process_images(theme_related_image_query, section_instructions):
         }
     except Exception as e:
         raise Exception(f"Error processing images: {str(e)}")
-
-def add_navigation(section_instructions_str):
-    """Add navigation menu if needed"""
-    try:
-        nav_instructions = Predict(NavInstuctions)
-        nav_response = nav_instructions(section_instructions=section_instructions_str)
-        return nav_response.updated_instructions
-    except Exception as e:
-        raise Exception(f"Error adding navigation: {str(e)}")
 
 def build_section(section, style_instructions, image_lookup):
     """Build individual HTML section"""
@@ -332,20 +314,8 @@ def page_builder_pipeline(prompt):
         logger.error(f"Pipeline failed in step 3 after {elapsed:.2f} seconds: {str(e)}", exc_info=True)
         yield format_sse({"type": "error", "message": str(e)})
 
-    # 4. Navigation Addition
-    section_instructions = instruction_data['section_instructions']
-    if instruction_data['need_nav']:
-        try:
-            step_start = time.time()
-            yield format_sse({"type": "progress", "message": "🧭 Adding navigation menu..."})
-            section_instructions = add_navigation(json.dumps(section_instructions))
-            logger.info(f"Step 4 - Navigation added in {time.time() - step_start:.2f} seconds")
-        except Exception as e:
-            elapsed = time.time() - pipeline_start
-            logger.error(f"Pipeline failed in step 4 after {elapsed:.2f} seconds: {str(e)}", exc_info=True)
-            yield format_sse({"type": "error", "message": str(e)})
-
     # 5. Section Building
+    section_instructions = instruction_data['section_instructions']
     try:
         step_start = time.time()
         total_sections = len(section_instructions)

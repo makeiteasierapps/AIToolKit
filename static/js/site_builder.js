@@ -4,10 +4,7 @@ import {
     saveThumbnail,
 } from './storage.js';
 
-import {
-    createThumbnail,
-    loadSavedThumbnails,
-} from './thumbnailManager.js';
+import { createThumbnail, loadSavedThumbnails } from './thumbnailManager.js';
 
 let currentMessageGroup = null;
 
@@ -129,36 +126,59 @@ async function handleSubmitDescription() {
             for (const msg of messages) {
                 try {
                     const jsonData = JSON.parse(msg.trim());
+                    console.log('Received SSE message:', jsonData.type); // Debug logging
 
-                    // Handle error messages from server
-                    if (jsonData.type === 'error') {
-                        showError(jsonData.message);
-                        return;
-                    }
+                    switch (jsonData.type) {
+                        case 'error':
+                            showError(jsonData.message);
+                            return;
 
-                    if (jsonData.type === 'progress') {
-                        await pendingImageLoads; // Wait for any pending images
-                        await addProgressItem('message', jsonData.message);
-                    } else if (jsonData.type === 'image') {
-                        await addProgressItem(
-                            'image',
-                            jsonData.description,
-                            jsonData.url
-                        );
-                    } else if (jsonData.type === 'html') {
-                        await pendingImageLoads;
-                        updatePreviewIframe(jsonData.content);
+                        case 'progress':
+                            await pendingImageLoads;
+                            await addProgressItem('message', jsonData.message);
+                            break;
+
+                        case 'section_complete':
+                            console.log(
+                                'Section Complete:',
+                                jsonData.section_name
+                            );
+                            await pendingImageLoads;
+                            // Update the preview with the intermediate component
+                            updatePreviewIframe(jsonData.current_component);
+                            // Add progress information
+                            await addProgressItem(
+                                'message',
+                                `Completed section ${jsonData.progress.current}/${jsonData.progress.total}: ${jsonData.section_name}`
+                            );
+                            break;
+
+                        case 'component_complete':
+                            console.log('Component Complete');
+                            await pendingImageLoads;
+                            updatePreviewIframe(jsonData.content);
+                            await addProgressItem(
+                                'message',
+                                'Component build complete!'
+                            );
+                            break;
+
+                        case 'image':
+                            await addProgressItem(
+                                'image',
+                                jsonData.description,
+                                jsonData.url
+                            );
+                            break;
                     }
                 } catch (e) {
-                    // If parsing fails, check if it's HTML content
-                    const trimmedMsg = msg.trim();
-                    if (trimmedMsg.startsWith('<')) {
-                        await pendingImageLoads;
-                        updatePreviewIframe(trimmedMsg);
-                    } else {
-                        console.error('Error parsing message:', e);
-                        showError('Error processing server response');
-                    }
+                    console.error(
+                        'Error processing message:',
+                        e,
+                        '\nMessage was:',
+                        msg
+                    );
+                    showError('Error processing server response');
                 }
             }
         }
