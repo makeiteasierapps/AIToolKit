@@ -7,7 +7,6 @@ import json
 import os
 from dspy import  LM, configure, InputField, OutputField, Signature, ChainOfThought, context, Predict
 from dotenv import load_dotenv
-import requests
 
 COMPONENT_SCAFFOLD = '''
 <!DOCTYPE html>
@@ -43,8 +42,8 @@ model_dict = {
     '4o-mini': {'model': 'openai/gpt-4o-mini', 'max_tokens': 4096},
     '4o': {'model': 'openai/gpt-4o', 'max_tokens': 4096},
 }
-lm = LM(model_dict['4o-mini']['model'], max_tokens=model_dict['4o-mini']['max_tokens'])
-strong_lm = LM(model_dict['4o-mini']['model'], max_tokens=model_dict['4o-mini']['max_tokens'])
+lm = LM(model_dict['haiku']['model'], max_tokens=model_dict['haiku']['max_tokens'])
+strong_lm = LM(model_dict['sonnet']['model'], max_tokens=model_dict['sonnet']['max_tokens'])
 configure(lm=lm)
 logger = logging.getLogger('app.component_builder')
 
@@ -83,15 +82,14 @@ class SectionStyle(Signature):
     component_type = InputField()
     section_css = OutputField(desc='Section-specific styles')
     section_animations = OutputField(desc='Section-specific animations')
-    scoped_class = OutputField(desc='Unique class for scoping section styles')
 class ComponentStructure(Signature):
     """Define the structural layout for a component section"""
     section_details = InputField(desc='Details about the section being built')
     component_type = InputField()
     image_prompt = InputField(desc='Generated image prompt for this section')
-    visual_theme = InputField()
+    section_css_rules = InputField()
+    state_requirements = InputField()
     markup = OutputField(desc='HTML structure for the section')
-    container_class = OutputField(desc='Main container class for the section')
     image_placeholders: List[Dict[Literal["id", "alt", "dimensions"], str]] = OutputField(desc='Details for image placeholders') 
 class ImagePromptGenerator(Signature):
     """Generate detailed prompts for AI image generation"""
@@ -145,7 +143,6 @@ def generate_section_style(section, component_type, visual_theme):
         return {
             'css': style_response.section_css,
             'animations': style_response.section_animations,
-            'scoped_class': style_response.scoped_class
         }
     except Exception as e:
         raise Exception(f"Error generating section styles: {str(e)}") 
@@ -182,7 +179,7 @@ def build_component_logic(component_type, global_interactions, section_states):
     except Exception as e:
         raise Exception(f"Error generating component logic: {str(e)}") 
 
-def build_component_section(section, component_type, visual_theme, image_prompt=None, section_style=None):
+def build_component_section(section, component_type, state_requirements, image_prompt=None, section_style=None):
     """Build a complete section including structure, styles, and image placeholders"""
     try:
         # Generate structure with image placeholders
@@ -192,13 +189,11 @@ def build_component_section(section, component_type, visual_theme, image_prompt=
                 section_details=section,
                 component_type=component_type,
                 image_prompt=image_prompt,
-                visual_theme=visual_theme
-            ) 
-        # Add scoped class to section markup
-        scoped_class = section_style['scoped_class']
-        section_markup = f'<div class="{scoped_class}">\n{structure_response.markup}\n</div>' 
+                section_css_rules=section_style['css'],
+                state_requirements=state_requirements
+            )
         return {
-            'markup': section_markup,
+            'markup': structure_response.markup,
             'image_placeholders': structure_response.image_placeholders
         }
     except Exception as e:
@@ -292,7 +287,7 @@ def component_builder_pipeline(prompt):
             visual_theme=component_data.visual_theme,
             component_type=component_data.component_type
         )
-        pprint.pprint(global_style_response)
+        
         combined_styles = [f'''
             /* Global Styles */
             {global_style_response.global_css} 
@@ -307,12 +302,7 @@ def component_builder_pipeline(prompt):
                 {joined_styles}
             </style>
         '''
-        
-        # Store style data for later use
-        style_data = {
-            'global_styles': global_style_response,
-            'section_styles': section_styles
-        } 
+
         logger.info(f"Step 3 - Styles generated in {time.time() - step_start:.2f} seconds") 
     except Exception as e:
         elapsed = time.time() - pipeline_start
@@ -321,7 +311,6 @@ def component_builder_pipeline(prompt):
         return
     
     # Section Building Loop
-    # Single Main Loop Through Sections
     total_sections = len(component_data.sections)
     for i, section in enumerate(component_data.sections, 1):
         section_start = time.time()
@@ -344,51 +333,52 @@ def component_builder_pipeline(prompt):
                     "section": section_name,
                     "prompt": image_prompt_data['prompt'],
                     "style": image_prompt_data['style']
-                }) 
+                })
+
             # 2. Generate Section Styles
             section_style_content = generate_section_style(
                 section,
                 component_data.component_type,
                 component_data.visual_theme
             )
-            pprint.pprint(section_style_content)
             section_styles[section_name] = section_style_content
             combined_styles.append(f'''
                 /* Styles for section: {section_name} */
-                {section_style_content['scoped_class']} {{
-                    {section_style_content['css']}
-                }} 
+                {section_style_content['css']}
                 /* Animations for section: {section_name} */
-                @keyframes {section_style_content['scoped_class']}-animations {{
-                    {section_style_content['animations']}
-                }}
+                {section_style_content['animations']}
             ''')
-            print(f"Combined Styles: {combined_styles}")
-            # 3. Build Section Content
-            section_content = build_component_section(
-                section,
-                component_data.component_type,
-                component_data.visual_theme,
-                image_prompts.get(section_name),
-                section_styles[section_name]
-            ) 
-            # Track image placeholders
-            transformed_placeholders = transform_image_placeholders(
-                section_content['image_placeholders']
-            )
-            all_image_placeholders.update(transformed_placeholders)
-            accumulated_markup.append(section_content['markup']) 
-            # 4. Generate Section Logic
+
+            # Generate Section Logic
             section_logic_content = build_section_logic(
                 section,
                 component_data.component_type,
                 component_data.global_interactions
             )
+
             section_logic[section_name] = section_logic_content['javascript']
+            # I dont think i need this section states array. The state instructions will be passed in to build the section and the js will get added to the Script Imports
             section_states.append({
                 'section': section_name,
                 'state': section_logic_content['state_requirements']
-            }) 
+            })
+
+            # Build Section Content
+            section_content = build_component_section(
+                section,
+                component_data.component_type,
+                section_logic_content['state_requirements'],
+                image_prompts.get(section_name),
+                section_styles[section_name],
+            )
+
+            # Track image placeholders
+            transformed_placeholders = transform_image_placeholders(
+                section_content['image_placeholders']
+            )
+            all_image_placeholders.update(transformed_placeholders)
+            accumulated_markup.append(section_content['markup'])
+
             # Create and yield intermediate component state
             joined_styles = "\n".join(combined_styles)
             final_styles = f"<style>{joined_styles}</style>"
