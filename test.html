@@ -2,584 +2,542 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Component: Responsive web landing page</title>
+        <title>Component: web</title>
         <!-- Dynamic Resource Loading -->
 
         <!-- Component Styles -->
         <style>
             /* Global Styles */
+
             :root {
-                --color-primary: #5b42f3;
-                --color-secondary: #7928ca;
-                --color-accent: #ff6b6b;
-                --color-background: #0f0f0f;
-                --color-text: #f2f2f2;
-                --font-family: 'Helvetica Neue', sans-serif;
+                --background-color: #1a1a2e;
+                --primary-color: #e94560;
+                --secondary-color: #0f3460;
+                --accent-color: #00a8e1;
+                --text-color: #ffffff;
+                --font-family: 'Orbitron', sans-serif;
+                --border-radius: 8px;
+                --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
             }
 
             body {
-                background-color: var(--color-background);
-                color: var(--color-text);
+                background-color: var(--background-color);
+                color: var(--text-color);
                 font-family: var(--font-family);
                 margin: 0;
                 padding: 0;
             }
 
-            h1,
-            h2,
-            h3,
-            h4,
-            h5,
-            h6 {
-                font-weight: 700;
-                margin-top: 0;
-            }
-
             a {
-                color: var(--color-primary);
+                color: var(--accent-color);
                 text-decoration: none;
             }
 
             a:hover {
-                color: var(--color-secondary);
-            }
-            /* Global Animations */
-            @keyframes shooting-star {
-                0% {
-                    transform: translateX(-5%) translateY(0);
-                    opacity: 0;
-                }
-                50% {
-                    opacity: 1;
-                }
-                100% {
-                    transform: translateX(105%) translateY(100%);
-                    opacity: 0;
-                }
+                text-decoration: underline;
             }
 
-            @keyframes orbit {
-                0% {
-                    transform: rotate(0deg) translateX(10%) translateY(10%);
-                }
-                100% {
-                    transform: rotate(360deg) translateX(10%) translateY(10%);
-                }
-            }
-
-            /* Styles for section: Hero Section */
-            .hero-section {
-                position: relative;
-                height: 100vh;
-                background-image: url('space-imagery.jpg');
-                background-size: cover;
-                background-position: center;
-                color: #fff;
-                font-family: 'Helvetica Neue', sans-serif;
-            }
-
-            .hero-section::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(
-                    to bottom,
-                    rgba(0, 0, 0, 0.6),
-                    rgba(0, 0, 0, 0.8)
-                );
-                z-index: 1;
-            }
-
-            .hero-section .content {
-                position: relative;
-                z-index: 2;
-                padding: 4rem;
-                text-align: center;
-            }
-
-            .hero-section h1 {
-                font-size: 4rem;
-                font-weight: bold;
-                margin-bottom: 1rem;
-            }
-
-            .hero-section p {
-                font-size: 1.5rem;
-                margin-bottom: 2rem;
-            }
-
-            .hero-section .cta-button {
-                display: inline-block;
-                background-color: #7b68ee;
-                color: #fff;
-                font-size: 1.2rem;
-                padding: 1rem 2rem;
-                border-radius: 4px;
-                text-decoration: none;
+            .button {
+                background-color: var(--primary-color);
+                color: var(--text-color);
+                border: none;
+                border-radius: var(--border-radius);
+                padding: 10px 20px;
+                cursor: pointer;
+                box-shadow: var(--box-shadow);
                 transition: background-color 0.3s ease;
             }
 
-            .hero-section .cta-button:hover {
-                background-color: #6a5acd;
-            }
-            /* Animations for section: Hero Section */
-            @keyframes shooting-star {
-                0% {
-                    transform: translateX(-100%) translateY(-50%);
-                    opacity: 0;
-                }
-                50% {
-                    opacity: 1;
-                }
-                100% {
-                    transform: translateX(100%) translateY(50%);
-                    opacity: 0;
-                }
+            .button:hover {
+                background-color: var(--secondary-color);
             }
 
-            .hero-section::after {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: radial-gradient(
-                    circle,
-                    rgba(255, 255, 255, 0.1) 0%,
-                    rgba(255, 255, 255, 0) 70%
-                );
-                animation: shooting-star 10s linear infinite;
-                z-index: 1;
-            }
-
-            /* Styles for section: Program Overview */
-            .program-overview {
-                background: linear-gradient(to bottom, #1e2a3b, #2c3c55);
-                padding: 80px 0;
-            }
-
-            .program-overview .section-title {
-                font-family: 'Helvetica Neue', sans-serif;
-                font-size: 36px;
-                font-weight: 700;
-                color: #ffffff;
-                text-align: center;
-                margin-bottom: 40px;
-            }
-
-            .program-overview .card-container {
-                display: flex;
-                justify-content: center;
-                flex-wrap: wrap;
-                gap: 30px;
-            }
-
-            .program-overview .card {
-                background-color: rgba(255, 255, 255, 0.1);
-                border-radius: 10px;
-                padding: 30px;
-                width: 300px;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                transition: transform 0.3s ease-in-out;
-            }
-
-            .program-overview .card:hover {
-                transform: translateY(-10px);
-            }
-
-            .program-overview .card-image {
-                width: 100%;
-                height: 200px;
-                background-size: cover;
-                background-position: center;
-                border-radius: 5px;
-                margin-bottom: 20px;
-            }
-
-            .program-overview .card-title {
-                font-family: 'Helvetica Neue', sans-serif;
-                font-size: 20px;
-                font-weight: 700;
-                color: #ffffff;
-                margin-bottom: 10px;
-            }
-
-            .program-overview .card-description {
-                font-family: 'Helvetica Neue', sans-serif;
-                font-size: 16px;
-                color: #cccccc;
-                line-height: 1.5;
-            }
-            /* Animations for section: Program Overview */
-            @keyframes shooting-star {
-                0% {
-                    transform: translateX(-100px) translateY(50px);
-                    opacity: 0;
-                }
-                50% {
-                    opacity: 1;
-                }
-                100% {
-                    transform: translateX(100vw) translateY(-50px);
-                    opacity: 0;
-                }
-            }
-
-            .program-overview::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-image: radial-gradient(
-                    circle at 50% 50%,
-                    rgba(255, 255, 255, 0.1) 10%,
-                    transparent 60%
-                );
-                animation: shooting-star 10s linear infinite;
-                z-index: -1;
-            }
-
-            /* Styles for section: Camp Details */
-            .camp-details-section {
-                background: linear-gradient(to bottom, #1b1b3a, #2c2c4d);
-                padding: 80px 40px;
-                color: #fff;
-                font-family: 'Helvetica Neue', sans-serif;
-            }
-
-            .camp-details-section h2 {
-                font-size: 36px;
-                font-weight: 700;
-                margin-bottom: 40px;
-                text-align: center;
-                text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-            }
-
-            .camp-details-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                grid-gap: 40px;
-            }
-
-            .camp-details-card {
-                background-color: rgba(255, 255, 255, 0.1);
-                border-radius: 10px;
-                padding: 30px;
-                box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-                text-align: center;
-            }
-
-            .camp-details-card h3 {
-                font-size: 24px;
-                font-weight: 700;
-                margin-bottom: 20px;
-            }
-
-            .camp-details-card p {
-                font-size: 16px;
-                line-height: 1.5;
-                margin-bottom: 20px;
-            }
-
-            .camp-details-card .icon {
-                font-size: 48px;
-                margin-bottom: 20px;
-            }
-            /* Animations for section: Camp Details */
-            @keyframes shooting-star {
-                0% {
-                    transform: translateX(-100%) translateY(-50%);
-                    opacity: 0;
-                }
-                50% {
-                    opacity: 1;
-                }
-                100% {
-                    transform: translateX(100%) translateY(50%);
-                    opacity: 0;
-                }
-            }
-
-            .camp-details-section {
-                position: relative; /* Add this */
-                overflow: hidden; /* Add this */
-            }
-
-            .camp-details-section::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 2px; /* Make the star smaller */
-                height: 2px; /* Make the star smaller */
-                background: white; /* Make it a solid color instead of gradient */
-                box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8); /* Add glow effect */
-                animation: shooting-star 3s linear infinite; /* Reduced duration */
-            }
-
-            /* Styles for section: Testimonials */
-            .testimonials-section {
-                background: linear-gradient(to bottom, #1e2a3b, #2c3c55);
-                padding: 80px 0;
-                position: relative;
-                overflow: hidden;
-            }
-
-            .testimonials-section::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: radial-gradient(
-                    ellipse at center,
-                    rgba(255, 255, 255, 0.1) 0%,
-                    rgba(255, 255, 255, 0) 70%
-                );
-                z-index: 1;
-            }
-
-            .testimonials-section .container {
-                position: relative;
-                z-index: 2;
-            }
-
-            .testimonial-card {
-                background-color: rgba(255, 255, 255, 0.1);
-                border-radius: 8px;
-                padding: 40px;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                color: #fff;
-                font-family: 'Helvetica Neue', sans-serif;
-            }
-
-            .testimonial-card .quote {
-                font-size: 24px;
-                font-weight: 300;
-                margin-bottom: 20px;
-            }
-
-            .testimonial-card .author {
-                font-size: 18px;
-                font-weight: 500;
-            }
-            /* Animations for section: Testimonials */
-            .testimonials-section::after {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: url('stars.png') repeat;
-                animation: starfield 60s linear infinite;
-                z-index: 0;
-            }
-
-            @keyframes starfield {
-                0% {
-                    background-position: 0 0;
-                }
-                100% {
-                    background-position: -100% -100%;
-                }
-            }
-
-            .testimonial-card {
-                animation: fadeIn 0.5s ease-in-out;
-            }
+            /* Global Animations */
 
             @keyframes fadeIn {
                 0% {
                     opacity: 0;
-                    transform: translateY(20px);
                 }
                 100% {
+                    opacity: 1;
+                }
+            }
+
+            @keyframes slideIn {
+                0% {
+                    transform: translateY(20px);
+                    opacity: 0;
+                }
+                100% {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            @keyframes pulse {
+                0%,
+                100% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.05);
+                }
+            }
+
+            /* Base styles: Background */
+
+            body {
+                background-image: url('starry-night-sky.jpg');
+                background-size: cover;
+                background-position: center;
+                color: #ffffff;
+                font-family: 'FuturisticFont', sans-serif;
+                margin: 0;
+                padding: 0;
+            }
+
+            .section-background {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                text-align: center;
+            }
+
+            h1 {
+                font-size: 3rem;
+                color: #00ffcc; /* Vibrant accent color */
+                text-shadow: 0 0 10px rgba(0, 255, 204, 0.8);
+            }
+
+            p {
+                font-size: 1.5rem;
+                color: #ffffff;
+                margin-top: 1rem;
+            }
+
+            /* States and interactions */
+
+            h1,
+            p {
+                transition: color 0.3s ease, text-shadow 0.3s ease;
+            }
+
+            h1:hover {
+                color: #ffcc00; /* Change color on hover */
+                text-shadow: 0 0 20px rgba(255, 204, 0, 0.8);
+            }
+
+            /* Motion preferences */
+            @media (prefers-reduced-motion: reduce) {
+                @media (prefers-reduced-motion: reduce) {
+                    h1,
+                    p {
+                        transition: none; /* Disable transitions for users with reduced motion preference */
+                    }
+                }
+            }
+
+            /* Base styles: Login Form */
+
+            /* Base styles for the login form */
+            .login-form {
+                background-color: #1a1a2e; /* Dark background */
+                color: #e94560; /* Vibrant accent color */
+                border-radius: 8px;
+                padding: 20px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+                max-width: 400px;
+                margin: auto;
+            }
+
+            /* Input fields */
+            .login-form input[type='text'],
+            .login-form input[type='password'] {
+                width: 100%;
+                padding: 10px;
+                margin: 10px 0;
+                border: 2px solid #e94560; /* Vibrant border */
+                border-radius: 4px;
+                background-color: #0f3460; /* Darker input background */
+                color: #ffffff;
+                font-family: 'Futuristic Font', sans-serif; /* Futuristic typography */
+            }
+
+            /* Focus state for input fields */
+            .login-form input[type='text']:focus,
+            .login-form input[type='password']:focus {
+                border-color: #00adb5; /* Accent color on focus */
+                outline: none;
+                box-shadow: 0 0 5px rgba(0, 173, 181, 0.5);
+            }
+
+            /* Submit button */
+            .login-form button {
+                background-color: #00adb5; /* Accent color */
+                color: #ffffff;
+                border: none;
+                border-radius: 4px;
+                padding: 10px;
+                cursor: pointer;
+                font-size: 16px;
+                transition: background-color 0.3s ease;
+            }
+
+            /* Hover state for button */
+            .login-form button:hover {
+                background-color: #e94560; /* Change to vibrant color on hover */
+            }
+
+            /* States and interactions */
+
+            /* Transition for input fields */
+            .login-form input {
+                transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            /* Transition for button */
+            .login-form button {
+                transition: background-color 0.3s ease;
+            }
+
+            /* Keyframe animation for form appearance */
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
                     opacity: 1;
                     transform: translateY(0);
                 }
             }
 
-            /* Styles for section: Registration Form */
-            .registration-section {
-                background: linear-gradient(to bottom, #1b1b3a, #2c2c4d);
-                padding: 4rem 2rem;
-                color: #fff;
-                font-family: 'Helvetica Neue', sans-serif;
+            /* Apply animation to the form */
+            .login-form {
+                animation: fadeIn 0.5s ease forwards;
             }
 
-            .registration-section h2 {
-                font-size: 2.5rem;
-                font-weight: 700;
-                margin-bottom: 1.5rem;
+            /* Motion preferences */
+            @media (prefers-reduced-motion: reduce) {
+                /* Reduced motion for users with motion preferences */
+                @media (prefers-reduced-motion: reduce) {
+                    .login-form {
+                        animation: none; /* Disable animation */
+                    }
+                    .login-form input,
+                    .login-form button {
+                        transition: none; /* Disable transitions */
+                    }
+                }
+            }
+
+            /* Base styles: Call to Action */
+
+            /* Core styles for Call to Action section */
+            .cta-section {
+                background-color: #1a1a1a; /* Dark background */
+                color: #ffffff; /* Text color */
+                padding: 20px;
                 text-align: center;
-            }
-
-            .registration-form {
-                max-width: 600px;
-                margin: 0 auto;
-                background-color: rgba(255, 255, 255, 0.1);
                 border-radius: 10px;
-                padding: 2rem;
-                box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
             }
 
-            .form-group {
-                margin-bottom: 1.5rem;
-            }
-
-            .form-group label {
-                display: block;
-                font-size: 1.1rem;
-                font-weight: 500;
-                margin-bottom: 0.5rem;
-            }
-
-            .form-group input {
-                width: 100%;
-                padding: 0.8rem 1rem;
-                font-size: 1rem;
+            .cta-button {
+                background-color: #00ffcc; /* Vibrant accent color */
+                color: #1a1a1a; /* Button text color */
+                font-family: 'FuturisticFont', sans-serif; /* Futuristic typography */
+                padding: 15px 30px;
                 border: none;
                 border-radius: 5px;
-                background-color: rgba(255, 255, 255, 0.2);
-                color: #fff;
-                transition: background-color 0.3s ease;
+                cursor: pointer;
+                transition: background-color 0.3s ease, transform 0.2s ease;
             }
 
-            .form-group input:focus {
-                outline: none;
-                background-color: rgba(255, 255, 255, 0.3);
+            .cta-button:hover {
+                background-color: #00cc99; /* Darker accent on hover */
+                transform: scale(1.05); /* Slightly enlarge on hover */
             }
 
-            .progress-bar {
-                width: 100%;
-                height: 10px;
-                background-color: rgba(255, 255, 255, 0.2);
-                border-radius: 5px;
-                margin-top: 1.5rem;
+            .cta-button:active {
+                transform: scale(0.95); /* Shrink on click */
             }
 
-            .progress-bar-fill {
-                height: 100%;
-                background: linear-gradient(to right, #7b68ee, #4169e1);
-                border-radius: 5px;
+            /* Responsive styles */
+            @media (max-width: 768px) {
+                .cta-section {
+                    padding: 15px;
+                }
+
+                .cta-button {
+                    padding: 10px 20px;
+                }
             }
-            /* Animations for section: Registration Form */
-            @keyframes shooting-star {
+
+            /* States and interactions */
+
+            /* Transitions for button interactions */
+            .cta-button {
+                transition: background-color 0.3s ease, transform 0.2s ease;
+            }
+
+            /* Keyframe animation for attention */
+            @keyframes pulse {
                 0% {
-                    transform: translateX(-100px) translateY(50px);
-                    opacity: 0;
+                    transform: scale(1);
                 }
                 50% {
-                    opacity: 1;
+                    transform: scale(1.05);
                 }
                 100% {
-                    transform: translateX(100vw) translateY(-50px);
-                    opacity: 0;
+                    transform: scale(1);
                 }
             }
 
-            .shooting-star {
-                position: absolute;
-                width: 3px;
-                height: 3px;
-                background-color: #fff;
-                border-radius: 50%;
-                animation: shooting-star 5s linear infinite;
+            .cta-section:hover .cta-button {
+                animation: pulse 1s infinite; /* Pulsing effect on hover */
             }
 
-            @keyframes orbit {
-                0% {
-                    transform: rotate(0deg) translateX(50px);
-                }
-                100% {
-                    transform: rotate(360deg) translateX(50px);
+            /* Motion preferences */
+            @media (prefers-reduced-motion: reduce) {
+                /* Reduced motion styles for accessibility */
+                @media (prefers-reduced-motion: reduce) {
+                    .cta-button {
+                        transition: none; /* Disable transitions */
+                    }
+
+                    .cta-section:hover .cta-button {
+                        animation: none; /* Disable pulsing effect */
+                    }
                 }
             }
 
-            .orbit {
-                position: absolute;
-                width: 100px;
-                height: 100px;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                border-radius: 50%;
-                animation: orbit 10s linear infinite;
+            /* Base styles: Footer */
+
+            .footer {
+                background-color: #1a1a2e; /* Dark background */
+                color: #e94560; /* Vibrant accent color */
+                padding: 20px;
+                text-align: center;
+                font-family: 'Orbitron', sans-serif; /* Futuristic typography */
+            }
+
+            .footer a {
+                color: #00adb5; /* Link color */
+                text-decoration: none;
+                transition: color 0.3s ease;
+            }
+
+            .footer a:hover {
+                color: #e94560; /* Change link color on hover */
+            }
+
+            .footer .subtle-graphics {
+                background-image: url('path/to/space-graphics.png'); /* Subtle space-themed graphics */
+                background-repeat: no-repeat;
+                background-position: center;
+                opacity: 0.1; /* Subtle effect */
+            }
+
+            @media (max-width: 768px) {
+                .footer {
+                    padding: 15px;
+                    font-size: 14px; /* Responsive font size */
+                }
+            }
+
+            /* States and interactions */
+
+            .footer a {
+                transition: color 0.3s ease, transform 0.2s ease; /* Smooth color and transform transitions */
+            }
+
+            .footer a:hover {
+                transform: scale(1.05); /* Slightly enlarge link on hover */
+            }
+
+            /* Motion preferences */
+            @media (prefers-reduced-motion: reduce) {
+                @media (prefers-reduced-motion: reduce) {
+                    .footer a {
+                        transition: none; /* Disable transitions for users with reduced motion preferences */
+                    }
+                }
             }
         </style>
+    </head>
+    <body>
+        <!-- Component Container -->
+        <div id="component-root">
+            <section class="section-background">
+                <h1>Welcome to the Cosmic Portal</h1>
+                <p>Please log in to continue your journey among the stars.</p>
+                <form id="login-form">
+                    <input type="text" placeholder="Username" required="" />
+                    <input type="password" placeholder="Password" required="" />
+                    <button type="submit">Log In</button>
+                </form>
+            </section>
+            <section class="login-form">
+                <h2>Login</h2>
+                <form id="loginForm">
+                    <div class="input-group">
+                        <img
+                            src="username_icon.png"
+                            alt="Space-themed icon for username field"
+                            width="50"
+                            height="50"
+                            class="icon"
+                        />
+                        <input type="text" placeholder="Username" required="" />
+                    </div>
+                    <div class="input-group">
+                        <img
+                            src="password_icon.png"
+                            alt="Space-themed icon for password field"
+                            width="50"
+                            height="50"
+                            class="icon"
+                        />
+                        <input
+                            type="password"
+                            placeholder="Password"
+                            required=""
+                        />
+                    </div>
+                    <button type="submit">Login</button>
+                </form>
+            </section>
+            <section class="cta-section">
+                <h2>Join Us in the Future!</h2>
+                <p>
+                    Log in to your account or create a new one to explore our
+                    features.
+                </p>
+                <button class="cta-button" aria-label="Futuristic login button">
+                    <img
+                        src="path/to/futuristic-login-button.png"
+                        alt="Futuristic login button"
+                        width="200"
+                        height="60"
+                    />
+                    Log In
+                </button>
+                <button
+                    class="cta-button"
+                    aria-label="Futuristic create account button"
+                >
+                    <img
+                        src="path/to/futuristic-create-account-button.png"
+                        alt="Futuristic create account button"
+                        width="200"
+                        height="60"
+                    />
+                    Create Account
+                </button>
+            </section>
+            <footer class="footer subtle-graphics">
+                <div class="footer-content">
+                    <h2>Stay Connected</h2>
+                    <nav>
+                        <ul>
+                            <li><a href="#about">About Us</a></li>
+                            <li><a href="#services">Services</a></li>
+                            <li><a href="#contact">Contact</a></li>
+                            <li><a href="#privacy">Privacy Policy</a></li>
+                        </ul>
+                    </nav>
+                    <div class="footer-graphics">
+                        <img
+                            src="path/to/small-planet.png"
+                            alt="Small planet graphic for footer"
+                            class="footer-planet"
+                        />
+                        <img
+                            src="path/to/twinkling-star.png"
+                            alt="Twinkling star graphic for footer"
+                            class="footer-star"
+                        />
+                    </div>
+                </div>
+            </footer>
+        </div>
+        <!-- Dynamic Script Loading -->
+
         <!-- Component Scripts -->
 
         <script>
             const imagePlaceholders = {
-                'hero-background': {
-                    alt: 'Dramatic rocket launch against deep space background with nebulae and stars',
+                'background-bg_starry_night': {
+                    alt: 'Starry night sky background for login page',
+                    prompt: 'A vast starry night sky filled with twinkling stars and a hint of a galaxy, creating an immersive space-themed environment.',
                     dimensions: '1920x1080',
+                    position: 'background',
+                    style_focus: 'dark color palette with vibrant star accents',
                 },
-                'loading-icon': {
-                    alt: 'Space-themed loading animation',
-                    dimensions: '128x128',
+                'background-bg_galaxy': {
+                    alt: 'Galaxy background for login page',
+                    prompt: 'A colorful galaxy with swirling stars and nebulae, designed to create a captivating and immersive login experience.',
+                    dimensions: '1920x1080',
+                    position: 'background',
+                    style_focus: 'dark color palette with vibrant accents',
                 },
-                'space-robotics': {
-                    alt: 'Students working with advanced robotics equipment in a space simulation lab',
-                    dimensions: '300x200',
+                'login form-username_icon': {
+                    alt: 'Space-themed icon for username field',
+                    prompt: 'A minimalistic space-themed icon representing a user, designed with a sleek and modern look, featuring stars and planets.',
+                    dimensions: '50x50',
+                    position: 'left of the username input field',
+                    style_focus: 'minimalistic, space-themed',
                 },
-                'astronomy-workshop': {
-                    alt: 'Young astronomers using telescopes during a night sky observation session',
-                    dimensions: '300x200',
+                'login form-password_icon': {
+                    alt: 'Space-themed icon for password field',
+                    prompt: 'A minimalistic space-themed icon representing a lock, designed with a futuristic style, incorporating elements of the cosmos.',
+                    dimensions: '50x50',
+                    position: 'left of the password input field',
+                    style_focus: 'minimalistic, space-themed',
                 },
-                'mission-control': {
-                    alt: 'Campers participating in a mission control simulation exercise',
-                    dimensions: '300x200',
+                'login form-starry_background': {
+                    alt: 'Starry background for the login form',
+                    prompt: 'A dark, starry background that enhances the space theme, featuring twinkling stars and a subtle galaxy effect.',
+                    dimensions: '100%',
+                    position: 'background of the login form',
+                    style_focus: 'dark color palette with vibrant accents',
                 },
-                'kids-icon': {
-                    alt: 'Space-themed icon representing children aged 5-8',
-                    dimensions: '120x120',
+                'call to action-cta_button_1': {
+                    alt: 'Futuristic login button',
+                    prompt: 'A sleek, futuristic button designed to resemble spaceship controls, glowing with vibrant accents against a dark starry background.',
+                    dimensions: '200x60',
+                    position: 'center',
+                    style_focus: 'futuristic, interactive',
                 },
-                'youth-icon': {
-                    alt: 'Space-themed icon representing youth aged 9-12',
-                    dimensions: '120x120',
+                'call to action-cta_button_2': {
+                    alt: 'Futuristic create account button',
+                    prompt: 'A modern create account button with a spaceship control design, featuring vibrant colors and a glowing effect, set against a dark cosmic backdrop.',
+                    dimensions: '200x60',
+                    position: 'center',
+                    style_focus: 'futuristic, interactive',
                 },
-                'teen-icon': {
-                    alt: 'Space-themed icon representing teens aged 13-15',
-                    dimensions: '120x120',
+                'footer-footer_background': {
+                    alt: 'Subtle space-themed background with stars and planets',
+                    prompt: 'A dark, starry background featuring small planets and twinkling stars, designed to enhance the footer section of a website. The colors should be vibrant yet subtle, fitting within a dark color palette.',
+                    dimensions: '1920x200',
+                    position: 'background',
+                    style_focus: 'space-themed, subtle graphics',
                 },
-                'senior-teen-icon': {
-                    alt: 'Space-themed icon representing senior teens aged 16-18',
-                    dimensions: '120x120',
+                'footer-footer_planet': {
+                    alt: 'Small planet graphic for footer',
+                    prompt: 'A small, stylized planet graphic to be placed in the footer, with vibrant colors that pop against a dark background. The design should be simple and modern, fitting the futuristic theme.',
+                    dimensions: '50x50',
+                    position: 'left',
+                    style_focus: 'futuristic, vibrant accent',
                 },
-                'testimonial-1': {
-                    alt: 'Sarah Johnson, Space Camp Alumni 2022',
-                    dimensions: '200x200',
-                },
-                'testimonial-2': {
-                    alt: 'Michael Chen, Junior Astronaut Program Graduate',
-                    dimensions: '200x200',
-                },
-                'testimonial-3': {
-                    alt: 'Emma Rodriguez, Advanced Space Training Participant',
-                    dimensions: '200x200',
-                },
-                'space-logo': {
-                    alt: 'Space-themed company logo',
-                    dimensions: '150x50',
-                },
-                'personal-info-icon': {
-                    alt: 'Astronaut helmet icon for personal information',
-                    dimensions: '32x32',
-                },
-                'contact-icon': {
-                    alt: 'Satellite dish icon for contact information',
-                    dimensions: '32x32',
-                },
-                'preferences-icon': {
-                    alt: 'Space station icon for preferences',
-                    dimensions: '32x32',
+                'footer-footer_star': {
+                    alt: 'Twinkling star graphic for footer',
+                    prompt: 'A small twinkling star graphic to be used in the footer section, designed to add a subtle sparkle effect. The star should be bright and eye-catching, complementing the dark theme.',
+                    dimensions: '30x30',
+                    position: 'right',
+                    style_focus: 'subtle sparkle, space-themed',
                 },
             };
             function loadGeneratedImage(imageId, imageUrl) {
@@ -607,498 +565,36 @@
                 });
             };
         </script>
-    </head>
-    <body>
-        <!-- Component Container -->
-        <div id="component-root">
-            <div class="loading-screen">
-                <img
-                    src="loading-icon.svg"
-                    id="loading-icon"
-                    alt="Space-themed loading animation"
-                />
-            </div>
 
-            <section class="hero-section" data-parallax="scroll">
-                <header class="main-header">
-                    <nav class="nav-container">
-                        <div class="logo">
-                            <a href="#home">SpaceX</a>
-                        </div>
-                        <ul class="nav-links">
-                            <li><a href="#missions">Missions</a></li>
-                            <li><a href="#vehicles">Vehicles</a></li>
-                            <li><a href="#careers">Careers</a></li>
-                            <li><a href="#contact">Contact</a></li>
-                        </ul>
-                    </nav>
-                </header>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
 
-                <div class="content">
-                    <h1>Explore The Final Frontier</h1>
-                    <p>
-                        Join us on humanity's greatest adventure as we reach for
-                        the stars
-                    </p>
-                    <a href="#learn-more" class="cta-button"
-                        >Begin Your Journey</a
-                    >
-                </div>
+            // javascript Section Logic
+            (function() {
+                1. **Hover Event for Buttons**: Add an event listener to all buttons in the footer that changes their color or applies a glowing effect when hovered over. This can be achieved using CSS classes that are toggled on mouse enter and mouse leave events.
 
-                <div class="scroll-indicator">
-                    <span class="scroll-text">Scroll to Explore</span>
-                    <div class="scroll-arrow"></div>
-                </div>
-            </section>
-            <section class="program-overview" aria-label="Program Overview">
-                <div class="container">
-                    <h2 class="section-title">
-                        Explore Our Space Camp Activities
-                    </h2>
+            2. **Focus Event for Input Fields**: Implement an event listener for input fields that adds a glowing effect class when the field is focused, and removes it when the field loses focus.
 
-                    <div class="card-container">
-                        <article class="card">
-                            <div class="card-image">
-                                <img
-                                    id="space-robotics"
-                                    src="placeholder.jpg"
-                                    alt="Students working with advanced robotics equipment in a space simulation lab"
-                                    loading="lazy"
-                                    width="300"
-                                    height="200"
-                                />
-                            </div>
-                            <h3 class="card-title">Space Robotics Lab</h3>
-                            <p class="card-description">
-                                Build and program robots designed for space
-                                exploration, learning real NASA engineering
-                                principles.
-                            </p>
-                        </article>
+            3. **Submit Event for Login Form**: Attach a submit event listener to the login form that triggers a space-themed loading animation. This can be done by displaying a loading spinner or animation overlay while the form is being processed.
+            })();
 
-                        <article class="card">
-                            <div class="card-image">
-                                <img
-                                    id="astronomy-workshop"
-                                    src="placeholder.jpg"
-                                    alt="Young astronomers using telescopes during a night sky observation session"
-                                    loading="lazy"
-                                    width="300"
-                                    height="200"
-                                />
-                            </div>
-                            <h3 class="card-title">Astronomy Workshop</h3>
-                            <p class="card-description">
-                                Discover the mysteries of the universe through
-                                advanced telescopes and night sky observation
-                                sessions.
-                            </p>
-                        </article>
 
-                        <article class="card">
-                            <div class="card-image">
-                                <img
-                                    id="mission-control"
-                                    src="placeholder.jpg"
-                                    alt="Campers participating in a mission control simulation exercise"
-                                    loading="lazy"
-                                    width="300"
-                                    height="200"
-                                />
-                            </div>
-                            <h3 class="card-title">
-                                Mission Control Simulation
-                            </h3>
-                            <p class="card-description">
-                                Experience the thrill of space mission control
-                                through interactive simulation exercises.
-                            </p>
-                        </article>
-                    </div>
-                </div>
-            </section>
-            <section class="camp-details-section" data-scroll-section="">
-                <div class="container">
-                    <h2 class="animate-on-scroll">
-                        Explore Our Space Camp Programs
-                    </h2>
+            // state_management Section Logic
+            (function() {
+                Since the footer is primarily static and does not require complex state management, the state handling will focus on managing the loading state during form submission. A simple boolean state variable can be used to track whether the form is currently submitting. This state can be set to true when the form is submitted and reset to false once the submission is complete.
+            })();
 
-                    <div class="camp-details-grid">
-                        <div class="camp-details-card animate-on-scroll">
-                            <img
-                                src="#"
-                                id="kids-icon"
-                                alt="Space-themed icon representing children aged 5-8"
-                                class="icon"
-                            />
-                            <h3>Junior Astronauts</h3>
-                            <p>Ages 5-8</p>
-                            <p>
-                                Perfect for young space enthusiasts beginning
-                                their cosmic journey
-                            </p>
-                        </div>
 
-                        <div class="camp-details-card animate-on-scroll">
-                            <img
-                                src="#"
-                                id="youth-icon"
-                                alt="Space-themed icon representing youth aged 9-12"
-                                class="icon"
-                            />
-                            <h3>Space Explorers</h3>
-                            <p>Ages 9-12</p>
-                            <p>
-                                Hands-on activities and basic space science for
-                                curious minds
-                            </p>
-                        </div>
+            // Footer Section Logic
+            (function() {
+                1. **Hover Event for Buttons**: Add an event listener to all buttons in the footer that changes their color or applies a glowing effect when hovered over. This can be achieved using CSS classes that are toggled on mouse enter and mouse leave events.
 
-                        <div class="camp-details-card animate-on-scroll">
-                            <img
-                                src="#"
-                                id="teen-icon"
-                                alt="Space-themed icon representing teens aged 13-15"
-                                class="icon"
-                            />
-                            <h3>Mission Specialists</h3>
-                            <p>Ages 13-15</p>
-                            <p>
-                                Advanced space concepts and team-based mission
-                                simulations
-                            </p>
-                        </div>
+            2. **Focus Event for Input Fields**: Implement an event listener for input fields that adds a glowing effect class when the field is focused, and removes it when the field loses focus.
 
-                        <div class="camp-details-card animate-on-scroll">
-                            <img
-                                src="#"
-                                id="senior-teen-icon"
-                                alt="Space-themed icon representing senior teens aged 16-18"
-                                class="icon"
-                            />
-                            <h3>Space Academy</h3>
-                            <p>Ages 16-18</p>
-                            <p>
-                                Leadership training and advanced aerospace
-                                education
-                            </p>
-                        </div>
-                    </div>
+            3. **Submit Event for Login Form**: Attach a submit event listener to the login form that triggers a space-themed loading animation. This can be done by displaying a loading spinner or animation overlay while the form is being processed.
+            })();
 
-                    <div class="calendar-container animate-on-scroll">
-                        <div class="calendar-filters">
-                            <select
-                                id="age-group-filter"
-                                aria-label="Filter by age group"
-                            >
-                                <option value="all">All Age Groups</option>
-                                <option value="5-8">Ages 5-8</option>
-                                <option value="9-12">Ages 9-12</option>
-                                <option value="13-15">Ages 13-15</option>
-                                <option value="16-18">Ages 16-18</option>
-                            </select>
-                        </div>
-
-                        <div
-                            id="camp-calendar"
-                            class="calendar-view"
-                            role="region"
-                            aria-label="Camp schedule calendar"
-                        >
-                            <!-- Calendar will be populated dynamically -->
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <section class="testimonials-section" aria-label="Testimonials">
-                <div class="container">
-                    <h2 class="section-title">What Our Space Explorers Say</h2>
-
-                    <div
-                        class="testimonials-carousel"
-                        role="region"
-                        aria-label="Testimonial Carousel"
-                    >
-                        <div class="carousel-track" data-autoplay="true">
-                            <article
-                                class="testimonial-card"
-                                role="tabpanel"
-                                aria-labelledby="testimonial-1-tab"
-                            >
-                                <div class="testimonial-content">
-                                    <blockquote class="quote">
-                                        "Space Camp transformed my perspective
-                                        on science and opened up a universe of
-                                        possibilities!"
-                                    </blockquote>
-                                    <div class="author-info">
-                                        <img
-                                            id="testimonial-1"
-                                            class="author-image"
-                                            src="[IMAGE_PLACEHOLDER]"
-                                            alt="Sarah Johnson, Space Camp Alumni 2022"
-                                        />
-                                        <cite class="author"
-                                            >Sarah Johnson</cite
-                                        >
-                                        <p class="credentials">
-                                            Space Camp Alumni 2022
-                                        </p>
-                                    </div>
-                                </div>
-                            </article>
-
-                            <article
-                                class="testimonial-card"
-                                role="tabpanel"
-                                aria-labelledby="testimonial-2-tab"
-                            >
-                                <div class="testimonial-content">
-                                    <blockquote class="quote">
-                                        "The hands-on experience with space
-                                        technology was incredible. I learned
-                                        more than I ever thought possible!"
-                                    </blockquote>
-                                    <div class="author-info">
-                                        <img
-                                            id="testimonial-2"
-                                            class="author-image"
-                                            src="[IMAGE_PLACEHOLDER]"
-                                            alt="Michael Chen, Junior Astronaut Program Graduate"
-                                        />
-                                        <cite class="author">Michael Chen</cite>
-                                        <p class="credentials">
-                                            Junior Astronaut Program Graduate
-                                        </p>
-                                    </div>
-                                </div>
-                            </article>
-
-                            <article
-                                class="testimonial-card"
-                                role="tabpanel"
-                                aria-labelledby="testimonial-3-tab"
-                            >
-                                <div class="testimonial-content">
-                                    <blockquote class="quote">
-                                        "The mentors and facilities at Space
-                                        Camp are world-class. It's an experience
-                                        I'll never forget!"
-                                    </blockquote>
-                                    <div class="author-info">
-                                        <img
-                                            id="testimonial-3"
-                                            class="author-image"
-                                            src="[IMAGE_PLACEHOLDER]"
-                                            alt="Emma Rodriguez, Advanced Space Training Participant"
-                                        />
-                                        <cite class="author"
-                                            >Emma Rodriguez</cite
-                                        >
-                                        <p class="credentials">
-                                            Advanced Space Training Participant
-                                        </p>
-                                    </div>
-                                </div>
-                            </article>
-                        </div>
-
-                        <div class="carousel-controls">
-                            <button
-                                class="prev-button"
-                                aria-label="Previous testimonial"
-                            >
-                                <span class="sr-only">Previous</span>
-                                <svg
-                                    aria-hidden="true"
-                                    focusable="false"
-                                    class="icon"
-                                >
-                                    <!-- Previous arrow icon -->
-                                </svg>
-                            </button>
-
-                            <div class="carousel-indicators" role="tablist">
-                                <button
-                                    role="tab"
-                                    id="testimonial-1-tab"
-                                    aria-selected="true"
-                                    aria-controls="testimonial-1"
-                                >
-                                    <span class="sr-only">Testimonial 1</span>
-                                </button>
-                                <button
-                                    role="tab"
-                                    id="testimonial-2-tab"
-                                    aria-selected="false"
-                                    aria-controls="testimonial-2"
-                                >
-                                    <span class="sr-only">Testimonial 2</span>
-                                </button>
-                                <button
-                                    role="tab"
-                                    id="testimonial-3-tab"
-                                    aria-selected="false"
-                                    aria-controls="testimonial-3"
-                                >
-                                    <span class="sr-only">Testimonial 3</span>
-                                </button>
-                            </div>
-
-                            <button
-                                class="next-button"
-                                aria-label="Next testimonial"
-                            >
-                                <span class="sr-only">Next</span>
-                                <svg
-                                    aria-hidden="true"
-                                    focusable="false"
-                                    class="icon"
-                                >
-                                    <!-- Next arrow icon -->
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <section
-                class="registration-section"
-                aria-label="Registration Form"
-            >
-                <div class="container">
-                    <img
-                        src="#"
-                        id="space-logo"
-                        alt="Space-themed company logo"
-                        class="logo"
-                    />
-
-                    <h2>Join Our Space Journey</h2>
-
-                    <div class="progress-bar">
-                        <div
-                            class="progress-bar-fill"
-                            role="progressbar"
-                            aria-valuenow="0"
-                            aria-valuemin="0"
-                            aria-valuemax="100"
-                        ></div>
-                    </div>
-
-                    <form class="registration-form" id="multi-step-form">
-                        <!-- Step 1: Personal Information -->
-                        <div class="form-step" data-step="1">
-                            <div class="step-header">
-                                <img
-                                    src="#"
-                                    id="personal-info-icon"
-                                    alt="Astronaut helmet icon for personal information"
-                                />
-                                <h3>Personal Information</h3>
-                            </div>
-                            <div class="form-group">
-                                <label for="fullname">Full Name</label>
-                                <input
-                                    type="text"
-                                    id="fullname"
-                                    name="fullname"
-                                    required=""
-                                />
-                            </div>
-                            <div class="form-group">
-                                <label for="username">Username</label>
-                                <input
-                                    type="text"
-                                    id="username"
-                                    name="username"
-                                    required=""
-                                />
-                            </div>
-                        </div>
-
-                        <!-- Step 2: Contact Information -->
-                        <div class="form-step" data-step="2">
-                            <div class="step-header">
-                                <img
-                                    src="#"
-                                    id="contact-icon"
-                                    alt="Satellite dish icon for contact information"
-                                />
-                                <h3>Contact Information</h3>
-                            </div>
-                            <div class="form-group">
-                                <label for="email">Email Address</label>
-                                <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    required=""
-                                />
-                            </div>
-                            <div class="form-group">
-                                <label for="phone">Phone Number</label>
-                                <input type="tel" id="phone" name="phone" />
-                            </div>
-                        </div>
-
-                        <!-- Step 3: Preferences -->
-                        <div class="form-step" data-step="3">
-                            <div class="step-header">
-                                <img
-                                    src="#"
-                                    id="preferences-icon"
-                                    alt="Space station icon for preferences"
-                                />
-                                <h3>Your Preferences</h3>
-                            </div>
-                            <div class="form-group">
-                                <label for="interests">Areas of Interest</label>
-                                <input
-                                    type="text"
-                                    id="interests"
-                                    name="interests"
-                                />
-                            </div>
-                            <div class="form-group">
-                                <label for="newsletter"
-                                    >Newsletter Subscription</label
-                                >
-                                <input
-                                    type="checkbox"
-                                    id="newsletter"
-                                    name="newsletter"
-                                />
-                            </div>
-                        </div>
-
-                        <div class="form-navigation">
-                            <button
-                                type="button"
-                                class="prev-btn"
-                                aria-label="Previous step"
-                            >
-                                Previous
-                            </button>
-                            <button
-                                type="button"
-                                class="next-btn"
-                                aria-label="Next step"
-                            >
-                                Next
-                            </button>
-                            <button
-                                type="submit"
-                                class="submit-btn"
-                                aria-label="Submit form"
-                            >
-                                Complete Registration
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </section>
-        </div>
-        <!-- Dynamic Script Loading -->
+            });
+        </script>
     </body>
 </html>

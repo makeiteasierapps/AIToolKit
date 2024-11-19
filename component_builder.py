@@ -19,8 +19,7 @@ COMPONENT_SCAFFOLD = '''
     {resource_links} 
     <!-- Component Styles -->
     {component_styles} 
-    <!-- Component Scripts -->
-    {component_scripts}
+    
 </head>
 <body>
     <!-- Component Container -->
@@ -29,6 +28,8 @@ COMPONENT_SCAFFOLD = '''
     </div> 
     <!-- Dynamic Script Loading -->
     {script_imports}
+    <!-- Component Scripts -->
+    {component_scripts}
 </body>
 </html>
 '''
@@ -42,8 +43,8 @@ model_dict = {
     '4o-mini': {'model': 'openai/gpt-4o-mini', 'max_tokens': 4096},
     '4o': {'model': 'openai/gpt-4o', 'max_tokens': 4096},
 }
-lm = LM(model_dict['haiku']['model'], max_tokens=model_dict['haiku']['max_tokens'])
-strong_lm = LM(model_dict['sonnet']['model'], max_tokens=model_dict['sonnet']['max_tokens'])
+lm = LM(model_dict['4o-mini']['model'], max_tokens=model_dict['4o-mini']['max_tokens'])
+strong_lm = LM(model_dict['4o-mini']['model'], max_tokens=model_dict['4o-mini']['max_tokens'])
 configure(lm=lm)
 logger = logging.getLogger('app.component_builder')
 
@@ -54,20 +55,28 @@ class ComponentDefinition(Signature):
     sections: List[Dict[Literal["section_name", "purpose", "interaction_type", "image_requirements"], str]] = OutputField()
     visual_theme = OutputField(desc='Visual design guidelines')
     global_interactions: List[Dict[Literal["event_type", "scope", "behavior"], str]] = OutputField(desc='Component-wide interaction patterns') 
-class SectionLogic(Signature):
-    """Define the interactive behavior for a specific section"""
+class InteractionLogic(Signature):
+    """Define pure interactive behaviors excluding visual styles"""
     section_details = InputField()
     component_type = InputField()
     global_interactions = InputField()
-    javascript_code = OutputField(desc='Section-specific behavior and event handling')
-    state_requirements = OutputField(desc='State requirements for this section') 
-class ComponentLogic(Signature):
-    """Define the global state and interaction management"""
-    component_type = InputField()
-    global_interactions = InputField()
-    section_states: List[Dict[str, Any]] = InputField(desc='State requirements from all sections')
-    javascript_code = OutputField(desc='Global component behavior and state management')
-    initialization_code = OutputField(desc='Component initialization and setup') 
+    event_handlers = OutputField(desc='Non-style related JavaScript functionality')
+    state_management = OutputField(desc='Data and state handling logic')
+class SectionImageDetails(Signature):
+    """Generate detailed image specifications for a section"""
+    section_details = InputField(desc="Section configuration and requirements")
+    component_type = InputField(desc="Type of component being built")
+    visual_theme = InputField(desc="Visual theme guidelines")
+    image_details: List[Dict[Literal[
+        "image_id",
+        "alt",
+        "prompt",
+        "dimensions",
+        "position",
+        "style_focus"
+    ], str]] = OutputField(
+        desc="List of image specifications including prompts and placement details"
+    )
 class ComponentStyle(Signature):
     """Define global component styles and theme"""
     visual_theme = InputField()
@@ -76,29 +85,21 @@ class ComponentStyle(Signature):
     global_animations = OutputField(desc='Global animations') 
     animation_rules = OutputField(desc='Transition and animation definitions')
 class SectionStyle(Signature):
-    """Define styles specific to a section"""
+    """Define styles and transitions for a section"""
     section_details = InputField()
     visual_theme = InputField()
     component_type = InputField()
-    section_css = OutputField(desc='Section-specific styles')
-    section_animations = OutputField(desc='Section-specific animations')
+    css_rules = OutputField(desc='Core styles including responsive and state variations')
+    transitions = OutputField(desc='CSS transitions and keyframe animations')
+    motion_preferences = OutputField(desc='Reduced motion and accessibility considerations')
 class ComponentStructure(Signature):
     """Define the structural layout for a component section"""
     section_details = InputField(desc='Details about the section being built')
     component_type = InputField()
-    image_prompt = InputField(desc='Generated image prompt for this section')
     section_css_rules = InputField()
-    state_requirements = InputField()
+    section_javascript = InputField(desc='A reference to help ensure all sections are built correctly')
+    image_details = InputField(desc='details of images to be used in the section')
     markup = OutputField(desc='HTML structure for the section')
-    image_placeholders: List[Dict[Literal["id", "alt", "dimensions"], str]] = OutputField(desc='Details for image placeholders') 
-class ImagePromptGenerator(Signature):
-    """Generate detailed prompts for AI image generation"""
-    section_purpose = InputField()
-    visual_theme = InputField()
-    component_type = InputField()
-    image_requirements = InputField()
-    image_prompt = OutputField(desc='Detailed prompt for image generation')
-    image_style = OutputField(desc='Style parameters for the image generator') 
 
 def clean_markup(markup):
     try:
@@ -112,21 +113,47 @@ def clean_markup(markup):
     except re.error as e:
         raise ValueError(f"Error cleaning HTML: {str(e)}")
 
-def create_component_scaffold(component_type: str, styles: str, markup: List[str], image_placeholders: Dict) -> str:
+def create_component_scaffold(component_type: str, styles: str, markup: List[str], image_placeholders: Dict, section_logic: Dict[str, str] = None) -> str:
     cleaned_styles = clean_markup(styles)
-    cleaned_markup = [clean_markup(section) for section in markup] 
+    cleaned_markup = [clean_markup(section) for section in markup]
+    
+    js_code = ""
+    if section_logic:
+        js_code = flatten_section_logic(section_logic)
+    
     return COMPONENT_SCAFFOLD.format(
         component_title=f"Component: {component_type}",
         resource_links="",
         component_styles=cleaned_styles,
         component_markup="\n".join(cleaned_markup),
         script_imports="",
-        component_scripts=generate_image_loading_script(image_placeholders)
+        component_scripts=f"{generate_image_loading_script(image_placeholders)}\n{js_code}"
     )
 
-def transform_image_placeholders(placeholders):
-    """Transform list of image placeholders into a dictionary keyed by 'id'"""
-    return {placeholder["id"]: {k: v for k, v in placeholder.items() if k != "id"} for placeholder in placeholders}
+def generate_section_image_details(section, component_type, visual_theme):
+    """Generate comprehensive image details for a section"""
+    try:
+        with context(lm=strong_lm):
+            image_generator = ChainOfThought(SectionImageDetails)
+            image_response = image_generator(
+                section_details=section,
+                component_type=component_type,
+                visual_theme=visual_theme
+            ) 
+            # Transform the response into a structured format
+            detailed_images = {}
+            for image in image_response.image_details:
+                image_id = f"{section['section_name'].lower()}-{image['image_id']}"
+                detailed_images[image_id] = {
+                    "alt": image["alt"],
+                    "prompt": image["prompt"],
+                    "dimensions": image["dimensions"],
+                    "position": image["position"],
+                    "style_focus": image["style_focus"]
+                } 
+            return detailed_images 
+    except Exception as e:
+        raise Exception(f"Error generating image details: {str(e)}")
 
 def format_sse(data):
     return f"data: {json.dumps(data)}\n\n"
@@ -141,8 +168,9 @@ def generate_section_style(section, component_type, visual_theme):
             component_type=component_type
         )
         return {
-            'css': style_response.section_css,
-            'animations': style_response.section_animations,
+            'css_rules': style_response.css_rules,
+            'transitions': style_response.transitions,
+            'motion_preferences': style_response.motion_preferences
         }
     except Exception as e:
         raise Exception(f"Error generating section styles: {str(e)}") 
@@ -150,71 +178,41 @@ def generate_section_style(section, component_type, visual_theme):
 def build_section_logic(section, component_type, global_interactions):
     """Generate logic for a specific section"""
     try:
-        section_logic = Predict(SectionLogic)
+        section_logic = Predict(InteractionLogic)
         logic_response = section_logic(
             section_details=section,
             component_type=component_type,
             global_interactions=global_interactions
         )
         return {
-            'javascript': logic_response.javascript_code,
-            'state_requirements': logic_response.state_requirements
+            'javascript': logic_response.event_handlers,
+            'state_management': logic_response.state_management
         }
     except Exception as e:
         raise Exception(f"Error generating section logic: {str(e)}")
 
-def build_component_logic(component_type, global_interactions, section_states):
-    """Generate global component logic"""
+def build_component_section(
+    section, 
+    component_type, 
+    javascript, 
+    section_style=None,
+    image_details=None
+):
+    """Build a complete section including structure with positioned image placeholders"""
     try:
-        component_logic = Predict(ComponentLogic)
-        logic_response = component_logic(
-            component_type=component_type,
-            global_interactions=global_interactions,
-            section_states=section_states
-        )
-        return {
-            'global_javascript': logic_response.javascript_code,
-            'init_code': logic_response.initialization_code
-        }
-    except Exception as e:
-        raise Exception(f"Error generating component logic: {str(e)}") 
-
-def build_component_section(section, component_type, state_requirements, image_prompt=None, section_style=None):
-    """Build a complete section including structure, styles, and image placeholders"""
-    try:
-        # Generate structure with image placeholders
         with context(lm=strong_lm):
             structure = ChainOfThought(ComponentStructure)
             structure_response = structure(
                 section_details=section,
                 component_type=component_type,
-                image_prompt=image_prompt,
-                section_css_rules=section_style['css'],
-                state_requirements=state_requirements
-            )
-        return {
-            'markup': structure_response.markup,
-            'image_placeholders': structure_response.image_placeholders
-        }
+                section_css_rules=section_style['css_rules'],
+                section_javascript=javascript,
+                image_details=image_details
+            ) 
+        return structure_response.markup
+        
     except Exception as e:
         raise Exception(f"Error building section structure: {str(e)}") 
-
-def generate_image_prompt(section, component_type, visual_theme):
-    """Generate image generation prompt for a section"""
-    try:
-        prompt_generator = Predict(ImagePromptGenerator)
-        prompt_response = prompt_generator(
-            section_purpose=section['purpose'],
-            visual_theme=visual_theme,
-            component_type=component_type,
-            image_requirements=section['image_requirements']
-        )
-        return {
-            'prompt': prompt_response.image_prompt,
-            'style': prompt_response.image_style
-        }
-    except Exception as e:
-        raise Exception(f"Error generating image prompt for {section['section_name']}: {str(e)}") 
 
 def generate_image_loading_script(image_placeholders):
     """Generate JavaScript to handle image loading and replacement"""
@@ -244,6 +242,36 @@ def generate_image_loading_script(image_placeholders):
     </script>
     '''
 
+def flatten_section_logic(section_logic: Dict[str, str]) -> str:
+    """Flatten multiple sections of JavaScript into a single coherent script."""
+    
+    # Extract JS content from each section, removing the markdown code blocks
+    cleaned_sections = []
+    for section_name, js_content in section_logic.items():
+        # Remove markdown code blocks and clean whitespace
+        clean_js = re.sub(r'```javascript\s*|```\s*', '', js_content).strip()
+        
+        # Wrap section code in IIFE with section name comment
+        section_wrapped = f"""
+// {section_name} Section Logic
+(function() {{
+    {clean_js}
+}})();
+"""
+        cleaned_sections.append(section_wrapped)
+    
+    # Combine all sections and wrap in DOMContentLoaded
+    combined_js = "\n".join(cleaned_sections)
+    final_js = f"""
+<script>
+document.addEventListener('DOMContentLoaded', function() {{
+    {combined_js}
+}});
+</script>
+"""
+    print(final_js)
+    return final_js
+
 def component_builder_pipeline(prompt):
     pipeline_start = time.time()
     logger.info(f"Starting component builder pipeline with prompt: {prompt[:100]}...") 
@@ -266,12 +294,9 @@ def component_builder_pipeline(prompt):
         yield format_sse({"type": "error", "message": str(e)})
         return 
 
-
     # Initialize collection structures
-    image_prompts = {}
     section_styles = {}
     section_logic = {}
-    section_states = []
     accumulated_markup = []
     all_image_placeholders = {}
     combined_styles = []    
@@ -321,63 +346,52 @@ def component_builder_pipeline(prompt):
                 "message": f"🏗️ Building section {i}/{total_sections}: {section_name}"
             }) 
             # 1. Generate Image Prompts
-            if 'image_requirements' in section and section['image_requirements']:
-                image_prompt_data = generate_image_prompt(
+            section_images = None
+            if 'image_requirements' in section:
+                section_images = generate_section_image_details(
                     section,
                     component_data.component_type,
                     component_data.visual_theme
                 )
-                image_prompts[section_name] = image_prompt_data
-                yield format_sse({
-                    "type": "image_prompt",
-                    "section": section_name,
-                    "prompt": image_prompt_data['prompt'],
-                    "style": image_prompt_data['style']
-                })
-
+                all_image_placeholders.update(section_images) 
+        
             # 2. Generate Section Styles
-            section_style_content = generate_section_style(
+            section_styling = generate_section_style(
                 section,
                 component_data.component_type,
                 component_data.visual_theme
             )
-            section_styles[section_name] = section_style_content
+            section_styles[section_name] = section_styling
+            
             combined_styles.append(f'''
-                /* Styles for section: {section_name} */
-                {section_style_content['css']}
-                /* Animations for section: {section_name} */
-                {section_style_content['animations']}
+                /* Base styles: {section_name} */
+                {section_styling['css_rules']} 
+                /* States and interactions */
+                {section_styling['transitions']} 
+                /* Motion preferences */
+                @media (prefers-reduced-motion: reduce) {{
+                    {section_styling['motion_preferences']}
+                }}
             ''')
 
             # Generate Section Logic
-            section_logic_content = build_section_logic(
+            section_logic = build_section_logic(
                 section,
                 component_data.component_type,
                 component_data.global_interactions
             )
-
-            section_logic[section_name] = section_logic_content['javascript']
-            # I dont think i need this section states array. The state instructions will be passed in to build the section and the js will get added to the Script Imports
-            section_states.append({
-                'section': section_name,
-                'state': section_logic_content['state_requirements']
-            })
+            section_logic[section_name] = section_logic['javascript']  
 
             # Build Section Content
-            section_content = build_component_section(
+            html_markup = build_component_section(
                 section,
                 component_data.component_type,
-                section_logic_content['state_requirements'],
-                image_prompts.get(section_name),
-                section_styles[section_name],
+                section_logic['javascript'],
+                section_styling,
+                image_details=section_images
             )
 
-            # Track image placeholders
-            transformed_placeholders = transform_image_placeholders(
-                section_content['image_placeholders']
-            )
-            all_image_placeholders.update(transformed_placeholders)
-            accumulated_markup.append(section_content['markup'])
+            accumulated_markup.append(html_markup)
 
             # Create and yield intermediate component state
             joined_styles = "\n".join(combined_styles)
@@ -392,7 +406,6 @@ def component_builder_pipeline(prompt):
                 "type": "section_complete",
                 "section_name": section_name,
                 "current_component": intermediate_component,
-                "image_placeholders": section_content['image_placeholders'],
                 "progress": {
                     "current": i,
                     "total": total_sections,
@@ -406,12 +419,12 @@ def component_builder_pipeline(prompt):
                 "message": f"Issues with section {section_name}: {str(e)}"
             })
             continue
-    
     final_component = create_component_scaffold(
         component_data.component_type,
         final_styles,
         accumulated_markup,
-        all_image_placeholders
+        all_image_placeholders,
+        section_logic
     )
 
     # Send complete component with image placeholder information
