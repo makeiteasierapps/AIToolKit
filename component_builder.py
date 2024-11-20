@@ -60,7 +60,7 @@ class InteractionLogic(Signature):
     section_details = InputField()
     component_type = InputField()
     global_interactions = InputField()
-    event_handlers = OutputField(desc='Non-style related JavaScript functionality')
+    javascript = OutputField(desc='Non-style related JavaScript functionality')
     state_management = OutputField(desc='Data and state handling logic')
 class SectionImageDetails(Signature):
     """Generate detailed image specifications for a section"""
@@ -185,7 +185,7 @@ def build_section_logic(section, component_type, global_interactions):
             global_interactions=global_interactions
         )
         return {
-            'javascript': logic_response.event_handlers,
+            'javascript': logic_response.javascript,
             'state_management': logic_response.state_management
         }
     except Exception as e:
@@ -244,20 +244,17 @@ def generate_image_loading_script(image_placeholders):
 
 def flatten_section_logic(section_logic: Dict[str, str]) -> str:
     """Flatten multiple sections of JavaScript into a single coherent script."""
-    
+    pprint.pprint(section_logic)
     # Extract JS content from each section, removing the markdown code blocks
     cleaned_sections = []
     for section_name, js_content in section_logic.items():
         # Remove markdown code blocks and clean whitespace
         clean_js = re.sub(r'```javascript\s*|```\s*', '', js_content).strip()
-        
-        # Wrap section code in IIFE with section name comment
+
         section_wrapped = f"""
-// {section_name} Section Logic
-(function() {{
-    {clean_js}
-}})();
-"""
+        // {section_name} Section Logic
+            {clean_js}
+        """
         cleaned_sections.append(section_wrapped)
     
     # Combine all sections and wrap in DOMContentLoaded
@@ -269,7 +266,6 @@ document.addEventListener('DOMContentLoaded', function() {{
 }});
 </script>
 """
-    print(final_js)
     return final_js
 
 def component_builder_pipeline(prompt):
@@ -375,18 +371,18 @@ def component_builder_pipeline(prompt):
             ''')
 
             # Generate Section Logic
-            section_logic = build_section_logic(
+            section_logic_response = build_section_logic(
                 section,
                 component_data.component_type,
                 component_data.global_interactions
             )
-            section_logic[section_name] = section_logic['javascript']  
+            section_logic[section_name] = section_logic_response['javascript']
 
             # Build Section Content
             html_markup = build_component_section(
                 section,
                 component_data.component_type,
-                section_logic['javascript'],
+                section_logic_response['javascript'],
                 section_styling,
                 image_details=section_images
             )
