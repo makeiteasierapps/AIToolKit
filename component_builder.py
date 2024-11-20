@@ -1,5 +1,5 @@
 import re
-import pprint
+from pprint import pprint
 import logging
 import time
 from typing import List, Dict, Literal, Any
@@ -49,57 +49,240 @@ configure(lm=lm)
 logger = logging.getLogger('app.component_builder')
 
 class ComponentDefinition(Signature):
-    """Analyze the user's needs and define appropriate UI/UX components"""
+    """Analyze user needs and define component architecture with clear contextual guidance"""
     description = InputField(desc='The user\'s requirements')
-    component_type = OutputField(desc='Type of UI/UX component (web, mobile, dashboard, etc.)')
-    sections: List[Dict[Literal["section_name", "purpose", "interaction_type", "image_requirements"], str]] = OutputField()
+    component_type = OutputField(desc='Type of UI/UX component (web, mobile, dashboard, etc.)') 
+    # New fields for improved context and guidance
+    component_purpose = OutputField(desc='Clear statement of component\'s main purpose and goals')
+    user_story = OutputField(desc='Primary user journey and expected outcomes')
+    design_principles = OutputField(desc='Key design principles to maintain throughout') 
+    sections: List[Dict[Literal[
+        "section_name",
+        "purpose",
+        "interaction_type",
+        "image_requirements",
+        "section_context",  
+        "dependencies"
+    ], str]] = OutputField() 
     visual_theme = OutputField(desc='Visual design guidelines')
-    global_interactions: List[Dict[Literal["event_type", "scope", "behavior"], str]] = OutputField(desc='Component-wide interaction patterns') 
+    global_interactions: List[Dict[Literal[
+        "event_type",
+        "scope",
+        "behavior",
+        "purpose"
+    ], str]] = OutputField() 
+class ComponentContext(Signature):
+    """Central context manager for maintaining component coherence"""
+    # Input fields
+    component_purpose = InputField()
+    user_story = InputField()
+    design_principles = InputField()
+    visual_theme = InputField() 
+    # Output fields
+    section_relationships = OutputField(desc='How sections interact and depend on each other')
+    state_flow = OutputField(desc='Component-wide state management strategy')
+    context_guidelines = OutputField(desc='Guidelines for maintaining component coherence')
+    component_strategy = OutputField(desc='Overall component strategy and goals') 
 class InteractionLogic(Signature):
-    """Define pure interactive behaviors excluding visual styles"""
+    """Define interactive behaviors with awareness of component-wide context"""
     section_details = InputField()
     component_type = InputField()
     global_interactions = InputField()
+    component_context = InputField(desc='Reference to overall component goals and principles') 
     javascript = OutputField(desc='Non-style related JavaScript functionality')
-    state_management = OutputField(desc='Data and state handling logic')
+    state_management = OutputField(desc='JS code for Data and state handling logic')
+    event_delegation = OutputField(desc='JS code for event handling and bubbling strategy')
+    section_api = OutputField(desc='JS code for inter-section communication') 
 class SectionImageDetails(Signature):
-    """Generate detailed image specifications for a section"""
-    section_details = InputField(desc="Section configuration and requirements")
-    component_type = InputField(desc="Type of component being built")
-    visual_theme = InputField(desc="Visual theme guidelines")
+    """Generate image specifications aligned with component goals"""
+    section_details = InputField()
+    component_type = InputField()
+    visual_theme = InputField()
+    component_context = InputField()  # New: Overall component context 
     image_details: List[Dict[Literal[
         "image_id",
         "alt",
         "prompt",
         "dimensions",
         "position",
-        "style_focus"
-    ], str]] = OutputField(
-        desc="List of image specifications including prompts and placement details"
-    )
+        "style_focus",
+        "purpose",           # New: Image's role in component
+        "content_strategy"   # New: Content guidelines
+    ], str]] = OutputField() 
 class ComponentStyle(Signature):
-    """Define global component styles and theme"""
+    """Define cohesive component styles with context awareness"""
     visual_theme = InputField()
     component_type = InputField()
-    global_css = OutputField(desc='Global styles and CSS variables')
-    global_animations = OutputField(desc='Global animations') 
-    animation_rules = OutputField(desc='Transition and animation definitions')
+    component_context = InputField()
+    global_css = OutputField()
+    global_animations = OutputField()
+    animation_rules = OutputField()
+    style_tokens = OutputField(desc='Reusable style values and patterns')
+    responsive_strategy = OutputField(desc='Breakpoint and adaptation strategy') 
 class SectionStyle(Signature):
-    """Define styles and transitions for a section"""
+    """Define section styles with awareness of global context"""
     section_details = InputField()
     visual_theme = InputField()
     component_type = InputField()
-    css_rules = OutputField(desc='Core styles including responsive and state variations')
+    component_context = InputField()
+    global_style_tokens = InputField()
+    css_rules = OutputField()
     transitions = OutputField(desc='CSS transitions and keyframe animations')
-    motion_preferences = OutputField(desc='Reduced motion and accessibility considerations')
+    style_dependencies = OutputField(desc='Dependencies on other section styles') 
 class ComponentStructure(Signature):
-    """Define the structural layout for a component section"""
-    section_details = InputField(desc='Details about the section being built')
+    """Define section structure with contextual awareness"""
+    section_details = InputField()
     component_type = InputField()
     section_css_rules = InputField()
-    section_javascript = InputField(desc='A reference to help ensure all sections are built correctly')
-    image_details = InputField(desc='details of images to be used in the section')
-    markup = OutputField(desc='HTML structure for the section')
+    section_javascript = InputField()
+    image_details = InputField()
+    component_context = InputField()
+    markup = OutputField()
+    accessibility_markup = OutputField(desc='ARIA and accessibility attributes')
+    content_structure = OutputField(desc='Semantic structure and hierarchy')
+
+def component_builder_pipeline(prompt):
+    start = time.time()
+    logger.info(f"Starting pipeline: {prompt[:100]}...") 
+    try:
+        yield format_sse({"type": "progress", "message": "🎯 Analyzing requirements..."}) 
+        # Generate initial component definition with enhanced context
+        with context(lm=strong_lm):
+            component_data = ChainOfThought(ComponentDefinition)(description=prompt) 
+            # Generate component-wide context
+            component_context = ChainOfThought(ComponentContext)(
+                component_purpose=component_data.component_purpose,
+                user_story=component_data.user_story,
+                design_principles=component_data.design_principles,
+                visual_theme=component_data.visual_theme
+            ) 
+        yield format_sse({
+            "type": "progress", 
+            "message": f"""
+            📦 Type: {component_data.component_type}
+            🎯 Strategy: {component_context.component_strategy}
+            🔄 State Flow: {component_context.state_flow}
+            """
+        }) 
+    except Exception as e:
+        logger.error(f"Definition failed: {str(e)}", exc_info=True)
+        yield format_sse({"type": "error", "message": str(e)})
+        return 
+    styles = []
+    markup = []
+    images = {}
+    section_logic = {} 
+    try:
+        yield format_sse({"type": "progress", "message": "🎨 Generating global styles..."}) 
+        # Generate global styles with context awareness
+        global_style = Predict(ComponentStyle)(
+            visual_theme=component_data.visual_theme,
+            component_type=component_data.component_type,
+            component_context=component_context
+        ) 
+        styles.append(f"""
+            /* Global Styles */
+            {global_style.global_css}
+            /* Global Animations */
+            {global_style.global_animations}
+            /* Style Tokens */
+            {global_style.style_tokens}
+            /* Responsive Strategy */
+            {global_style.responsive_strategy}
+        """) 
+    except Exception as e:
+        logger.error(f"Style failed: {str(e)}", exc_info=True)
+        yield format_sse({"type": "error", "message": str(e)})
+        return 
+    # Process each section with enhanced context awareness
+    for i, section in enumerate(component_data.sections, 1):
+        try:
+            yield format_sse({
+                "type": "progress",
+                "message": f"🏗️ Section {i}/{len(component_data.sections)}: {section['section_name']}\nContext: {section['section_context']}"
+            }) 
+            # Generate images with context
+            if 'image_requirements' in section:
+                section_images = generate_section_image_details(
+                    section=section,
+                    component_type=component_data.component_type,
+                    visual_theme=component_data.visual_theme,
+                    component_context=component_context
+                )
+                images.update(section_images) 
+            # Generate section-specific styles with context
+            section_style = generate_section_style(
+                section=section,
+                component_type=component_data.component_type,
+                visual_theme=component_data.visual_theme,
+                component_context=component_context,
+                global_style_tokens=global_style.style_tokens
+            ) 
+            styles.append(f"""
+                /* {section['section_name']} */
+                {section_style['css_rules']}
+            """) 
+            # Generate section logic with context
+            logic = build_section_logic(
+                section=section,
+                component_type=component_data.component_type,
+                global_interactions=component_data.global_interactions,
+                component_context=component_context
+            )
+            section_logic[section['section_name']] = logic 
+            # Build section structure with context
+            markup.append(build_component_section(
+                section=section,
+                component_type=component_data.component_type,
+                javascript=logic['javascript'],
+                section_style=section_style,
+                image_details=section_images,
+                component_context=component_context
+            )) 
+            # Provide intermediate feedback
+            yield format_sse({
+                "type": "section_complete",
+                "current_component": create_component_scaffold(
+                    component_type=component_data.component_type,
+                    styles=f"<style>{' '.join(styles)}</style>",
+                    markup=markup,
+                    image_placeholders=images,
+                    section_logic=section_logic
+                )
+            }) 
+        except Exception as e:
+            logger.error(f"Section {section['section_name']} failed: {str(e)}")
+            yield format_sse({
+                "type": "warning",
+                "message": f"Section issue: {str(e)}"
+            }) 
+    # Generate final component with all context-aware parts
+    final = create_component_scaffold(
+        component_type=component_data.component_type,
+        styles=f"<style>{' '.join(styles)}</style>",
+        markup=markup,
+        image_placeholders=images,
+        section_logic=section_logic
+    ) 
+    # Final outputs
+    yield format_sse({
+        "type": "component_complete",
+        "content": final,
+        "image_placeholders": images,
+        "component_context": {
+            "purpose": component_data.component_purpose,
+            "user_story": component_data.user_story,
+            "design_principles": component_data.design_principles
+        }
+    }) 
+    yield format_sse({
+        "type": "pipeline_complete",
+        "build_time": time.time() - start,
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+    }) 
+
+def format_sse(data):
+    return f"data: {json.dumps(data)}\n\n"
 
 def clean_markup(markup):
     try:
@@ -130,90 +313,6 @@ def create_component_scaffold(component_type: str, styles: str, markup: List[str
         component_scripts=f"{generate_image_loading_script(image_placeholders)}\n{js_code}"
     )
 
-def generate_section_image_details(section, component_type, visual_theme):
-    """Generate comprehensive image details for a section"""
-    try:
-        with context(lm=strong_lm):
-            image_generator = ChainOfThought(SectionImageDetails)
-            image_response = image_generator(
-                section_details=section,
-                component_type=component_type,
-                visual_theme=visual_theme
-            ) 
-            # Transform the response into a structured format
-            detailed_images = {}
-            for image in image_response.image_details:
-                image_id = f"{section['section_name'].lower()}-{image['image_id']}"
-                detailed_images[image_id] = {
-                    "alt": image["alt"],
-                    "prompt": image["prompt"],
-                    "dimensions": image["dimensions"],
-                    "position": image["position"],
-                    "style_focus": image["style_focus"]
-                } 
-            return detailed_images 
-    except Exception as e:
-        raise Exception(f"Error generating image details: {str(e)}")
-
-def format_sse(data):
-    return f"data: {json.dumps(data)}\n\n"
-
-def generate_section_style(section, component_type, visual_theme):
-    """Generate styles for a specific section"""
-    try:
-        section_style = Predict(SectionStyle)
-        style_response = section_style(
-            section_details=section,
-            visual_theme=visual_theme,
-            component_type=component_type
-        )
-        return {
-            'css_rules': style_response.css_rules,
-            'transitions': style_response.transitions,
-            'motion_preferences': style_response.motion_preferences
-        }
-    except Exception as e:
-        raise Exception(f"Error generating section styles: {str(e)}") 
-
-def build_section_logic(section, component_type, global_interactions):
-    """Generate logic for a specific section"""
-    try:
-        section_logic = Predict(InteractionLogic)
-        logic_response = section_logic(
-            section_details=section,
-            component_type=component_type,
-            global_interactions=global_interactions
-        )
-        return {
-            'javascript': logic_response.javascript,
-            'state_management': logic_response.state_management
-        }
-    except Exception as e:
-        raise Exception(f"Error generating section logic: {str(e)}")
-
-def build_component_section(
-    section, 
-    component_type, 
-    javascript, 
-    section_style=None,
-    image_details=None
-):
-    """Build a complete section including structure with positioned image placeholders"""
-    try:
-        with context(lm=strong_lm):
-            structure = ChainOfThought(ComponentStructure)
-            structure_response = structure(
-                section_details=section,
-                component_type=component_type,
-                section_css_rules=section_style['css_rules'],
-                section_javascript=javascript,
-                image_details=image_details
-            ) 
-        return structure_response.markup
-        
-    except Exception as e:
-        raise Exception(f"Error building section structure: {str(e)}") 
-
 def generate_image_loading_script(image_placeholders):
     """Generate JavaScript to handle image loading and replacement"""
     return f'''
@@ -242,204 +341,211 @@ def generate_image_loading_script(image_placeholders):
     </script>
     '''
 
-def flatten_section_logic(section_logic: Dict[str, str]) -> str:
+def flatten_section_logic(section_logic: Dict[str, Dict[str, str]]) -> str:
     """Flatten multiple sections of JavaScript into a single coherent script."""
-    pprint.pprint(section_logic)
-    # Extract JS content from each section, removing the markdown code blocks
-    cleaned_sections = []
-    for section_name, js_content in section_logic.items():
-        # Remove markdown code blocks and clean whitespace
-        clean_js = re.sub(r'```javascript\s*|```\s*', '', js_content).strip()
-
-        section_wrapped = f"""
-        // {section_name} Section Logic
-            {clean_js}
-        """
-        cleaned_sections.append(section_wrapped)
+    # Lists to store cleaned sections of JavaScript logic
+    cleaned_js_sections = []
+    cleaned_state_sections = []
+    cleaned_event_delegations = []
+    cleaned_section_apis = []
     
-    # Combine all sections and wrap in DOMContentLoaded
-    combined_js = "\n".join(cleaned_sections)
+    # Collect all section APIs
+    section_apis = {}
+
+    for section_name, logic in section_logic.items():
+        # Process JavaScript logic
+        js_content = re.sub(r'```javascript\s*|```\s*', '', logic.get('javascript', '')).strip()
+        if js_content:
+            cleaned_js_sections.append(f"""
+        // {section_name} Section Logic
+        {js_content}
+        """)
+        
+        # Process state management logic
+        state_content = re.sub(r'```javascript\s*|```\s*', '', logic.get('state_management', '')).strip()
+        if state_content:
+            cleaned_state_sections.append(f"""
+        // {section_name} State Management
+        {state_content}
+        """)
+        
+        # Process event delegation logic
+        event_delegation_content = re.sub(r'```javascript\s*|```\s*', '', logic.get('event_delegation', '')).strip()
+        if event_delegation_content:
+            cleaned_event_delegations.append(f"""
+        // {section_name} Event Delegation
+        {event_delegation_content}
+        """)
+        
+        # Collect section API
+        if 'section_api' in logic:
+            section_apis[section_name] = logic['section_api']
+    
+    combined_apis = combine_section_apis(section_apis)
+    # Combine all sections into organized JavaScript
+    joined_js_sections = "\n".join(cleaned_js_sections)
+    joined_state_sections = "\n".join(cleaned_state_sections)
+    joined_event_delegations = "\n".join(cleaned_event_delegations)
+
+    # Construct the final JavaScript script
     final_js = f"""
 <script>
 document.addEventListener('DOMContentLoaded', function() {{
-    {combined_js}
+    // Global State Management
+    {joined_state_sections}
+
+    // Section-specific Logic
+    {joined_js_sections}
+
+    // Event Delegations
+    {joined_event_delegations}
+
+    // Section APIs
+    {combined_apis}
 }});
 </script>
 """
     return final_js
 
-def component_builder_pipeline(prompt):
-    pipeline_start = time.time()
-    logger.info(f"Starting component builder pipeline with prompt: {prompt[:100]}...") 
-    
-    # Component Definition
+def generate_section_style(section, component_type, visual_theme, component_context, global_style_tokens):
+    """Generate context-aware styles for a section"""
     try:
-        step_start = time.time()
-        yield format_sse({"type": "progress", "message": "🎯 Analyzing component requirements..."}) 
-        with context(lm=strong_lm):
-            component_def = ChainOfThought(ComponentDefinition)
-            component_data = component_def(description=prompt)
-        logger.info(f"Step 1 - Component defined in {time.time() - step_start:.2f} seconds")
-        yield format_sse({
-            "type": "progress",
-            "message": f"📦 Component Type: {component_data.component_type}"
-        })
-    except Exception as e:
-        elapsed = time.time() - pipeline_start
-        logger.error(f"Pipeline failed in definition step: {str(e)}", exc_info=True)
-        yield format_sse({"type": "error", "message": str(e)})
-        return 
-
-    # Initialize collection structures
-    section_styles = {}
-    section_logic = {}
-    accumulated_markup = []
-    all_image_placeholders = {}
-    combined_styles = []    
-    
-    # Style Generation
-    try:
-        step_start = time.time()
-        yield format_sse({"type": "progress", "message": "🎨 Generating component styles..."}) 
-        
-        # Generate global styles
-        style = Predict(ComponentStyle)
-        global_style_response = style(
-            visual_theme=component_data.visual_theme,
-            component_type=component_data.component_type
+        section_style = Predict(SectionStyle)
+        style_response = section_style(
+            section_details=section,
+            visual_theme=visual_theme,
+            component_type=component_type,
+            component_context=component_context,
+            global_style_tokens=global_style_tokens
         )
-        
-        combined_styles = [f'''
-            /* Global Styles */
-            {global_style_response.global_css} 
-            /* Global Animations */
-            {global_style_response.global_animations}
-        ''']
-
-        # Create final style element
-        joined_styles = "\n".join(combined_styles)
-        final_styles = f'''
-            <style>
-                {joined_styles}
-            </style>
-        '''
-
-        logger.info(f"Step 3 - Styles generated in {time.time() - step_start:.2f} seconds") 
+        return {
+            'css_rules': style_response.css_rules,
+            'transitions': style_response.transitions,
+            'style_dependencies': style_response.style_dependencies
+        }
     except Exception as e:
-        elapsed = time.time() - pipeline_start
-        logger.error(f"Pipeline failed in style step: {str(e)}", exc_info=True)
-        yield format_sse({"type": "error", "message": str(e)})
-        return
-    
-    # Section Building Loop
-    total_sections = len(component_data.sections)
-    for i, section in enumerate(component_data.sections, 1):
-        section_start = time.time()
-        section_name = section['section_name'] 
-        try:
-            yield format_sse({
-                "type": "progress",
-                "message": f"🏗️ Building section {i}/{total_sections}: {section_name}"
-            }) 
-            # 1. Generate Image Prompts
-            section_images = None
-            if 'image_requirements' in section:
-                section_images = generate_section_image_details(
-                    section,
-                    component_data.component_type,
-                    component_data.visual_theme
-                )
-                all_image_placeholders.update(section_images) 
-        
-            # 2. Generate Section Styles
-            section_styling = generate_section_style(
-                section,
-                component_data.component_type,
-                component_data.visual_theme
-            )
-            section_styles[section_name] = section_styling
-            
-            combined_styles.append(f'''
-                /* Base styles: {section_name} */
-                {section_styling['css_rules']} 
-                /* States and interactions */
-                {section_styling['transitions']} 
-                /* Motion preferences */
-                @media (prefers-reduced-motion: reduce) {{
-                    {section_styling['motion_preferences']}
-                }}
-            ''')
+        raise Exception(f"Error generating section styles: {str(e)}")
 
-            # Generate Section Logic
-            section_logic_response = build_section_logic(
-                section,
-                component_data.component_type,
-                component_data.global_interactions
-            )
-            section_logic[section_name] = section_logic_response['javascript']
+def build_section_logic(section, component_type, global_interactions, component_context):
+    """Generate context-aware logic for a section"""
+    try:
+        section_logic = Predict(InteractionLogic)
+        logic_response = section_logic(
+            section_details=section,
+            component_type=component_type,
+            global_interactions=global_interactions,
+            component_context=component_context
+        )
+        return {
+            'javascript': logic_response.javascript,
+            'state_management': logic_response.state_management,
+            'event_delegation': logic_response.event_delegation,
+            'section_api': logic_response.section_api
+        }
+    except Exception as e:
+        raise Exception(f"Error generating section logic: {str(e)}")
 
-            # Build Section Content
-            html_markup = build_component_section(
-                section,
-                component_data.component_type,
-                section_logic_response['javascript'],
-                section_styling,
-                image_details=section_images
-            )
-
-            accumulated_markup.append(html_markup)
-
-            # Create and yield intermediate component state
-            joined_styles = "\n".join(combined_styles)
-            final_styles = f"<style>{joined_styles}</style>"
-            intermediate_component = create_component_scaffold(
-                component_data.component_type,
-                final_styles,
-                accumulated_markup,
-                all_image_placeholders
-            )
-            yield format_sse({
-                "type": "section_complete",
-                "section_name": section_name,
-                "current_component": intermediate_component,
-                "progress": {
-                    "current": i,
-                    "total": total_sections,
-                    "section_build_time": time.time() - section_start
+def generate_section_image_details(section, component_type, visual_theme, component_context):
+    """Generate context-aware image details for a section"""
+    try:
+        with context(lm=strong_lm):
+            image_generator = ChainOfThought(SectionImageDetails)
+            image_response = image_generator(
+                section_details=section,
+                component_type=component_type,
+                visual_theme=visual_theme,
+                component_context=component_context
+            ) 
+            detailed_images = {}
+            for image in image_response.image_details:
+                image_id = f"{section['section_name'].lower()}-{image['image_id']}"
+                detailed_images[image_id] = {
+                    "alt": image["alt"],
+                    "prompt": image["prompt"],
+                    "dimensions": image["dimensions"],
+                    "position": image["position"],
+                    "style_focus": image["style_focus"],
+                    "purpose": image["purpose"],
+                    "content_strategy": image["content_strategy"]
                 }
-            }) 
-        except Exception as e:
-            logger.error(f"Error processing section {section_name}: {str(e)}")
-            yield format_sse({
-                "type": "warning",
-                "message": f"Issues with section {section_name}: {str(e)}"
-            })
-            continue
-    final_component = create_component_scaffold(
-        component_data.component_type,
-        final_styles,
-        accumulated_markup,
-        all_image_placeholders,
-        section_logic
-    )
+            return detailed_images
+    except Exception as e:
+        raise Exception(f"Error generating image details: {str(e)}") 
 
-    # Send complete component with image placeholder information
-    yield format_sse({
-        "type": "component_complete",
-        "content": final_component,
-        "image_placeholders": all_image_placeholders
-    }) 
+def build_component_section(
+    section, 
+    component_type, 
+    javascript, 
+    section_style=None,
+    image_details=None,
+    component_context=None
+):
+    """
+    Build a complete section including structure with positioned image placeholders
+    and context-aware accessibility features
+    """
+    try:
+        with context(lm=strong_lm):
+            structure = ChainOfThought(ComponentStructure) 
+            # Prepare section-specific context from global context
+            section_context = {
+                "purpose": section.get('section_context', ''),
+                "dependencies": section.get('dependencies', []),
+                "relationships": component_context.section_relationships,
+                "state_flow": component_context.state_flow,
+                "accessibility": component_context.accessibility_guidelines,
+                "strategy": component_context.component_strategy,
+                "guidelines": component_context.context_guidelines
+            }
+            structure_response = structure(
+                section_details=section,
+                component_type=component_type,
+                section_css_rules=section_style['css_rules'],
+                section_javascript=javascript,
+                image_details=image_details,
+                component_context=section_context
+            ) 
+            # Combine the markup with accessibility features
+            cleaned_markup = clean_markup(structure_response.markup) 
+            return cleaned_markup 
+    except Exception as e:
+        logger.error(f"Error in build_component_section: {str(e)}", exc_info=True)
+        raise Exception(f"Error building section structure: {str(e)}") 
+
+def combine_section_apis(section_apis: Dict[str, str]) -> str:
+    """
+    Combines multiple section APIs into a single organized JavaScript object.
     
-    elapsed = time.time() - pipeline_start
-    logger.error(f"Pipeline failed in section building: {str(e)}", exc_info=True)
-    yield format_sse({"type": "error", "message": str(e)}) 
-
-
-    total_time = time.time() - pipeline_start
-    logger.info(f"Component pipeline completed in {total_time:.2f} seconds") 
-    # Send final completion message
-    yield format_sse({
-        "type": "pipeline_complete",
-        "build_time": total_time,
-        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
-    })
+    Args:
+        section_apis: Dictionary with section names as keys and API content as values
+    
+    Returns:
+        String containing JavaScript code for the combined API object
+    """
+    # Start the combined API object
+    combined_js = """
+    // Combined Section APIs
+    const componentAPI = {
+    """
+    
+    for section_name, api_content in section_apis.items():
+        # Clean the section name for use as an object key
+        clean_section_name = section_name.lower().replace(' ', '_').replace('-', '_')
+        
+        # Extract the API object content between curly braces
+        match = re.search(r'const\s+sectionAPI\s*=\s*({[\s\S]*?});', api_content)
+        if match:
+            api_object_content = match.group(1).strip()
+            
+            # Add the section as a namespace in the combined API
+            combined_js += f"""
+        // {section_name} API
+        {clean_section_name}: {api_object_content},
+            """
+    
+    # Close the combined API object
+    combined_js += """
+    };
+    """
+    
+    return combined_js

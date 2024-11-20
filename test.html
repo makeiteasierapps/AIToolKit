@@ -8,460 +8,324 @@
         <!-- Component Styles -->
         <style>
             /* Global Styles */
-
-            :root {
-                --background-color: #1a1a2e;
-                --primary-color: #e94560;
-                --secondary-color: #0f3460;
-                --accent-color: #00a8e1;
-                --text-color: #ffffff;
-                --font-family: 'Orbitron', sans-serif;
-                --border-radius: 8px;
-                --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            }
-
             body {
-                background-color: var(--background-color);
-                color: var(--text-color);
-                font-family: var(--font-family);
-                margin: 0;
-                padding: 0;
+                background-color: #f9f9f9;
+                font-family: 'Arial', sans-serif;
+                color: #333;
             }
 
-            a {
-                color: var(--accent-color);
-                text-decoration: none;
+            .game-board {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+                margin: 20px auto;
+                max-width: 300px;
             }
 
-            a:hover {
-                text-decoration: underline;
-            }
-
-            .button {
-                background-color: var(--primary-color);
-                color: var(--text-color);
-                border: none;
-                border-radius: var(--border-radius);
-                padding: 10px 20px;
-                cursor: pointer;
-                box-shadow: var(--box-shadow);
-                transition: background-color 0.3s ease;
-            }
-
-            .button:hover {
-                background-color: var(--secondary-color);
-            }
-
-            /* Global Animations */
-
-            @keyframes fadeIn {
-                0% {
-                    opacity: 0;
-                }
-                100% {
-                    opacity: 1;
-                }
-            }
-
-            @keyframes slideIn {
-                0% {
-                    transform: translateY(20px);
-                    opacity: 0;
-                }
-                100% {
-                    transform: translateY(0);
-                    opacity: 1;
-                }
-            }
-
-            @keyframes pulse {
-                0%,
-                100% {
-                    transform: scale(1);
-                }
-                50% {
-                    transform: scale(1.05);
-                }
-            }
-
-            /* Base styles: Background */
-
-            body {
-                background-image: url('starry-night-sky.jpg');
-                background-size: cover;
-                background-position: center;
-                color: #ffffff;
-                font-family: 'FuturisticFont', sans-serif;
-                margin: 0;
-                padding: 0;
-            }
-
-            .section-background {
+            .cell {
+                width: 100px;
+                height: 100px;
                 display: flex;
-                justify-content: center;
                 align-items: center;
-                height: 100vh;
+                justify-content: center;
+                font-size: 2rem;
+                border: 2px solid #ccc;
+                cursor: pointer;
+                transition: background-color 0.3s;
+            }
+
+            .cell.x {
+                color: blue;
+            }
+
+            .cell.o {
+                color: red;
+            }
+
+            .cell:hover {
+                background-color: #e0e0e0;
+            }
+
+            .scoreboard {
+                text-align: center;
+                margin: 20px 0;
+            }
+
+            .game-status {
+                font-weight: bold;
                 text-align: center;
             }
-
-            h1 {
-                font-size: 3rem;
-                color: #00ffcc; /* Vibrant accent color */
-                text-shadow: 0 0 10px rgba(0, 255, 204, 0.8);
-            }
-
-            p {
-                font-size: 1.5rem;
-                color: #ffffff;
-                margin-top: 1rem;
-            }
-
-            /* States and interactions */
-
-            h1,
-            p {
-                transition: color 0.3s ease, text-shadow 0.3s ease;
-            }
-
-            h1:hover {
-                color: #ffcc00; /* Change color on hover */
-                text-shadow: 0 0 20px rgba(255, 204, 0, 0.8);
-            }
-
-            /* Motion preferences */
-            @media (prefers-reduced-motion: reduce) {
-                @media (prefers-reduced-motion: reduce) {
-                    h1,
-                    p {
-                        transition: none; /* Disable transitions for users with reduced motion preference */
-                    }
-                }
-            }
-
-            /* Base styles: Login Form */
-
-            /* Base styles for the login form */
-            .login-form {
-                background-color: #1a1a2e; /* Dark background */
-                color: #e94560; /* Vibrant accent color */
-                border-radius: 8px;
-                padding: 20px;
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-                max-width: 400px;
-                margin: auto;
-            }
-
-            /* Input fields */
-            .login-form input[type='text'],
-            .login-form input[type='password'] {
-                width: 100%;
-                padding: 10px;
-                margin: 10px 0;
-                border: 2px solid #e94560; /* Vibrant border */
-                border-radius: 4px;
-                background-color: #0f3460; /* Darker input background */
-                color: #ffffff;
-                font-family: 'Futuristic Font', sans-serif; /* Futuristic typography */
-            }
-
-            /* Focus state for input fields */
-            .login-form input[type='text']:focus,
-            .login-form input[type='password']:focus {
-                border-color: #00adb5; /* Accent color on focus */
-                outline: none;
-                box-shadow: 0 0 5px rgba(0, 173, 181, 0.5);
-            }
-
-            /* Submit button */
-            .login-form button {
-                background-color: #00adb5; /* Accent color */
-                color: #ffffff;
-                border: none;
-                border-radius: 4px;
-                padding: 10px;
-                cursor: pointer;
-                font-size: 16px;
-                transition: background-color 0.3s ease;
-            }
-
-            /* Hover state for button */
-            .login-form button:hover {
-                background-color: #e94560; /* Change to vibrant color on hover */
-            }
-
-            /* States and interactions */
-
-            /* Transition for input fields */
-            .login-form input {
-                transition: border-color 0.3s ease, box-shadow 0.3s ease;
-            }
-
-            /* Transition for button */
-            .login-form button {
-                transition: background-color 0.3s ease;
-            }
-
-            /* Keyframe animation for form appearance */
+            /* Global Animations */
             @keyframes fadeIn {
                 from {
                     opacity: 0;
-                    transform: translateY(-20px);
                 }
                 to {
                     opacity: 1;
-                    transform: translateY(0);
                 }
             }
 
-            /* Apply animation to the form */
-            .login-form {
-                animation: fadeIn 0.5s ease forwards;
+            @keyframes scaleUp {
+                from {
+                    transform: scale(0.9);
+                }
+                to {
+                    transform: scale(1);
+                }
             }
+            /* Style Tokens */
+            :root {
+                --color-background: #f9f9f9;
+                --color-text: #333;
+                --color-x: blue;
+                --color-o: red;
+                --color-border: #ccc;
+                --color-hover: #e0e0e0;
+                --font-family: 'Arial', sans-serif;
+                --font-size-large: 2rem;
+                --spacing-small: 10px;
+                --spacing-medium: 20px;
+            }
+            /* Responsive Strategy */
+            @media (max-width: 600px) {
+                .game-board {
+                    grid-template-columns: repeat(3, 1fr);
+                    max-width: 90%;
+                }
 
-            /* Motion preferences */
-            @media (prefers-reduced-motion: reduce) {
-                /* Reduced motion for users with motion preferences */
-                @media (prefers-reduced-motion: reduce) {
-                    .login-form {
-                        animation: none; /* Disable animation */
-                    }
-                    .login-form input,
-                    .login-form button {
-                        transition: none; /* Disable transitions */
-                    }
+                .cell {
+                    width: 80px;
+                    height: 80px;
+                    font-size: 1.5rem;
+                }
+
+                .scoreboard,
+                .game-status {
+                    font-size: 1.2rem;
                 }
             }
 
-            /* Base styles: Call to Action */
-
-            /* Core styles for Call to Action section */
-            .cta-section {
-                background-color: #1a1a1a; /* Dark background */
-                color: #ffffff; /* Text color */
-                padding: 20px;
-                text-align: center;
-                border-radius: 10px;
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            /* Game Board */
+            .game-board {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                grid-template-rows: repeat(3, 1fr);
+                gap: var(--spacing-small);
+                background-color: var(--color-background);
+                border: 2px solid var(--color-border);
+                padding: var(--spacing-medium);
+                font-family: var(--font-family);
+                font-size: var(--font-size-large);
             }
 
-            .cta-button {
-                background-color: #00ffcc; /* Vibrant accent color */
-                color: #1a1a1a; /* Button text color */
-                font-family: 'FuturisticFont', sans-serif; /* Futuristic typography */
-                padding: 15px 30px;
-                border: none;
+            .game-cell {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                height: 100%;
+                border: 1px solid var(--color-border);
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+            }
+
+            .game-cell:hover {
+                background-color: var(--color-hover);
+            }
+
+            .x-mark {
+                color: var(--color-x);
+                font-size: 3rem;
+            }
+
+            .o-mark {
+                color: var(--color-o);
+                font-size: 3rem;
+            }
+
+            /* Scoreboard */
+            .scoreboard {
+                background-color: var(--color-background);
+                color: var(--color-text);
+                font-family: var(--font-family);
+                font-size: var(--font-size-large);
+                padding: var(--spacing-medium);
+                border: 1px solid var(--color-border);
                 border-radius: 5px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .scoreboard .player-x {
+                color: var(--color-x);
+            }
+
+            .scoreboard .player-o {
+                color: var(--color-o);
+            }
+
+            .scoreboard .status {
+                font-weight: bold;
+            }
+
+            .scoreboard:hover {
+                background-color: var(--color-hover);
+            }
+
+            /* Reset Button */
+            #reset-button {
+                background-color: var(--color-background);
+                color: var(--color-text);
+                border: 2px solid var(--color-border);
+                border-radius: 5px;
+                font-family: var(--font-family);
+                font-size: var(--font-size-large);
+                padding: var(--spacing-small) var(--spacing-medium);
                 cursor: pointer;
                 transition: background-color 0.3s ease, transform 0.2s ease;
             }
 
-            .cta-button:hover {
-                background-color: #00cc99; /* Darker accent on hover */
-                transform: scale(1.05); /* Slightly enlarge on hover */
+            #reset-button:hover {
+                background-color: var(--color-hover);
             }
 
-            .cta-button:active {
-                transform: scale(0.95); /* Shrink on click */
+            #reset-button:active {
+                transform: scale(0.95);
             }
 
-            /* Responsive styles */
-            @media (max-width: 768px) {
-                .cta-section {
-                    padding: 15px;
-                }
-
-                .cta-button {
-                    padding: 10px 20px;
-                }
-            }
-
-            /* States and interactions */
-
-            /* Transitions for button interactions */
-            .cta-button {
-                transition: background-color 0.3s ease, transform 0.2s ease;
-            }
-
-            /* Keyframe animation for attention */
-            @keyframes pulse {
-                0% {
-                    transform: scale(1);
-                }
-                50% {
-                    transform: scale(1.05);
-                }
-                100% {
-                    transform: scale(1);
-                }
-            }
-
-            .cta-section:hover .cta-button {
-                animation: pulse 1s infinite; /* Pulsing effect on hover */
-            }
-
-            /* Motion preferences */
-            @media (prefers-reduced-motion: reduce) {
-                /* Reduced motion styles for accessibility */
-                @media (prefers-reduced-motion: reduce) {
-                    .cta-button {
-                        transition: none; /* Disable transitions */
-                    }
-
-                    .cta-section:hover .cta-button {
-                        animation: none; /* Disable pulsing effect */
-                    }
-                }
-            }
-
-            /* Base styles: Footer */
-
-            .footer {
-                background-color: #1a1a2e; /* Dark background */
-                color: #e94560; /* Vibrant accent color */
-                padding: 20px;
+            /* Game Status */
+            #game-status {
+                background-color: var(--color-background);
+                color: var(--color-text);
+                font-family: var(--font-family);
+                font-size: var(--font-size-large);
+                padding: var(--spacing-medium);
+                border: 1px solid var(--color-border);
+                border-radius: 5px;
                 text-align: center;
-                font-family: 'Orbitron', sans-serif; /* Futuristic typography */
+                margin-bottom: var(--spacing-medium);
             }
 
-            .footer a {
-                color: #00adb5; /* Link color */
-                text-decoration: none;
-                transition: color 0.3s ease;
+            #game-status .turn {
+                font-weight: bold;
             }
 
-            .footer a:hover {
-                color: #e94560; /* Change link color on hover */
+            #game-status .winner {
+                color: var(--color-x);
             }
 
-            .footer .subtle-graphics {
-                background-image: url('path/to/space-graphics.png'); /* Subtle space-themed graphics */
-                background-repeat: no-repeat;
-                background-position: center;
-                opacity: 0.1; /* Subtle effect */
-            }
-
-            @media (max-width: 768px) {
-                .footer {
-                    padding: 15px;
-                    font-size: 14px; /* Responsive font size */
-                }
-            }
-
-            /* States and interactions */
-
-            .footer a {
-                transition: color 0.3s ease, transform 0.2s ease; /* Smooth color and transform transitions */
-            }
-
-            .footer a:hover {
-                transform: scale(1.05); /* Slightly enlarge link on hover */
-            }
-
-            /* Motion preferences */
-            @media (prefers-reduced-motion: reduce) {
-                @media (prefers-reduced-motion: reduce) {
-                    .footer a {
-                        transition: none; /* Disable transitions for users with reduced motion preferences */
-                    }
-                }
+            #game-status .draw {
+                color: var(--color-o);
             }
         </style>
     </head>
     <body>
         <!-- Component Container -->
         <div id="component-root">
-            <section class="section-background">
-                <h1>Welcome to the Cosmic Portal</h1>
-                <p>Please log in to continue your journey among the stars.</p>
-                <form id="login-form">
-                    <input type="text" placeholder="Username" required="" />
-                    <input type="password" placeholder="Password" required="" />
-                    <button type="submit">Log In</button>
-                </form>
+            <section
+                id="game-board"
+                class="game-board"
+                role="grid"
+                aria-label="Tic Tac Toe Game Board"
+            >
+                <div
+                    class="game-cell"
+                    role="gridcell"
+                    tabindex="0"
+                    aria-label="Cell 0-0"
+                    data-index="0-0"
+                ></div>
+                <div
+                    class="game-cell"
+                    role="gridcell"
+                    tabindex="0"
+                    aria-label="Cell 0-1"
+                    data-index="0-1"
+                ></div>
+                <div
+                    class="game-cell"
+                    role="gridcell"
+                    tabindex="0"
+                    aria-label="Cell 0-2"
+                    data-index="0-2"
+                ></div>
+                <div
+                    class="game-cell"
+                    role="gridcell"
+                    tabindex="0"
+                    aria-label="Cell 1-0"
+                    data-index="1-0"
+                ></div>
+                <div
+                    class="game-cell"
+                    role="gridcell"
+                    tabindex="0"
+                    aria-label="Cell 1-1"
+                    data-index="1-1"
+                ></div>
+                <div
+                    class="game-cell"
+                    role="gridcell"
+                    tabindex="0"
+                    aria-label="Cell 1-2"
+                    data-index="1-2"
+                ></div>
+                <div
+                    class="game-cell"
+                    role="gridcell"
+                    tabindex="0"
+                    aria-label="Cell 2-0"
+                    data-index="2-0"
+                ></div>
+                <div
+                    class="game-cell"
+                    role="gridcell"
+                    tabindex="0"
+                    aria-label="Cell 2-1"
+                    data-index="2-1"
+                ></div>
+                <div
+                    class="game-cell"
+                    role="gridcell"
+                    tabindex="0"
+                    aria-label="Cell 2-2"
+                    data-index="2-2"
+                ></div>
             </section>
-            <section class="login-form">
-                <h2>Login</h2>
-                <form id="loginForm">
-                    <div class="input-group">
-                        <img
-                            src="username_icon.png"
-                            alt="Space-themed icon for username field"
-                            width="50"
-                            height="50"
-                            class="icon"
-                        />
-                        <input type="text" placeholder="Username" required="" />
-                    </div>
-                    <div class="input-group">
-                        <img
-                            src="password_icon.png"
-                            alt="Space-themed icon for password field"
-                            width="50"
-                            height="50"
-                            class="icon"
-                        />
-                        <input
-                            type="password"
-                            placeholder="Password"
-                            required=""
-                        />
-                    </div>
-                    <button type="submit">Login</button>
-                </form>
-            </section>
-            <section class="cta-section">
-                <h2>Join Us in the Future!</h2>
-                <p>
-                    Log in to your account or create a new one to explore our
-                    features.
-                </p>
-                <button class="cta-button" aria-label="Futuristic login button">
-                    <img
-                        src="path/to/futuristic-login-button.png"
-                        alt="Futuristic login button"
-                        width="200"
-                        height="60"
-                    />
-                    Log In
-                </button>
-                <button
-                    class="cta-button"
-                    aria-label="Futuristic create account button"
-                >
-                    <img
-                        src="path/to/futuristic-create-account-button.png"
-                        alt="Futuristic create account button"
-                        width="200"
-                        height="60"
-                    />
-                    Create Account
-                </button>
-            </section>
-            <footer class="footer subtle-graphics">
-                <div class="footer-content">
-                    <h2>Stay Connected</h2>
-                    <nav>
-                        <ul>
-                            <li><a href="#about">About Us</a></li>
-                            <li><a href="#services">Services</a></li>
-                            <li><a href="#contact">Contact</a></li>
-                            <li><a href="#privacy">Privacy Policy</a></li>
-                        </ul>
-                    </nav>
-                    <div class="footer-graphics">
-                        <img
-                            src="path/to/small-planet.png"
-                            alt="Small planet graphic for footer"
-                            class="footer-planet"
-                        />
-                        <img
-                            src="path/to/twinkling-star.png"
-                            alt="Twinkling star graphic for footer"
-                            class="footer-star"
-                        />
-                    </div>
+            <div
+                id="scoreboard"
+                class="scoreboard"
+                role="status"
+                aria-live="polite"
+            >
+                <div class="player-x" aria-label="Player 1 score">
+                    Player 1: <span id="score-x">0</span>
                 </div>
-            </footer>
+                <div class="status" aria-label="Current turn">
+                    | Current Turn: <span id="current-player">X</span>
+                </div>
+                <div class="player-o" aria-label="Player 2 score">
+                    Player 2: <span id="score-o">0</span>
+                </div>
+            </div>
+            <div
+                id="reset-button"
+                role="button"
+                tabindex="0"
+                aria-label="Reset Game"
+                onclick="resetGame()"
+                onkeypress="if(event.key === 'Enter') resetGame()"
+            >
+                Reset Game
+            </div>
+            <div id="game-status" role="status" aria-live="polite">
+                <p class="turn">
+                    Current turn: <span id="current-player">X</span>
+                </p>
+                <p class="winner" aria-hidden="true"></p>
+                <p class="draw" aria-hidden="true"></p>
+            </div>
         </div>
         <!-- Dynamic Script Loading -->
 
@@ -469,75 +333,73 @@
 
         <script>
             const imagePlaceholders = {
-                'background-bg_starry_night': {
-                    alt: 'Starry night sky background for login page',
-                    prompt: 'A vast starry night sky filled with twinkling stars and a hint of a galaxy, creating an immersive space-themed environment.',
-                    dimensions: '1920x1080',
-                    position: 'background',
-                    style_focus: 'dark color palette with vibrant star accents',
-                },
-                'background-bg_galaxy': {
-                    alt: 'Galaxy background for login page',
-                    prompt: 'A colorful galaxy with swirling stars and nebulae, designed to create a captivating and immersive login experience.',
-                    dimensions: '1920x1080',
-                    position: 'background',
-                    style_focus: 'dark color palette with vibrant accents',
-                },
-                'login form-username_icon': {
-                    alt: 'Space-themed icon for username field',
-                    prompt: 'A minimalistic space-themed icon representing a user, designed with a sleek and modern look, featuring stars and planets.',
-                    dimensions: '50x50',
-                    position: 'left of the username input field',
-                    style_focus: 'minimalistic, space-themed',
-                },
-                'login form-password_icon': {
-                    alt: 'Space-themed icon for password field',
-                    prompt: 'A minimalistic space-themed icon representing a lock, designed with a futuristic style, incorporating elements of the cosmos.',
-                    dimensions: '50x50',
-                    position: 'left of the password input field',
-                    style_focus: 'minimalistic, space-themed',
-                },
-                'login form-starry_background': {
-                    alt: 'Starry background for the login form',
-                    prompt: 'A dark, starry background that enhances the space theme, featuring twinkling stars and a subtle galaxy effect.',
-                    dimensions: '100%',
-                    position: 'background of the login form',
-                    style_focus: 'dark color palette with vibrant accents',
-                },
-                'call to action-cta_button_1': {
-                    alt: 'Futuristic login button',
-                    prompt: 'A sleek, futuristic button designed to resemble spaceship controls, glowing with vibrant accents against a dark starry background.',
-                    dimensions: '200x60',
+                'game board-game_board': {
+                    alt: '3x3 Tic Tac Toe game board with a light background and contrasting colors for X and O.',
+                    prompt: 'A clean and minimalistic Tic Tac Toe game board featuring a 3x3 grid. The grid should have a light background, with blue squares for X and red squares for O. The design should be simple and user-friendly, emphasizing clarity and ease of interaction.',
+                    dimensions: '300x300',
                     position: 'center',
-                    style_focus: 'futuristic, interactive',
+                    style_focus: 'minimalistic design, contrasting colors',
+                    purpose:
+                        'to display the game board for players to place their marks',
+                    content_strategy:
+                        'ensure clarity and ease of use for an engaging gameplay experience',
                 },
-                'call to action-cta_button_2': {
-                    alt: 'Futuristic create account button',
-                    prompt: 'A modern create account button with a spaceship control design, featuring vibrant colors and a glowing effect, set against a dark cosmic backdrop.',
-                    dimensions: '200x60',
-                    position: 'center',
-                    style_focus: 'futuristic, interactive',
+                'scoreboard-scoreboard_background': {
+                    alt: 'Light background for scoreboard',
+                    prompt: 'A clean and minimalistic light background suitable for a scoreboard display.',
+                    dimensions: '800x200',
+                    position: 'top',
+                    style_focus: 'minimalistic design',
+                    purpose: 'to provide a clear display area for scores',
+                    content_strategy: 'ensure high contrast with score text',
                 },
-                'footer-footer_background': {
-                    alt: 'Subtle space-themed background with stars and planets',
-                    prompt: 'A dark, starry background featuring small planets and twinkling stars, designed to enhance the footer section of a website. The colors should be vibrant yet subtle, fitting within a dark color palette.',
-                    dimensions: '1920x200',
-                    position: 'background',
-                    style_focus: 'space-themed, subtle graphics',
-                },
-                'footer-footer_planet': {
-                    alt: 'Small planet graphic for footer',
-                    prompt: 'A small, stylized planet graphic to be placed in the footer, with vibrant colors that pop against a dark background. The design should be simple and modern, fitting the futuristic theme.',
-                    dimensions: '50x50',
+                'scoreboard-score_x': {
+                    alt: 'Score display for player X',
+                    prompt: 'A scoreboard element displaying the score for player X in blue.',
+                    dimensions: '200x100',
                     position: 'left',
-                    style_focus: 'futuristic, vibrant accent',
+                    style_focus: 'bold typography',
+                    purpose: "to show player X's current score",
+                    content_strategy: "highlight player X's score prominently",
                 },
-                'footer-footer_star': {
-                    alt: 'Twinkling star graphic for footer',
-                    prompt: 'A small twinkling star graphic to be used in the footer section, designed to add a subtle sparkle effect. The star should be bright and eye-catching, complementing the dark theme.',
-                    dimensions: '30x30',
+                'scoreboard-score_o': {
+                    alt: 'Score display for player O',
+                    prompt: 'A scoreboard element displaying the score for player O in red.',
+                    dimensions: '200x100',
                     position: 'right',
-                    style_focus: 'subtle sparkle, space-themed',
+                    style_focus: 'bold typography',
+                    purpose: "to show player O's current score",
+                    content_strategy: "highlight player O's score prominently",
+                },
+                'scoreboard-turn_indicator': {
+                    alt: 'Current turn indicator',
+                    prompt: 'An indicator showing whose turn it is, with a simple design.',
+                    dimensions: '400x100',
+                    position: 'center',
+                    style_focus: 'clear and concise',
+                    purpose: 'to inform players whose turn it is',
+                    content_strategy:
+                        'use simple text to indicate current player',
+                },
+                'reset button-reset_button': {
+                    alt: 'Reset Game Button',
+                    prompt: 'A clean and minimalistic reset button for a Tic Tac Toe game, designed with a light background and contrasting colors. The button should be visually distinct, easy to identify, and located near the scoreboard.',
+                    dimensions: '100x50',
+                    position: 'near scoreboard',
+                    style_focus: 'minimalistic design, contrasting colors',
+                    purpose: 'to allow players to reset the game easily',
+                    content_strategy:
+                        'ensure clarity and accessibility in design',
+                },
+                'game status-game_status_display': {
+                    alt: 'Current game status display showing whose turn it is and the game outcome.',
+                    prompt: "A minimalistic scoreboard displaying the current player's turn and game outcome (win, draw). Use a light background with contrasting colors for X (blue) and O (red). Simple typography for clarity.",
+                    dimensions: '300x100',
+                    position: 'above the game board',
+                    style_focus: 'clean and minimalistic design',
+                    purpose: 'to inform players of the current game status',
+                    content_strategy:
+                        'ensure clarity and ease of understanding',
                 },
             };
             function loadGeneratedImage(imageId, imageUrl) {
@@ -567,33 +429,289 @@
         </script>
 
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
+                // Global State Management
 
-            // javascript Section Logic
-            (function() {
-                1. **Hover Event for Buttons**: Add an event listener to all buttons in the footer that changes their color or applies a glowing effect when hovered over. This can be achieved using CSS classes that are toggled on mouse enter and mouse leave events.
+                // Game Board State Management
+                let currentPlayer = 'X'; // X starts first
+                let gameBoard = Array(3)
+                    .fill(null)
+                    .map(() => Array(3).fill(null));
+                let gameStatus = 'ongoing'; // can be 'ongoing', 'win', or 'draw'
 
-            2. **Focus Event for Input Fields**: Implement an event listener for input fields that adds a glowing effect class when the field is focused, and removes it when the field loses focus.
+                // Function to handle player moves
+                function handlePlayerMove(index) {
+                    const [row, col] = index.split('-').map(Number);
+                    if (
+                        gameBoard[row][col] === null &&
+                        gameStatus === 'ongoing'
+                    ) {
+                        gameBoard[row][col] = currentPlayer;
+                        updateBoard(index, currentPlayer);
+                        if (checkGameStatus()) {
+                            gameStatus = 'win'; // or 'draw' based on the check
+                        } else {
+                            currentPlayer = currentPlayer === 'X' ? 'O' : 'X'; // Switch player
+                        }
+                    }
+                }
 
-            3. **Submit Event for Login Form**: Attach a submit event listener to the login form that triggers a space-themed loading animation. This can be done by displaying a loading spinner or animation overlay while the form is being processed.
-            })();
+                // Scoreboard State Management
+                // State management for the scoreboard
+                let player1Score = 0;
+                let player2Score = 0;
+                let currentPlayer = 'Player 1';
 
+                // Function to reset scores
+                function resetScores() {
+                    player1Score = 0;
+                    player2Score = 0;
+                    currentPlayer = 'Player 1';
+                    updateScoreboard(player1Score, player2Score, currentPlayer);
+                }
 
-            // state_management Section Logic
-            (function() {
-                Since the footer is primarily static and does not require complex state management, the state handling will focus on managing the loading state during form submission. A simple boolean state variable can be used to track whether the form is currently submitting. This state can be set to true when the form is submitted and reset to false once the submission is complete.
-            })();
+                // Function to update scores based on game outcome
+                function updateScores(winner) {
+                    if (winner === 'Player 1') {
+                        player1Score++;
+                    } else if (winner === 'Player 2') {
+                        player2Score++;
+                    }
+                    updateScoreboard(player1Score, player2Score, currentPlayer);
+                }
 
+                // Reset Button State Management
+                let gameState = {
+                    currentPlayer: 'X',
+                    board: Array(9).fill(null),
+                    scores: { X: 0, O: 0 },
+                    status: 'ongoing', // can be 'ongoing', 'win', or 'draw'
+                };
 
-            // Footer Section Logic
-            (function() {
-                1. **Hover Event for Buttons**: Add an event listener to all buttons in the footer that changes their color or applies a glowing effect when hovered over. This can be achieved using CSS classes that are toggled on mouse enter and mouse leave events.
+                function updateScoreboard(scoreX, scoreO) {
+                    gameState.scores.X = scoreX;
+                    gameState.scores.O = scoreO;
+                    document.getElementById('scoreX').textContent = scoreX;
+                    document.getElementById('scoreO').textContent = scoreO;
+                }
 
-            2. **Focus Event for Input Fields**: Implement an event listener for input fields that adds a glowing effect class when the field is focused, and removes it when the field loses focus.
+                // Game Status State Management
+                // State management for the game
+                let gameState = {
+                    currentPlayer: 'X',
+                    board: Array(9).fill(null),
+                    gameStatus: 'ongoing', // can be 'ongoing', 'win', or 'draw'
+                };
 
-            3. **Submit Event for Login Form**: Attach a submit event listener to the login form that triggers a space-themed loading animation. This can be done by displaying a loading spinner or animation overlay while the form is being processed.
-            })();
+                // Function to switch players
+                function switchPlayer() {
+                    gameState.currentPlayer =
+                        gameState.currentPlayer === 'X' ? 'O' : 'X';
+                }
 
+                // Function to reset the game state
+                function resetGame() {
+                    gameState = {
+                        currentPlayer: 'X',
+                        board: Array(9).fill(null),
+                        gameStatus: 'ongoing',
+                    };
+                    updateGameStatus(
+                        gameState.currentPlayer,
+                        gameState.gameStatus
+                    );
+                }
+
+                // Section-specific Logic
+
+                // Game Board Section Logic
+                // Function to initialize the game board
+                function initializeBoard() {
+                    const board = document.getElementById('game-board');
+                    for (let i = 0; i < 3; i++) {
+                        for (let j = 0; j < 3; j++) {
+                            const cell = document.createElement('div');
+                            cell.classList.add('cell');
+                            cell.dataset.index = `${i}-${j}`;
+                            board.appendChild(cell);
+                        }
+                    }
+                }
+
+                // Function to update the board with the player's mark
+                function updateBoard(index, playerMark) {
+                    const cell = document.querySelector(
+                        `.cell[data-index='${index}']`
+                    );
+                    if (cell && !cell.textContent) {
+                        cell.textContent = playerMark;
+                    }
+                }
+
+                // Function to check for a win or draw
+                function checkGameStatus() {
+                    // Logic to check rows, columns, and diagonals for a win
+                    // Logic to check for a draw
+                }
+
+                // Scoreboard Section Logic
+                // Function to update the scoreboard display
+                function updateScoreboard(
+                    player1Score,
+                    player2Score,
+                    currentPlayer
+                ) {
+                    const scoreboardElement =
+                        document.getElementById('scoreboard');
+                    scoreboardElement.innerHTML = `Player 1: ${player1Score} - Player 2: ${player2Score} | Current Turn: ${currentPlayer}`;
+                }
+
+                // Reset Button Section Logic
+                document
+                    .getElementById('resetButton')
+                    .addEventListener('click', function () {
+                        resetGame();
+                    });
+
+                function resetGame() {
+                    // Clear the game board
+                    const cells = document.querySelectorAll('.game-cell');
+                    cells.forEach((cell) => {
+                        cell.textContent = '';
+                        cell.classList.remove('occupied');
+                    });
+
+                    // Reset scores
+                    updateScoreboard(0, 0);
+
+                    // Notify other components of the reset
+                    document.dispatchEvent(new CustomEvent('gameReset'));
+                }
+
+                // Game Status Section Logic
+                // Function to update the game status display
+                function updateGameStatus(currentPlayer, gameOutcome) {
+                    const statusElement =
+                        document.getElementById('game-status');
+                    if (gameOutcome === 'win') {
+                        statusElement.textContent = `${currentPlayer} wins!`;
+                    } else if (gameOutcome === 'draw') {
+                        statusElement.textContent = "It's a draw!";
+                    } else {
+                        statusElement.textContent = `Current turn: ${currentPlayer}`;
+                    }
+                }
+
+                // Event Delegations
+
+                // Game Board Event Delegation
+                document
+                    .getElementById('game-board')
+                    .addEventListener('click', (event) => {
+                        if (event.target.classList.contains('cell')) {
+                            const index = event.target.dataset.index;
+                            handlePlayerMove(index);
+                        }
+                    });
+
+                // Reset button event listener
+                document
+                    .getElementById('reset-button')
+                    .addEventListener('click', () => {
+                        resetGame();
+                    });
+
+                function resetGame() {
+                    gameBoard = Array(3)
+                        .fill(null)
+                        .map(() => Array(3).fill(null));
+                    currentPlayer = 'X';
+                    gameStatus = 'ongoing';
+                    initializeBoard();
+                }
+
+                // Scoreboard Event Delegation
+                // Event delegation for handling game events
+                document.addEventListener('gameEvent', function (event) {
+                    switch (event.detail.type) {
+                        case 'Player Move':
+                            // Logic to handle player move and update scoreboard
+                            currentPlayer =
+                                currentPlayer === 'Player 1'
+                                    ? 'Player 2'
+                                    : 'Player 1';
+                            break;
+                        case 'Game Reset':
+                            resetScores();
+                            break;
+                    }
+                });
+
+                // Reset Button Event Delegation
+                document
+                    .getElementById('gameBoard')
+                    .addEventListener('click', function (event) {
+                        if (
+                            event.target.classList.contains('game-cell') &&
+                            !event.target.classList.contains('occupied')
+                        ) {
+                            const cellIndex = Array.from(
+                                event.target.parentNode.children
+                            ).indexOf(event.target);
+                            gameState.board[cellIndex] =
+                                gameState.currentPlayer;
+                            event.target.textContent = gameState.currentPlayer;
+                            event.target.classList.add('occupied');
+
+                            // Check for win or draw
+                            checkGameStatus();
+
+                            // Switch players
+                            gameState.currentPlayer =
+                                gameState.currentPlayer === 'X' ? 'O' : 'X';
+                        }
+                    });
+
+                // Game Status Event Delegation
+                // Event delegation for handling player moves
+                document
+                    .getElementById('game-board')
+                    .addEventListener('click', function (event) {
+                        const index = event.target.dataset.index; // Assuming each cell has a data-index attribute
+                        if (
+                            gameState.board[index] === null &&
+                            gameState.gameStatus === 'ongoing'
+                        ) {
+                            gameState.board[index] = gameState.currentPlayer;
+                            const winner = checkForWinner(); // Function to check for a winner
+                            if (winner) {
+                                gameState.gameStatus = 'win';
+                                updateGameStatus(
+                                    gameState.currentPlayer,
+                                    gameState.gameStatus
+                                );
+                            } else if (
+                                gameState.board.every((cell) => cell !== null)
+                            ) {
+                                gameState.gameStatus = 'draw';
+                                updateGameStatus(
+                                    gameState.currentPlayer,
+                                    gameState.gameStatus
+                                );
+                            } else {
+                                switchPlayer();
+                                updateGameStatus(
+                                    gameState.currentPlayer,
+                                    gameState.gameStatus
+                                );
+                            }
+                        }
+                    });
+
+                // Section APIs
+
+                // Combined Section APIs
+                const componentAPI = {};
             });
         </script>
     </body>
