@@ -54,7 +54,7 @@ async def home(request: Request):
 async def site_builder(request: Request):
     return templates.TemplateResponse("site_builder.html", {"request": request})
 
-@app.post("/component_builder", )
+@app.post("/test", )
 async def component_builder(description: WebsiteDescription):
     try:
         result = test_component_builder(description.website_description)
@@ -62,26 +62,26 @@ async def component_builder(description: WebsiteDescription):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-# @app.post("/page_builder")
-# async def start_pipeline(description: WebsiteDescription):
-#     if not description.website_description.strip():
-#         return StreamingResponse(
-#             iter(['data: {"type": "error", "message": "Please provide a website description"}\n\n']),
-#             media_type="text/event-stream"
-#         )
+@app.post("/page_builder")
+async def start_pipeline(description: WebsiteDescription):
+    if not description.website_description.strip():
+        return StreamingResponse(
+            iter(['data: {"type": "error", "message": "Please provide a website description"}\n\n']),
+            media_type="text/event-stream"
+        )
 
-#     async def generate():
-#         try:
-#             for html_update in component_builder_pipeline(description.website_description):
-#                 yield f"data: {html_update}\n\n"
-#         except Exception as e:
-#             yield f'data: {{"type": "error", "message": "Pipeline error: {str(e)}"}}\n\n'
+    async def generate():
+        try:
+            for html_update in component_builder_pipeline(description.website_description):
+                yield f"data: {html_update}\n\n"
+        except Exception as e:
+            yield f'data: {{"type": "error", "message": "Pipeline error: {str(e)}"}}\n\n'
 
-#     return StreamingResponse(
-#         generate(),
-#         media_type="text/event-stream",
-#         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
-#     )
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
+    )
 
 if __name__ == "__main__":
     load_dotenv()
