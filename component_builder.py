@@ -2,7 +2,7 @@ import re
 from pprint import pprint
 import logging
 import time
-from typing import List, Dict, Literal, Any
+from typing import List, Dict, Literal, Union
 import json
 import os
 from dspy import  LM, configure, InputField, OutputField, Signature, ChainOfThought, context, Predict
@@ -43,11 +43,22 @@ model_dict = {
     '4o-mini': {'model': 'openai/gpt-4o-mini', 'max_tokens': 4096},
     '4o': {'model': 'openai/gpt-4o', 'max_tokens': 4096},
 }
-lm = LM(model_dict['4o-mini']['model'], max_tokens=model_dict['4o-mini']['max_tokens'])
-strong_lm = LM(model_dict['4o-mini']['model'], max_tokens=model_dict['4o-mini']['max_tokens'])
+lm = LM(model_dict['4o-mini']['model'], max_tokens=model_dict['4o-mini']['max_tokens'], cache=False)
+strong_lm = LM(model_dict['4o-mini']['model'], max_tokens=model_dict['4o-mini']['max_tokens'], cache=False)
 configure(lm=lm)
 logger = logging.getLogger('app.component_builder')
 
+class ComponentArchitect(Signature):
+    """Design a web component"""
+    description = InputField(desc='The user\'s requirements') 
+    # Output Fields for overall architecture
+    component_blueprint = OutputField(desc='Detailed and verbose component blueprint')
+    component_outline: List[Dict[Literal[
+        "section_id",
+        "section_type",
+        "responsibility",
+        "javascript_instructions",
+    ], Union[str, List[str]]]] = OutputField(desc='A compponent level outline')
 class ComponentDefinition(Signature):
     """Analyze user needs and define component architecture with clear contextual guidance"""
     description = InputField(desc='The user\'s requirements')
@@ -140,6 +151,20 @@ class ComponentStructure(Signature):
     markup = OutputField()
     accessibility_markup = OutputField(desc='ARIA and accessibility attributes')
     content_structure = OutputField(desc='Semantic structure and hierarchy')
+
+def test_component_builder(prompt):
+    try:
+        print(prompt)
+        architect = ChainOfThought(ComponentArchitect)(description=prompt)
+        print(architect)
+        # Convert the architect object to a dictionary for JSON serialization
+        return {
+            "component_blueprint": architect.component_blueprint,
+            "component_outline": architect.component_outline,
+        }
+    except Exception as e:
+        logger.error(f"Component architect failed: {str(e)}", exc_info=True)
+        return {"status": "error", "message": str(e)}
 
 def component_builder_pipeline(prompt):
     start = time.time()

@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from site_builder import page_builder_pipeline
-from component_builder import component_builder_pipeline
+from component_builder import component_builder_pipeline, test_component_builder
 
 # Configure logging only for our application modules
 logging.basicConfig(
@@ -54,26 +54,34 @@ async def home(request: Request):
 async def site_builder(request: Request):
     return templates.TemplateResponse("site_builder.html", {"request": request})
 
-@app.post("/page_builder")
-async def start_pipeline(description: WebsiteDescription):
-    if not description.website_description.strip():
-        return StreamingResponse(
-            iter(['data: {"type": "error", "message": "Please provide a website description"}\n\n']),
-            media_type="text/event-stream"
-        )
+@app.post("/component_builder", )
+async def component_builder(description: WebsiteDescription):
+    try:
+        result = test_component_builder(description.website_description)
+        return {"status": "success", "data": result}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
-    async def generate():
-        try:
-            for html_update in component_builder_pipeline(description.website_description):
-                yield f"data: {html_update}\n\n"
-        except Exception as e:
-            yield f'data: {{"type": "error", "message": "Pipeline error: {str(e)}"}}\n\n'
+# @app.post("/page_builder")
+# async def start_pipeline(description: WebsiteDescription):
+#     if not description.website_description.strip():
+#         return StreamingResponse(
+#             iter(['data: {"type": "error", "message": "Please provide a website description"}\n\n']),
+#             media_type="text/event-stream"
+#         )
 
-    return StreamingResponse(
-        generate(),
-        media_type="text/event-stream",
-        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
-    )
+#     async def generate():
+#         try:
+#             for html_update in component_builder_pipeline(description.website_description):
+#                 yield f"data: {html_update}\n\n"
+#         except Exception as e:
+#             yield f'data: {{"type": "error", "message": "Pipeline error: {str(e)}"}}\n\n'
+
+#     return StreamingResponse(
+#         generate(),
+#         media_type="text/event-stream",
+#         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
+#     )
 
 if __name__ == "__main__":
     load_dotenv()
