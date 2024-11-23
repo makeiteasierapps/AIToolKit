@@ -140,11 +140,6 @@ async function handleSubmitDescription() {
                             await pendingImageLoads;
                             // Update the preview with the intermediate component
                             updatePreviewIframe(jsonData.content);
-                            // Add progress information
-                            await addProgressItem(
-                                'message',
-                                `Completed section: ${jsonData.section_name}`
-                            );
                             break;
 
                         case 'component_complete':

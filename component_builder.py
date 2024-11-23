@@ -14,20 +14,20 @@ COMPONENT_SCAFFOLD = '''
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{component_title}</title> 
-    <!-- Dynamic Resource Loading -->
-    {resource_links} 
+    <title>{component_title}</title>  
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script> 
+    
+    <!-- Additional Resource Loading -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Component Styles -->
     {component_styles} 
-    
 </head>
 <body>
     <!-- Component Container -->
     <div id="component-root">
         {component_markup}
-    </div> 
-    <!-- Dynamic Script Loading -->
-    {script_imports}
+    </div>  
     <!-- Component Scripts -->
     {component_scripts}
 </body>
@@ -43,29 +43,41 @@ model_dict = {
     '4o-mini': {'model': 'openai/gpt-4o-mini', 'max_tokens': 4096},
     '4o': {'model': 'openai/gpt-4o', 'max_tokens': 4096},
 }
-lm = LM(model_dict['haiku']['model'], max_tokens=model_dict['haiku']['max_tokens'], cache=False)
-strong_lm = LM(model_dict['sonnet']['model'], max_tokens=model_dict['sonnet']['max_tokens'], cache=False)
+lm = LM(model_dict['4o-mini']['model'], max_tokens=model_dict['4o-mini']['max_tokens'], cache=False)
+strong_lm = LM(model_dict['4o-mini']['model'], max_tokens=model_dict['4o-mini']['max_tokens'], cache=False)
 configure(lm=lm)
 logger = logging.getLogger('app.component_builder')
 
 class WebAppArchitect(Signature):
-    """Design high-level web app UI structure and identify main sections"""
+    """Design a modern, responsive web app UI using Tailwind CSS for styling.
+    Focus on:
+    - Tailwind's utility-first approach for styling
+    - Vanilla JavaScript for interactivity
+    - Responsive design using Tailwind's breakpoint system
+    - Modern layout patterns with Tailwind's flex and grid utilities
+    - Simple, clean animations using Tailwind's transition utilities
+    Avoid raw CSS unless absolutely necessary."""
     description = InputField(desc='The user\'s requirements')
     component_blueprint = OutputField(desc='Detailed high-level web app UI description and purpose')
-    global_css = OutputField(desc='Global CSS rules')
-    global_javascript = OutputField(desc='Global JavaScript code')
+    global_css = OutputField(desc='Global Tailwind configurations and any necessary custom CSS')
+    global_javascript = OutputField(desc='Clean, vanilla JavaScript code') 
 class SectionArchitect(Signature):
-    """Design detailed section-specific UI components"""
+    """Design section-specific UI components using modern Tailwind patterns.
+    Implement:
+    - Tailwind's built-in animation and transition classes
+    - Simple interactive elements using vanilla JavaScript
+    - Tailwind's state modifiers (hover, focus, etc.)
+    - Responsive patterns using Tailwind breakpoints
+    - Clean event handling with vanilla JavaScript"""
     global_css = InputField()
     component_blueprint = InputField()
     sections: List[Dict[Literal[
         "section_name",
-        "purpose",
         "section_details",
         "image_requirements",
         "css_style_and_animation_instructions",
         "javascript_instructions"
-    ], str]] = OutputField(desc='Instructions for building a section')
+    ], str]] = OutputField(desc='Instructions using Tailwind classes and vanilla JavaScript')  
 class InteractionLogic(Signature):
     """Define interactive behaviors with awareness of component-wide context"""
     javascript_instructions = InputField()
@@ -90,14 +102,18 @@ class SectionStyle(Signature):
     css_rules = OutputField()
     transitions = OutputField(desc='CSS transitions and keyframe animations')
 class ComponentStructure(Signature):
-    """Define section structure with contextual awareness"""
-    component_blueprint = InputField()
-    section_purpose = InputField()
+    """Create semantic HTML5 markup with Tailwind utility classes.
+    Include:
+    - Semantic HTML5 elements with Tailwind classes
+    - Data attributes for JavaScript interactions
+    - Tailwind's built-in responsive utilities
+    - Simple state management with data attributes
+    - Clean, readable markup structure"""
     section_details = InputField()
     section_css_rules = InputField()
     section_javascript = InputField()
     image_details = InputField()
-    markup = OutputField(desc='HTML markup for the section')
+    markup = OutputField(desc='Response should contain HTML with Tailwind classes')
 
 def test_component_builder(prompt):
     try:
@@ -129,6 +145,7 @@ def component_builder_pipeline(prompt):
                 global_css=web_app_architect.global_css,
                 component_blueprint=web_app_architect.component_blueprint
             )
+            print(f"section_architect: {section_architect.sections}")
         yield format_sse({
             "type": "progress", 
             "message": 'Design complete'
@@ -185,20 +202,16 @@ def component_builder_pipeline(prompt):
             section_logic[section['section_name']] = logic 
             # Build section structure with context
             markup.append(build_component_section(
-                component_blueprint=web_app_architect.component_blueprint,
-                section_purpose=section['purpose'],
                 section_details=section['section_details'],
                 javascript=logic.get('javascript', ''),
                 section_style=section_style,
                 image_details=section_images,
             )) 
             # Provide intermediate feedback
-            print(markup)
             current_component = create_component_scaffold(
                 styles=f"<style>{' '.join(styles)}</style>",
                 markup=markup,
             )
-            print(f"current_component: {current_component}")
             yield format_sse({
                 "type": "section_complete",
                 "content": current_component
@@ -252,7 +265,6 @@ def create_component_scaffold(styles: str, markup: List[str], section_logic: Dic
     
     return COMPONENT_SCAFFOLD.format(
         component_title="",
-        resource_links="",
         component_styles=cleaned_styles,
         component_markup="\n".join(cleaned_markup),
         script_imports="",
@@ -366,8 +378,6 @@ def generate_section_image_details(section_name, image_instructions):
         raise Exception(f"Error generating image details: {str(e)}") 
 
 def build_component_section(
-    component_blueprint, 
-    section_purpose, 
     section_details, 
     javascript, 
     section_style=None,
@@ -379,17 +389,21 @@ def build_component_section(
     """
     try:
         with context(lm=strong_lm):
-            structure = ChainOfThought(ComponentStructure) 
+            structure = Predict(ComponentStructure)
+            print(f"section_details: {section_details}")
+            print(f"section_style: {section_style}")
+            print(f"javascript: {javascript}")
+            print(f"image_details: {image_details}")
             structure_response = structure(
-                component_blueprint=component_blueprint,
-                section_purpose=section_purpose,
                 section_details=section_details,
                 section_css_rules=section_style['css_rules'],
                 section_javascript=javascript,
                 image_details=image_details,
             ) 
+            
             # Combine the markup with accessibility features
-            cleaned_markup = clean_markup(structure_response.markup) 
+            cleaned_markup = clean_markup(structure_response.markup)
+            print(f"cleaned_markup: {cleaned_markup}")
             return cleaned_markup 
     except Exception as e:
         logger.error(f"Error in build_component_section: {str(e)}", exc_info=True)

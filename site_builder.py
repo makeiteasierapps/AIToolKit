@@ -35,18 +35,16 @@ model_dict = {
     '4o-mini': {'model': 'openai/gpt-4o-mini', 'max_tokens': 4096},
     '4o': {'model': 'openai/gpt-4o', 'max_tokens': 4096},
 }
-lm = LM(model_dict['4o-mini']['model'], max_tokens=model_dict['4o-mini']['max_tokens'])
-strong_lm = LM(model_dict['4o-mini']['model'], max_tokens=model_dict['4o-mini']['max_tokens'])
+lm = LM(model_dict['haiku']['model'], max_tokens=model_dict['haiku']['max_tokens'], cache=False)
+strong_lm = LM(model_dict['sonnet']['model'], max_tokens=model_dict['sonnet']['max_tokens'], cache=False)
 configure(lm=lm)
 logger = logging.getLogger('app.site_builder')
 
 class ClassifyImages(Signature):
-    '''You are given a dictionary that contains image descriptions as keys and urls as values.
-    You are also given a section names of a website, ie. hero, about, services, etc.
-    '''
+    '''Assign images to sections of the website'''
     image_descriptions = InputField()
     section_names = InputField()
-    image_instructions: List[Dict[Literal["section_name", "urls"], str | List[str]]] = OutputField(desc="A list of images that contain the section name, and urls for 3-4 images")
+    where_images_go: List[Dict[Literal["section_name", "urls"], str | List[str]]] = OutputField(desc="A list of images that contain the section name, and urls for 3-4 images")
 
 class CreateInstructions(Signature):
     '''Analyze the website description and generate a clean, responsive HTML layout using Bootstrap 5 components.
@@ -78,7 +76,7 @@ class CreateInstructions(Signature):
     description = InputField(desc='The user\'s description of the website')
     image_query = OutputField(desc='usually 1-3 words')
     website_title = OutputField(desc='The title of the website')
-    instructions_list: List[Dict[Literal["section_name", "instructions", "class_name"], str]] = OutputField()
+    instructions_list: List[Dict[Literal["section_name", "instructions", "class_name"], str]] = OutputField(desc='Generate content that relates to the user\'s description')
     color_scheme = OutputField(desc='A guide to the color scheme for the website')
 
 class CSSRules(Signature):
@@ -103,7 +101,7 @@ class HTMLElement(Signature):
     images = InputField(desc='List of images or None')
     html = OutputField(desc='The HTML code for the given section')
 
-def query_unsplash(query, per_page=10, page=1):
+def query_unsplash(query):
     try:
         api_key = os.environ.get('UNSPLASH_ACCESS_KEY')
         if not api_key:
@@ -113,8 +111,6 @@ def query_unsplash(query, per_page=10, page=1):
         headers = {"Authorization": f"Client-ID {api_key}"}
         params = {
             "query": query,
-            "per_page": per_page,
-            "page": page
         }
         
         response = requests.get(url, headers=headers, params=params, timeout=60)
@@ -201,7 +197,7 @@ def process_images(theme_related_image_query, section_instructions):
         theme_related_image_dict = extract_image_data(theme_related_image_results)
         theme_related_image_dict_str = json.dumps(theme_related_image_dict)
         
-        classify_images = ChainOfThought(ClassifyImages)
+        classify_images = Predict(ClassifyImages)
         section_names_str = json.dumps([section['section_name'] for section in section_instructions])
         classify_imgs_response = classify_images(
             image_descriptions=theme_related_image_dict_str, 
@@ -214,7 +210,7 @@ def process_images(theme_related_image_query, section_instructions):
             'image_dict': theme_related_image_dict,
             'image_lookup': {
                 img['section_name']: img['urls'] 
-                for img in classify_imgs_response.image_instructions
+                for img in classify_imgs_response.where_images_go
             }
         }
     except Exception as e:
@@ -344,7 +340,7 @@ def page_builder_pipeline(prompt):
                 logger.info(f"Section {i}/{total_sections} ({section['section_name']}) built in {time.time() - section_start:.2f} seconds")
 
                 yield format_sse({
-                    "type": "html",
+                    "type": "section_complete",
                     "content": current_html
                 })
             except Exception as e:
