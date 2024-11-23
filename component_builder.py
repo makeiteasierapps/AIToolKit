@@ -1,13 +1,15 @@
 import re
 from pprint import pprint
+import replicate
 import logging
 import time
-from typing import List, Dict, Literal, Union
+from typing import List, Dict, Literal
 import json
 import os
 from dspy import  LM, configure, InputField, OutputField, Signature, ChainOfThought, context, Predict
 from dotenv import load_dotenv
-
+from SSHManager import SSHManager
+from ImageGenManager import ImageGenerator
 COMPONENT_SCAFFOLD = '''
 <!DOCTYPE html>
 <html>
@@ -36,6 +38,7 @@ COMPONENT_SCAFFOLD = '''
 load_dotenv()
 os.environ.get("OPENAI_API_KEY")
 os.environ.get("ANTHROPIC_API_KEY")
+os.environ.get("REPLICATE_API_TOKEN")
 model_dict = {
     'sonnet': {'model': 'anthropic/claude-3-5-sonnet-latest', 'max_tokens': 8192},
     'haiku': {'model': 'anthropic/claude-3-haiku-20240307', 'max_tokens': 4096},
@@ -55,8 +58,7 @@ class WebAppArchitect(Signature):
     - Vanilla JavaScript for interactivity
     - Responsive design using Tailwind's breakpoint system
     - Modern layout patterns with Tailwind's flex and grid utilities
-    - Simple, clean animations using Tailwind's transition utilities
-    Avoid raw CSS unless absolutely necessary."""
+    - Simple, clean animations using Tailwind's transition utilities."""
     description = InputField(desc='The user\'s requirements')
     component_blueprint = OutputField(desc='Detailed high-level web app UI description and purpose')
     global_css = OutputField(desc='Global Tailwind configurations and any necessary custom CSS')
@@ -117,18 +119,19 @@ class ComponentStructure(Signature):
 
 def test_component_builder(prompt):
     try:
-        print(prompt)
-        architect = ChainOfThought(WebAppArchitect)(description=prompt)
-        print(architect)
-        section_architect = ChainOfThought(SectionArchitect)(
-            global_css=architect.global_css,
-            component_blueprint=architect.component_blueprint
-        )
-        # Convert the architect object to a dictionary for JSON serialization
-        return {
-            "component_blueprint": architect.component_blueprint,
-            "sections": section_architect.sections,
+        input = {
+            "prompt": prompt,
+            "guidance": 3.5
         }
+
+        output = replicate.run(
+            "black-forest-labs/flux-dev",
+            input=input
+        )
+        print(f"output: {output}")
+        for index, item in enumerate(output):
+            with open(f"output_{index}.webp", "wb") as file:
+                file.write(item.read())
     except Exception as e:
         logger.error(f"Component architect failed: {str(e)}", exc_info=True)
         return {"status": "error", "message": str(e)}
@@ -390,9 +393,6 @@ def build_component_section(
     try:
         with context(lm=strong_lm):
             structure = Predict(ComponentStructure)
-            print(f"section_details: {section_details}")
-            print(f"section_style: {section_style}")
-            print(f"javascript: {javascript}")
             print(f"image_details: {image_details}")
             structure_response = structure(
                 section_details=section_details,
@@ -403,7 +403,6 @@ def build_component_section(
             
             # Combine the markup with accessibility features
             cleaned_markup = clean_markup(structure_response.markup)
-            print(f"cleaned_markup: {cleaned_markup}")
             return cleaned_markup 
     except Exception as e:
         logger.error(f"Error in build_component_section: {str(e)}", exc_info=True)
