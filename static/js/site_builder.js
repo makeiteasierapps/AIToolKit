@@ -96,7 +96,7 @@ async function handleSubmitDescription() {
         // Reset progress containers
         document.getElementById('progress-stream').innerHTML = '';
         startNewMessageGroup();
-        const response = await fetch('/test', {
+        const response = await fetch('/page_builder', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

@@ -1,4 +1,5 @@
 import re
+from datetime import datetime, UTC
 from pprint import pprint
 import replicate
 import logging
@@ -50,7 +51,7 @@ lm = LM(model_dict['4o-mini']['model'], max_tokens=model_dict['4o-mini']['max_to
 strong_lm = LM(model_dict['4o-mini']['model'], max_tokens=model_dict['4o-mini']['max_tokens'], cache=False)
 configure(lm=lm)
 logger = logging.getLogger('app.component_builder')
-
+ssh_manager = SSHManager(is_dev_mode=True, logger=logger)
 class WebAppArchitect(Signature):
     """Design a modern, responsive web app UI using Tailwind CSS for styling.
     Focus on:
@@ -90,13 +91,13 @@ class InteractionLogic(Signature):
     state_management = OutputField(desc='JS code for Data and state handling logic')
     event_delegation = OutputField(desc='JS code for event handling')
 class SectionImageDetails(Signature):
-    """Generate image prompts that will be used to generate images"""
+    """Create image details that will be used to generate images"""
     image_instructions = InputField()
     image_details: List[Dict[Literal[
-        "image_id",
+        "image_name",
         "alt",
         "prompt",
-    ], str]] = OutputField(desc='prompt should be detailed and verbose') 
+    ], str]] = OutputField(desc='prompt should be detailed and verbose, avoid Icons') 
 class SectionStyle(Signature):
     """Define section styles with awareness of global context"""
     style_instructions = InputField()
@@ -110,11 +111,12 @@ class ComponentStructure(Signature):
     - Data attributes for JavaScript interactions
     - Tailwind's built-in responsive utilities
     - Simple state management with data attributes
-    - Clean, readable markup structure"""
+    - Clean, readable markup structure
+    - Use Font Awesome version 6 Icons"""
     section_details = InputField()
     section_css_rules = InputField()
     section_javascript = InputField()
-    image_details = InputField()
+    image_details = InputField(desc='image paths are local to the server')
     markup = OutputField(desc='Response should contain HTML with Tailwind classes')
 
 def test_component_builder(prompt):
@@ -136,7 +138,7 @@ def test_component_builder(prompt):
         logger.error(f"Component architect failed: {str(e)}", exc_info=True)
         return {"status": "error", "message": str(e)}
 
-def component_builder_pipeline(prompt):
+async def component_builder_pipeline(prompt, db):
     start = time.time()
     logger.info(f"Starting pipeline: {prompt[:100]}...") 
     try:
@@ -148,7 +150,6 @@ def component_builder_pipeline(prompt):
                 global_css=web_app_architect.global_css,
                 component_blueprint=web_app_architect.component_blueprint
             )
-            print(f"section_architect: {section_architect.sections}")
         yield format_sse({
             "type": "progress", 
             "message": 'Design complete'
@@ -159,7 +160,7 @@ def component_builder_pipeline(prompt):
         return 
     styles = []
     markup = []
-    images = {}
+    images = []
     section_logic = {} 
     try:
         yield format_sse({"type": "progress", "message": "🎨 Generating global styles..."}) 
@@ -172,38 +173,40 @@ def component_builder_pipeline(prompt):
         logger.error(f"Style failed: {str(e)}", exc_info=True)
         yield format_sse({"type": "error", "message": str(e)})
         return 
-    # Process each section with enhanced context awareness
+    
+    # Section loop
     for i, section in enumerate(section_architect.sections, 1):
         try:
             yield format_sse({
                 "type": "progress",
                 "message": f"🏗️ Section {i}/{len(section_architect.sections)}: {section['section_name']}"
-            }) 
-            # Generate images with context
+            })
+
+            # Generate images
             if 'image_requirements' in section:
                 section_images = generate_section_image_details(
-                    section_name=section['section_name'],
                     image_instructions=section['image_requirements']
                 )
-                images.update(section_images)
+                images.extend(section_images)
 
-            # Generate section-specific styles with context
+            # Generate section-specific styles
             section_style = generate_section_style(
                 style_instructions=section['css_style_and_animation_instructions'],
                 global_css=web_app_architect.global_css
-            ) 
+            )
+
             styles.append(f"""
                 /* {section['section_name']} */
                 {section_style['css_rules']}
                 {section_style['transitions']}
             """)
 
-            # Generate section logic with context
+            # Generate section logic
             logic = build_section_logic(
                 javascript_instructions=section['javascript_instructions']
             )
             section_logic[section['section_name']] = logic 
-            # Build section structure with context
+            # Build section structure
             markup.append(build_component_section(
                 section_details=section['section_details'],
                 javascript=logic.get('javascript', ''),
@@ -225,12 +228,22 @@ def component_builder_pipeline(prompt):
                 "type": "warning",
                 "message": f"Section issue: {str(e)}"
             }) 
-    # Generate final component with all context-aware parts
+    # Generate final component
     final = create_component_scaffold(
         styles=f"<style>{' '.join(styles)}</style>",
         markup=markup,
         section_logic=section_logic
     ) 
+    
+    # Add timestamp to each image and insert into MongoDB
+    current_time = datetime.now(UTC)
+    image_documents = [
+        {**image, "created_at": current_time} 
+        for image in images
+    ]
+    
+    await db.generated_images.insert_many(image_documents)
+
     # Final outputs
     yield format_sse({
         "type": "component_complete",
@@ -361,7 +374,7 @@ def build_section_logic(javascript_instructions):
     except Exception as e:
         raise Exception(f"Error generating section logic: {str(e)}")
 
-def generate_section_image_details(section_name, image_instructions):
+def generate_section_image_details(image_instructions):
     """Generate image details for a section"""
     try:
         with context(lm=strong_lm):
@@ -369,13 +382,18 @@ def generate_section_image_details(section_name, image_instructions):
             image_response = image_generator(
                 image_instructions=image_instructions
             ) 
-            detailed_images = {}
+            detailed_images = []
+            image_generator = ImageGenerator(ssh_manager)
             for image in image_response.image_details:
-                image_id = f"{section_name.lower()}-{image['image_id']}"
-                detailed_images[image_id] = {
-                    "alt": image["alt"],
-                    "prompt": image["prompt"],
-                }
+                image_name = image['image_name']
+                image_list = image_generator.generate_image(image["prompt"], image_name)
+                image_list[0].update({
+                    'alt': image['alt'],
+                    'prompt': image['prompt'],
+                    'image_name': image_name
+                })
+                detailed_images.append(image_list[0])
+
             return detailed_images
     except Exception as e:
         raise Exception(f"Error generating image details: {str(e)}") 
@@ -393,7 +411,6 @@ def build_component_section(
     try:
         with context(lm=strong_lm):
             structure = Predict(ComponentStructure)
-            print(f"image_details: {image_details}")
             structure_response = structure(
                 section_details=section_details,
                 section_css_rules=section_style['css_rules'],
@@ -407,31 +424,3 @@ def build_component_section(
     except Exception as e:
         logger.error(f"Error in build_component_section: {str(e)}", exc_info=True)
         raise Exception(f"Error building section structure: {str(e)}") 
-
-# def generate_image_loading_script(image_placeholders):
-#     """Generate JavaScript to handle image loading and replacement"""
-#     return f'''
-#     <script>
-#     const imagePlaceholders = {json.dumps(image_placeholders)}; 
-#     function loadGeneratedImage(imageId, imageUrl) {{
-#         const placeholder = document.querySelector(`[data-image-id="${{imageId}}"]`);
-#         if (placeholder) {{
-#             const img = new Image();
-#             img.src = imageUrl;
-#             img.alt = imagePlaceholders[imageId].alt;
-#             img.className = 'generated-image'; 
-#             img.onload = () => {{
-#                 placeholder.querySelector('.loading-indicator').style.display = 'none';
-#                 placeholder.appendChild(img);
-#                 img.style.opacity = '1';
-#             }};
-#         }}
-#     }} 
-#     // Function to be called when images are generated
-#     window.updateGeneratedImages = function(imageMapping) {{
-#         Object.entries(imageMapping).forEach(([imageId, imageUrl]) => {{
-#             loadGeneratedImage(imageId, imageUrl);
-#         }});
-#     }};
-#     </script>
-#     '''

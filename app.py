@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from site_builder import page_builder_pipeline
+from MongoDbClient import MongoDbClient
 from component_builder import component_builder_pipeline, test_component_builder
 
 # Configure logging only for our application modules
@@ -35,6 +36,8 @@ logger = logging.getLogger('app.main')
 async def lifespan(app: FastAPI):
     logger.info("Starting up the application...")
     logger.info(f"Environment: {'Development' if os.getenv('IS_LOCAL_DEV') == 'true' else 'Production'}")
+    mongo_client = MongoDbClient.get_instance("media")
+    app.state.db = mongo_client
     yield
 
 app = FastAPI(lifespan=lifespan)
@@ -54,16 +57,13 @@ async def home(request: Request):
 async def site_builder(request: Request):
     return templates.TemplateResponse("site_builder.html", {"request": request})
 
-@app.post("/test", )
+@app.post("/test")
 async def component_builder(description: WebsiteDescription):
-    try:
-        result = test_component_builder(description.website_description)
-        return {"status": "success", "data": result}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+    pass
 
 @app.post("/page_builder")
-async def start_pipeline(description: WebsiteDescription):
+async def start_pipeline(request: Request, description: WebsiteDescription):
+    db = request.app.state.db
     if not description.website_description.strip():
         return StreamingResponse(
             iter(['data: {"type": "error", "message": "Please provide a website description"}\n\n']),
@@ -72,7 +72,7 @@ async def start_pipeline(description: WebsiteDescription):
 
     async def generate():
         try:
-            for html_update in component_builder_pipeline(description.website_description):
+            async for html_update in component_builder_pipeline(description.website_description, db):
                 yield f"data: {html_update}\n\n"
         except Exception as e:
             yield f'data: {{"type": "error", "message": "Pipeline error: {str(e)}"}}\n\n'

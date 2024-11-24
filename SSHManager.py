@@ -19,6 +19,7 @@ class SSHManager:
             )
             return ssh
         except Exception as e:
+            ssh.close()
             self.logger.error(f"Failed to establish SSH connection: {str(e)}")
             return None
 
