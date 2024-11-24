@@ -21,7 +21,7 @@ class MongoDbClient:
         self.mongo_uri = self._load_mongo_uri()
         self.db_name = db_name
         self._connect()
-
+    
     def _load_mongo_uri(self):
         load_dotenv(override=True)
         uri = os.getenv('MONGO_URI_DEV') if os.getenv('LOCAL_DEV') == 'true' else os.getenv('MONGO_URI')

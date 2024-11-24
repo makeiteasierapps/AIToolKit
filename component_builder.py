@@ -242,7 +242,7 @@ async def component_builder_pipeline(prompt, db):
         for image in images
     ]
     
-    await db.generated_images.insert_many(image_documents)
+    await db.get_collection('generated_images').insert_many(image_documents)
 
     # Final outputs
     yield format_sse({

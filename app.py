@@ -37,7 +37,7 @@ async def lifespan(app: FastAPI):
     logger.info("Starting up the application...")
     logger.info(f"Environment: {'Development' if os.getenv('IS_LOCAL_DEV') == 'true' else 'Production'}")
     mongo_client = MongoDbClient.get_instance("media")
-    app.state.db = mongo_client
+    app.state.db = mongo_client.db
     yield
 
 app = FastAPI(lifespan=lifespan)
