@@ -45,24 +45,22 @@ class WebComponentArchitect(Signature):
     """Design a modern, responsive web component using Tailwind's component classes.
     Focus on:
     - Using Tailwind's preset component classes (like btn, card, etc.)
-    - Component-level classes instead of utility classes
     - Vanilla JavaScript for interactivity
     - Responsive design patterns
     """ 
     description = InputField(desc='The user\'s requirements')
-    global_css = OutputField()
+    global_css = OutputField(desc='CSS and Animations should be simple and elegant')
     component_spec: Dict[Literal[
         'component_name',
         "layout_structure",
         "image_requirements",
         "css_style_and_animation_instructions",
         "javascript_instructions"
-    ], str] = OutputField()
+    ], str] = OutputField(desc='CSS and Animations should be simple and elegant')
 class WebAppArchitect(Signature):
     """Design a modern, responsive web app UI using Tailwind's component classes.
     Focus on:
     - Using Tailwind's preset component classes (like btn, card, etc.)
-    - Component-level classes instead of utility classes
     - Vanilla JavaScript for interactivity
     - Responsive design patterns"""
     description = InputField(desc='The user\'s requirements')
@@ -72,8 +70,8 @@ class WebAppArchitect(Signature):
         "image_requirements",
         "css_style_and_animation_instructions",
         "javascript_instructions"
-    ], str]] = OutputField() 
-    global_css = OutputField()
+    ], str]] = OutputField(desc='CSS and Animations should be simple and elegant') 
+    global_css = OutputField(desc='CSS and Animations should be simple and elegant')
 class InteractionLogic(Signature):
     """Define interactive behaviors with awareness of component-wide context"""
     javascript_instructions = InputField()
@@ -98,18 +96,16 @@ class SectionStyle(Signature):
     css_rules = OutputField()
     transitions = OutputField(desc='CSS transitions and keyframe animations')
 class ComponentStructure(Signature):
-    """Create semantic HTML5 markup with Tailwind utility classes.
+    """Create semantic HTML5 markup with Tailwind component classes.
     Include:
     - Semantic HTML5 elements with Tailwind classes
     - Data attributes for JavaScript interactions
-    - Tailwind's built-in responsive utilities
-    - Simple state management with data attributes
     - Clean, readable markup structure
     - Use Font Awesome version 6 Icons"""
     layout_structure = InputField()
     section_css_rules = InputField()
     section_javascript = InputField()
-    image_details = InputField(desc='image paths are local to the server, use all of the images in your response')
+    image_details = InputField(desc='use the image paths provided, use all of the images in your response')
     markup = OutputField(desc='Response should contain HTML with Tailwind classes')
 
 strong_lm = initialize_llm('4o-mini', 'sonnet')
@@ -167,7 +163,7 @@ async def component_builder_pipeline(prompt, db):
                 })
 
             # Generate images
-            section_images = []
+            print(section)
             if 'image_requirements' in section:
                 section_images = await generate_section_image_details(
                     image_instructions=section['image_requirements']
@@ -400,7 +396,7 @@ async def build_component_section(
     try:
         with context(lm=strong_lm):
             structure_response = await execute_llm_call(
-                Predict(ComponentStructure),
+                ChainOfThought(ComponentStructure),
                 layout_structure=layout_structure,
                 section_css_rules=section_style['css_rules'],
                 section_javascript=javascript,

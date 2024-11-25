@@ -1,4 +1,5 @@
 import replicate
+from datetime import datetime
 from dspy import LM, configure, InputField, OutputField, Signature, Predict
 import os
 import re
@@ -20,7 +21,7 @@ class ImageGenerator:
         self.is_dev_mode = os.getenv("LOCAL_DEV", "false") == "true"
 
     def clean_string(self, string):
-        return re.sub(r'[^a-zA-Z0-9]', '_', string).strip('_').lower()
+        return re.sub(r'\s+', '_', re.sub(r'[^a-zA-Z0-9\s]', '', os.path.splitext(string)[0])).lower()
     
     def categorize_image(self, prompt):
         file_metadata = Predict(ImageCategorizer)(prompt=prompt)
@@ -40,26 +41,40 @@ class ImageGenerator:
 
         category = self.clean_string(self.categorize_image(prompt))
         generated_images = []
+        remote_category_path = os.path.join(self.storage_path, category)
 
-        # Dev mode: Use SSH to save on remote server
+        # Dev mode: Save both locally and via SSH
         if self.is_dev_mode:
+            # First save locally with same path structure
+            local_category_path = os.path.join(".", self.storage_path.lstrip('/'), category)
+            os.makedirs(local_category_path, exist_ok=True)
+
             ssh_client = self.ssh_manager.get_client()
             if ssh_client:
                 sftp = ssh_client.open_sftp()
-                category_path = os.path.join(self.storage_path, category)
                 
                 try:
-                    sftp.stat(category_path)
+                    sftp.stat(remote_category_path)
                 except FileNotFoundError:
-                    sftp.mkdir(category_path)
+                    sftp.mkdir(remote_category_path)
 
                 for index, item in enumerate(output):
-                    image_data = BytesIO(item.read())
-                    filename = f"{file_name}_{index}.webp"
-                    remote_file_path = os.path.join(category_path, filename)
-                    sftp.putfo(image_data, remote_file_path)
+                    image_data = item.read()
+                    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+                    filename = f"{file_name}_{timestamp}.webp"
+                    
+                    # Save locally
+                    local_file_path = os.path.join(local_category_path, filename)
+                    with open(local_file_path, "wb") as file:
+                        file.write(image_data)
+                    
+                    # Save to remote via SSH
+                    image_data_copy = BytesIO(image_data)
+                    remote_file_path = os.path.join(remote_category_path, filename)
+                    sftp.putfo(image_data_copy, remote_file_path)
+                    
                     generated_images.append({
-                        "path": os.path.join(category, filename),
+                        "path": os.path.join('/mnt/media_storage/generated', category, filename),
                         "category": category
                     })
                 
@@ -67,17 +82,16 @@ class ImageGenerator:
                 ssh_client.close()
                 return generated_images
 
-        # Production: Save locally (we're on the server)
-        category_path = os.path.join(self.storage_path, category)
-        os.makedirs(category_path, exist_ok=True)
+        # Production: Save locally only
+        os.makedirs(remote_category_path, exist_ok=True)
         
         for index, item in enumerate(output):
             filename = f"{file_name}_{index}.webp"
-            file_path = os.path.join(category_path, filename)
+            file_path = os.path.join(remote_category_path, filename)
             with open(file_path, "wb") as file:
                 file.write(item.read())
             generated_images.append({
-                "path": os.path.join(category, filename),
+                "path": os.path.join('/mnt/media_storage/generated', category, filename),
                 "category": category
             })
         

@@ -30,7 +30,7 @@ app = FastAPI(lifespan=lifespan)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
+app.mount("/mnt/media_storage/generated", StaticFiles(directory="mnt/media_storage/generated"), name="generated_media")
 # Include routes
 app.include_router(router)
 
