@@ -3,571 +3,743 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title></title>
-        <!-- Dynamic Resource Loading -->
+        <!-- Tailwind CSS -->
+        <script src="https://cdn.tailwindcss.com"></script>
 
+        <!-- Additional Resource Loading -->
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+            rel="stylesheet"
+        />
         <!-- Component Styles -->
         <style>
-            /* Global Styles */
+            /*Global CSS*/
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .card {
+                animation: fadeIn 0.5s ease-out;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                border-radius: 1rem;
+            }
+
+            .btn {
+                transition: transform 0.2s ease;
+            }
+
+            .btn:hover {
+                transform: scale(1.02);
+            }
+
+            .input:focus {
+                box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+            }
+            /*End Global CSS*/
+            /* LoginPage */
+            .btn {
+                @apply transition-transform duration-200 ease-in-out;
+            }
+
+            .btn:hover {
+                transform: scale(1.02);
+            }
+
+            .input:focus {
+                @apply shadow-[0_0_0_2px_rgba(59,130,246,0.5)];
+            }
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .card {
+                animation: fadeIn 0.5s ease-out;
+            }
+        </style>
+        <style>
+            *,
+            ::before,
+            ::after {
+                --tw-border-spacing-x: 0;
+                --tw-border-spacing-y: 0;
+                --tw-translate-x: 0;
+                --tw-translate-y: 0;
+                --tw-rotate: 0;
+                --tw-skew-x: 0;
+                --tw-skew-y: 0;
+                --tw-scale-x: 1;
+                --tw-scale-y: 1;
+                --tw-pan-x: ;
+                --tw-pan-y: ;
+                --tw-pinch-zoom: ;
+                --tw-scroll-snap-strictness: proximity;
+                --tw-gradient-from-position: ;
+                --tw-gradient-via-position: ;
+                --tw-gradient-to-position: ;
+                --tw-ordinal: ;
+                --tw-slashed-zero: ;
+                --tw-numeric-figure: ;
+                --tw-numeric-spacing: ;
+                --tw-numeric-fraction: ;
+                --tw-ring-inset: ;
+                --tw-ring-offset-width: 0px;
+                --tw-ring-offset-color: #fff;
+                --tw-ring-color: rgb(59 130 246 / 0.5);
+                --tw-ring-offset-shadow: 0 0 #0000;
+                --tw-ring-shadow: 0 0 #0000;
+                --tw-shadow: 0 0 #0000;
+                --tw-shadow-colored: 0 0 #0000;
+                --tw-blur: ;
+                --tw-brightness: ;
+                --tw-contrast: ;
+                --tw-grayscale: ;
+                --tw-hue-rotate: ;
+                --tw-invert: ;
+                --tw-saturate: ;
+                --tw-sepia: ;
+                --tw-drop-shadow: ;
+                --tw-backdrop-blur: ;
+                --tw-backdrop-brightness: ;
+                --tw-backdrop-contrast: ;
+                --tw-backdrop-grayscale: ;
+                --tw-backdrop-hue-rotate: ;
+                --tw-backdrop-invert: ;
+                --tw-backdrop-opacity: ;
+                --tw-backdrop-saturate: ;
+                --tw-backdrop-sepia: ;
+                --tw-contain-size: ;
+                --tw-contain-layout: ;
+                --tw-contain-paint: ;
+                --tw-contain-style: ;
+            }
+            ::backdrop {
+                --tw-border-spacing-x: 0;
+                --tw-border-spacing-y: 0;
+                --tw-translate-x: 0;
+                --tw-translate-y: 0;
+                --tw-rotate: 0;
+                --tw-skew-x: 0;
+                --tw-skew-y: 0;
+                --tw-scale-x: 1;
+                --tw-scale-y: 1;
+                --tw-pan-x: ;
+                --tw-pan-y: ;
+                --tw-pinch-zoom: ;
+                --tw-scroll-snap-strictness: proximity;
+                --tw-gradient-from-position: ;
+                --tw-gradient-via-position: ;
+                --tw-gradient-to-position: ;
+                --tw-ordinal: ;
+                --tw-slashed-zero: ;
+                --tw-numeric-figure: ;
+                --tw-numeric-spacing: ;
+                --tw-numeric-fraction: ;
+                --tw-ring-inset: ;
+                --tw-ring-offset-width: 0px;
+                --tw-ring-offset-color: #fff;
+                --tw-ring-color: rgb(59 130 246 / 0.5);
+                --tw-ring-offset-shadow: 0 0 #0000;
+                --tw-ring-shadow: 0 0 #0000;
+                --tw-shadow: 0 0 #0000;
+                --tw-shadow-colored: 0 0 #0000;
+                --tw-blur: ;
+                --tw-brightness: ;
+                --tw-contrast: ;
+                --tw-grayscale: ;
+                --tw-hue-rotate: ;
+                --tw-invert: ;
+                --tw-saturate: ;
+                --tw-sepia: ;
+                --tw-drop-shadow: ;
+                --tw-backdrop-blur: ;
+                --tw-backdrop-brightness: ;
+                --tw-backdrop-contrast: ;
+                --tw-backdrop-grayscale: ;
+                --tw-backdrop-hue-rotate: ;
+                --tw-backdrop-invert: ;
+                --tw-backdrop-opacity: ;
+                --tw-backdrop-saturate: ;
+                --tw-backdrop-sepia: ;
+                --tw-contain-size: ;
+                --tw-contain-layout: ;
+                --tw-contain-paint: ;
+                --tw-contain-style: ;
+            } /* ! tailwindcss v3.4.15 | MIT License | https://tailwindcss.com */
+            *,
+            ::after,
+            ::before {
+                box-sizing: border-box;
+                border-width: 0;
+                border-style: solid;
+                border-color: #e5e7eb;
+            }
+            ::after,
+            ::before {
+                --tw-content: '';
+            }
+            :host,
+            html {
+                line-height: 1.5;
+                -webkit-text-size-adjust: 100%;
+                -moz-tab-size: 4;
+                tab-size: 4;
+                font-family: ui-sans-serif, system-ui, sans-serif,
+                    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+                    'Noto Color Emoji';
+                font-feature-settings: normal;
+                font-variation-settings: normal;
+                -webkit-tap-highlight-color: transparent;
+            }
             body {
-                font-family: 'Arial', sans-serif;
+                margin: 0;
+                line-height: inherit;
+            }
+            hr {
+                height: 0;
+                color: inherit;
+                border-top-width: 1px;
+            }
+            abbr:where([title]) {
+                -webkit-text-decoration: underline dotted;
+                text-decoration: underline dotted;
+            }
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6 {
+                font-size: inherit;
+                font-weight: inherit;
+            }
+            a {
+                color: inherit;
+                text-decoration: inherit;
+            }
+            b,
+            strong {
+                font-weight: bolder;
+            }
+            code,
+            kbd,
+            pre,
+            samp {
+                font-family: ui-monospace, SFMono-Regular, Menlo, Monaco,
+                    Consolas, 'Liberation Mono', 'Courier New', monospace;
+                font-feature-settings: normal;
+                font-variation-settings: normal;
+                font-size: 1em;
+            }
+            small {
+                font-size: 80%;
+            }
+            sub,
+            sup {
+                font-size: 75%;
+                line-height: 0;
+                position: relative;
+                vertical-align: baseline;
+            }
+            sub {
+                bottom: -0.25em;
+            }
+            sup {
+                top: -0.5em;
+            }
+            table {
+                text-indent: 0;
+                border-color: inherit;
+                border-collapse: collapse;
+            }
+            button,
+            input,
+            optgroup,
+            select,
+            textarea {
+                font-family: inherit;
+                font-feature-settings: inherit;
+                font-variation-settings: inherit;
+                font-size: 100%;
+                font-weight: inherit;
+                line-height: inherit;
+                letter-spacing: inherit;
+                color: inherit;
                 margin: 0;
                 padding: 0;
-                line-height: 1.6;
             }
-
-            header {
-                background: #333;
-                color: #fff;
-                padding: 10px 20px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
+            button,
+            select {
+                text-transform: none;
             }
-
-            nav a {
-                color: #fff;
-                text-decoration: none;
-                margin: 0 15px;
+            button,
+            input:where([type='button']),
+            input:where([type='reset']),
+            input:where([type='submit']) {
+                -webkit-appearance: button;
+                background-color: transparent;
+                background-image: none;
             }
-
-            .hero {
-                background: url('hero-image.jpg') no-repeat center center/cover;
-                height: 60vh;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                color: #fff;
-                text-align: center;
+            :-moz-focusring {
+                outline: auto;
             }
-
-            .section {
-                padding: 40px 20px;
+            :-moz-ui-invalid {
+                box-shadow: none;
             }
-
-            footer {
-                background: #333;
-                color: #fff;
-                text-align: center;
-                padding: 20px 0;
+            progress {
+                vertical-align: baseline;
             }
-
-            @media (max-width: 768px) {
-                header {
-                    flex-direction: column;
-                }
+            ::-webkit-inner-spin-button,
+            ::-webkit-outer-spin-button {
+                height: auto;
             }
-
-            /* Header */
-            nav a:hover {
-                color: #ffcc00; /* Change color on hover */
+            [type='search'] {
+                -webkit-appearance: textfield;
+                outline-offset: -2px;
             }
-
-            .section {
-                display: flex;
-                flex-direction: column; /* Stack items vertically */
-                align-items: center; /* Center items horizontally */
+            ::-webkit-search-decoration {
+                -webkit-appearance: none;
             }
-
-            .section .content {
-                max-width: 800px; /* Limit width for better readability */
-                text-align: left; /* Align text to the left */
+            ::-webkit-file-upload-button {
+                -webkit-appearance: button;
+                font: inherit;
             }
-            nav a {
-                transition: color 0.3s ease; /* Smooth transition for color change */
+            summary {
+                display: list-item;
             }
-
-            /* Hero Section */
-            .section {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                text-align: center;
-                height: 100%; /* Ensure the section takes full height for vertical centering */
+            blockquote,
+            dd,
+            dl,
+            figure,
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6,
+            hr,
+            p,
+            pre {
+                margin: 0;
             }
-
-            .fade-in {
-                opacity: 0;
-                animation: fadeIn 1s forwards; /* Apply fade-in animation */
+            fieldset {
+                margin: 0;
+                padding: 0;
             }
-
-            @keyframes fadeIn {
-                to {
-                    opacity: 1;
-                }
+            legend {
+                padding: 0;
             }
-            .fade-in {
-                transition: opacity 1s ease-in; /* Smooth transition for opacity */
+            menu,
+            ol,
+            ul {
+                list-style: none;
+                margin: 0;
+                padding: 0;
             }
-
-            /* About Section */
-            .section-content {
-                display: flex;
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: flex-start;
+            dialog {
+                padding: 0;
             }
-
-            .text-column {
-                flex: 1;
-                padding: 20px;
+            textarea {
+                resize: vertical;
             }
-
-            .media-column {
-                flex: 1;
-                padding: 20px;
-            }
-
-            @media (max-width: 768px) {
-                .section-content {
-                    flex-direction: column;
-                }
-            }
-
-            .slide-in {
-                opacity: 0;
-                transform: translateX(-100%);
-                animation: slideIn 0.5s forwards;
-            }
-
-            @keyframes slideIn {
-                to {
-                    opacity: 1;
-                    transform: translateX(0);
-                }
-            }
-            .slide-in {
-                transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
-            }
-
-            /* Services Section */
-            .section-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                gap: 20px;
-            }
-
-            .card {
-                background: #fff;
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                overflow: hidden;
-                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
-            }
-
-            .card:hover {
-                transform: scale(1.05);
-                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            }
-
-            .card-content {
-                padding: 20px;
-            }
-            .card {
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
-            }
-
-            /* Testimonials Section */
-            .carousel {
-                position: relative;
-                overflow: hidden;
-                width: 100%;
-                max-width: 800px;
-                margin: 0 auto;
-            }
-
-            .carousel .testimonial {
-                position: absolute;
-                width: 100%;
-                opacity: 0;
-                transition: opacity 0.5s ease-in-out;
-            }
-
-            .carousel .testimonial.active {
+            input::placeholder,
+            textarea::placeholder {
                 opacity: 1;
+                color: #9ca3af;
             }
-
-            .carousel .testimonial h3 {
-                font-size: 1.5em;
-                margin-bottom: 10px;
-            }
-
-            .carousel .testimonial p {
-                font-size: 1em;
-                color: #666;
-            }
-
-            .carousel-controls {
-                display: flex;
-                justify-content: center;
-                margin-top: 20px;
-            }
-
-            .carousel-controls button {
-                background: #333;
-                color: #fff;
-                border: none;
-                padding: 10px 15px;
+            [role='button'],
+            button {
                 cursor: pointer;
-                margin: 0 5px;
             }
-
-            .carousel-controls button:hover {
-                background: #555;
+            :disabled {
+                cursor: default;
             }
-            @keyframes fade {
-                0% {
-                    opacity: 0;
-                }
-                100% {
-                    opacity: 1;
-                }
+            audio,
+            canvas,
+            embed,
+            iframe,
+            img,
+            object,
+            svg,
+            video {
+                display: block;
+                vertical-align: middle;
             }
-
-            .carousel .testimonial {
-                animation: fade 0.5s ease-in-out;
+            img,
+            video {
+                max-width: 100%;
+                height: auto;
             }
-
-            /* Call to Action Section */
-            .section {
-                background-color: #f4f4f4; /* Contrasting background color */
-                border-radius: 8px; /* Optional: adds rounded corners */
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Optional: adds subtle shadow */
+            [hidden]:where(:not([hidden='until-found'])) {
+                display: none;
             }
-            .section {
-                transition: background-color 0.3s ease; /* Smooth transition for background color */
+            .absolute {
+                position: absolute;
             }
-
-            /* Footer */
-            .section {
+            .relative {
+                position: relative;
+            }
+            .inset-0 {
+                inset: 0px;
+            }
+            .right-3 {
+                right: 0.75rem;
+            }
+            .top-1\/2 {
+                top: 50%;
+            }
+            .my-6 {
+                margin-top: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+            .mb-8 {
+                margin-bottom: 2rem;
+            }
+            .ml-2 {
+                margin-left: 0.5rem;
+            }
+            .mt-2 {
+                margin-top: 0.5rem;
+            }
+            .flex {
+                display: flex;
+            }
+            .h-4 {
+                height: 1rem;
+            }
+            .min-h-screen {
+                min-height: 100vh;
+            }
+            .w-4 {
+                width: 1rem;
+            }
+            .w-full {
+                width: 100%;
+            }
+            .max-w-md {
+                max-width: 28rem;
+            }
+            .-translate-y-1\/2 {
+                --tw-translate-y: -50%;
+                transform: translate(
+                        var(--tw-translate-x),
+                        var(--tw-translate-y)
+                    )
+                    rotate(var(--tw-rotate)) skewX(var(--tw-skew-x))
+                    skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x))
+                    scaleY(var(--tw-scale-y));
+            }
+            .cursor-pointer {
+                cursor: pointer;
+            }
+            .items-center {
+                align-items: center;
+            }
+            .justify-center {
+                justify-content: center;
+            }
+            .justify-between {
+                justify-content: space-between;
+            }
+            .space-x-2 > :not([hidden]) ~ :not([hidden]) {
+                --tw-space-x-reverse: 0;
+                margin-right: calc(0.5rem * var(--tw-space-x-reverse));
+                margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
+            }
+            .space-y-3 > :not([hidden]) ~ :not([hidden]) {
+                --tw-space-y-reverse: 0;
+                margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));
+                margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));
+            }
+            .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+                --tw-space-y-reverse: 0;
+                margin-top: calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));
+                margin-bottom: calc(1.5rem * var(--tw-space-y-reverse));
+            }
+            .rounded-lg {
+                border-radius: 0.5rem;
+            }
+            .border {
+                border-width: 1px;
+            }
+            .border-t {
+                border-top-width: 1px;
+            }
+            .border-gray-300 {
+                --tw-border-opacity: 1;
+                border-color: rgb(209 213 219 / var(--tw-border-opacity, 1));
+            }
+            .bg-blue-600 {
+                --tw-bg-opacity: 1;
+                background-color: rgb(37 99 235 / var(--tw-bg-opacity, 1));
+            }
+            .bg-gray-100 {
+                --tw-bg-opacity: 1;
+                background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
+            }
+            .bg-white {
+                --tw-bg-opacity: 1;
+                background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+            }
+            .p-4 {
+                padding: 1rem;
+            }
+            .p-8 {
+                padding: 2rem;
+            }
+            .px-2 {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+            .px-4 {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            .py-3 {
+                padding-top: 0.75rem;
+                padding-bottom: 0.75rem;
+            }
+            .text-center {
                 text-align: center;
-                font-size: 0.9em; /* Smaller font size */
             }
-
-            .social-icons a {
-                display: inline-block;
-                margin: 0 10px;
-                transition: transform 0.3s ease, opacity 0.3s ease; /* Transition for hover effect */
+            .text-2xl {
+                font-size: 1.5rem;
+                line-height: 2rem;
             }
-
-            .social-icons a:hover {
-                transform: scale(1.1); /* Scale effect on hover */
-                opacity: 0.8; /* Slightly fade on hover */
+            .text-sm {
+                font-size: 0.875rem;
+                line-height: 1.25rem;
             }
-            .social-icons a {
-                transition: transform 0.3s ease, opacity 0.3s ease; /* Transition for hover effect */
+            .font-bold {
+                font-weight: 700;
+            }
+            .font-medium {
+                font-weight: 500;
+            }
+            .text-blue-600 {
+                --tw-text-opacity: 1;
+                color: rgb(37 99 235 / var(--tw-text-opacity, 1));
+            }
+            .text-gray-400 {
+                --tw-text-opacity: 1;
+                color: rgb(156 163 175 / var(--tw-text-opacity, 1));
+            }
+            .text-gray-500 {
+                --tw-text-opacity: 1;
+                color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+            }
+            .text-gray-600 {
+                --tw-text-opacity: 1;
+                color: rgb(75 85 99 / var(--tw-text-opacity, 1));
+            }
+            .text-gray-700 {
+                --tw-text-opacity: 1;
+                color: rgb(55 65 81 / var(--tw-text-opacity, 1));
+            }
+            .text-gray-800 {
+                --tw-text-opacity: 1;
+                color: rgb(31 41 55 / var(--tw-text-opacity, 1));
+            }
+            .text-red-500 {
+                --tw-text-opacity: 1;
+                color: rgb(239 68 68 / var(--tw-text-opacity, 1));
+            }
+            .text-white {
+                --tw-text-opacity: 1;
+                color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+            }
+            .shadow-lg {
+                --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+                    0 4px 6px -4px rgb(0 0 0 / 0.1);
+                --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color),
+                    0 4px 6px -4px var(--tw-shadow-color);
+                box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000),
+                    var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+            }
+            .transition {
+                transition-property: color, background-color, border-color, fill,
+                    stroke, opacity, box-shadow, transform, filter,
+                    -webkit-text-decoration-color, -webkit-backdrop-filter;
+                transition-property: color, background-color, border-color,
+                    text-decoration-color, fill, stroke, opacity, box-shadow,
+                    transform, filter, backdrop-filter;
+                transition-property: color, background-color, border-color,
+                    text-decoration-color, fill, stroke, opacity, box-shadow,
+                    transform, filter, backdrop-filter,
+                    -webkit-text-decoration-color, -webkit-backdrop-filter;
+                transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                transition-duration: 150ms;
+            }
+            .transition-all {
+                transition-property: all;
+                transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                transition-duration: 150ms;
+            }
+            .transition-colors {
+                transition-property: color, background-color, border-color, fill,
+                    stroke, -webkit-text-decoration-color;
+                transition-property: color, background-color, border-color,
+                    text-decoration-color, fill, stroke;
+                transition-property: color, background-color, border-color,
+                    text-decoration-color, fill, stroke,
+                    -webkit-text-decoration-color;
+                transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                transition-duration: 150ms;
+            }
+            .duration-150 {
+                transition-duration: 150ms;
+            }
+            .ease-in-out {
+                transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .hover\:bg-blue-700:hover {
+                --tw-bg-opacity: 1;
+                background-color: rgb(29 78 216 / var(--tw-bg-opacity, 1));
+            }
+            .hover\:bg-gray-50:hover {
+                --tw-bg-opacity: 1;
+                background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1));
+            }
+            .hover\:text-blue-800:hover {
+                --tw-text-opacity: 1;
+                color: rgb(30 64 175 / var(--tw-text-opacity, 1));
+            }
+            .focus\:outline-none:focus {
+                outline: 2px solid transparent;
+                outline-offset: 2px;
+            }
+            .focus\:ring-2:focus {
+                --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0
+                    var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+                --tw-ring-shadow: var(--tw-ring-inset) 0 0 0
+                    calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+                box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+                    var(--tw-shadow, 0 0 #0000);
+            }
+            .focus\:ring-blue-500:focus {
+                --tw-ring-opacity: 1;
+                --tw-ring-color: rgb(59 130 246 / var(--tw-ring-opacity, 1));
             }
         </style>
     </head>
     <body>
         <!-- Component Container -->
         <div id="component-root">
-            <header class="header">
-                <div class="logo">
-                    <img
-                        src="header-logo_design_001.svg"
-                        alt="A modern and sleek logo design for a tech company"
-                    />
-                </div>
-                <nav class="navigation">
-                    <ul>
-                        <li><a href="#home">Home</a></li>
-                        <li><a href="#about">About</a></li>
-                        <li><a href="#services">Services</a></li>
-                        <li><a href="#contact">Contact</a></li>
-                    </ul>
-                </nav>
-                <div class="cta-button">
-                    <button>Get Started</button>
-                </div>
-                <div class="menu-toggle">Menu</div>
-                <div class="mobile-menu">
-                    <ul>
-                        <li><a href="#home">Home</a></li>
-                        <li><a href="#about">About</a></li>
-                        <li><a href="#services">Services</a></li>
-                        <li><a href="#contact">Contact</a></li>
-                    </ul>
-                </div>
-            </header>
-            <section
-                class="hero-section section fade-in"
-                style="background-image: url('path/to/hero_image.jpg')"
+            <div
+                class="min-h-screen bg-gray-100 flex items-center justify-center p-4"
             >
-                <div class="hero-content">
-                    <h1>Your Catchy Tagline Here</h1>
-                    <p>
-                        A brief description of the firm that highlights its
-                        mission and values.
-                    </p>
-                    <a href="#learn-more" class="cta-button">Learn More</a>
-                </div>
-            </section>
-            <section class="about-section">
-                <div class="section-content">
-                    <div class="text-column slide-in">
-                        <h2>About Us</h2>
-                        <p>
-                            We are committed to innovation and inclusivity,
-                            striving to make a positive impact in our community
-                            and beyond. Our mission is to empower individuals
-                            and foster collaboration to achieve excellence in
-                            everything we do.
+                <div
+                    class="card w-full max-w-md p-8 bg-white rounded-lg shadow-lg"
+                >
+                    <div class="text-center mb-8">
+                        <h1 class="text-2xl font-bold text-gray-800">
+                            Welcome Back
+                        </h1>
+                        <p class="text-gray-600 mt-2">
+                            Please sign in to continue
                         </p>
                     </div>
-                    <div class="media-column slide-in">
-                        <img
-                            src="path/to/image1.jpg"
-                            alt="A diverse group of employees collaborating in a modern office space."
-                        />
-                        <img
-                            src="path/to/image2.jpg"
-                            alt="Employees participating in a community service event."
-                        />
-                    </div>
-                </div>
-            </section>
-            <section class="services-section">
-                <h2>Our Services</h2>
-                <div class="section-grid">
-                    <div class="card">
-                        <img
-                            src="path/to/email-icon.png"
-                            alt="Email Service Icon"
-                        />
-                        <div class="card-content">
-                            <h3>Email Service</h3>
-                            <p>
-                                Reliable email solutions to keep your
-                                communication seamless.
-                            </p>
+
+                    <form class="space-y-6" data-form="login">
+                        <div class="form-control relative">
+                            <input
+                                type="email"
+                                placeholder="Email"
+                                class="input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                required=""
+                                aria-label="Email address"
+                            />
+                            <i
+                                class="fas fa-envelope absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                            ></i>
                         </div>
-                    </div>
-                    <div class="card">
-                        <img
-                            src="path/to/cloud-storage-icon.png"
-                            alt="Cloud Storage Service Icon"
-                        />
-                        <div class="card-content">
-                            <h3>Cloud Storage</h3>
-                            <p>
-                                Secure and scalable storage solutions for your
-                                data.
-                            </p>
+
+                        <div class="form-control relative">
+                            <input
+                                type="password"
+                                placeholder="Password"
+                                class="input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                required=""
+                                aria-label="Password"
+                            />
+                            <i
+                                class="fas fa-lock absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                            ></i>
                         </div>
-                    </div>
-                    <div class="card">
-                        <img
-                            src="path/to/video-conferencing-icon.png"
-                            alt="Video Conferencing Service Icon"
-                        />
-                        <div class="card-content">
-                            <h3>Video Conferencing</h3>
-                            <p>
-                                Connect with your team and clients through
-                                high-quality video calls.
-                            </p>
+
+                        <div class="flex items-center justify-between">
+                            <label
+                                class="label cursor-pointer flex items-center"
+                            >
+                                <input
+                                    type="checkbox"
+                                    class="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out"
+                                />
+                                <span class="label-text ml-2 text-gray-700"
+                                    >Remember me</span
+                                >
+                            </label>
+                            <a
+                                href="#"
+                                class="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
+                                >Forgot Password?</a
+                            >
                         </div>
-                    </div>
-                    <div class="card">
-                        <img
-                            src="path/to/project-management-icon.png"
-                            alt="Project Management Service Icon"
-                        />
-                        <div class="card-content">
-                            <h3>Project Management</h3>
-                            <p>
-                                Streamline your projects with our comprehensive
-                                management tools.
-                            </p>
+
+                        <button
+                            type="submit"
+                            class="btn w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-all"
+                        >
+                            Sign In
+                        </button>
+
+                        <div class="relative my-6">
+                            <div class="absolute inset-0 flex items-center">
+                                <div
+                                    class="w-full border-t border-gray-300"
+                                ></div>
+                            </div>
+                            <div class="relative flex justify-center text-sm">
+                                <span class="px-2 bg-white text-gray-500"
+                                    >OR</span
+                                >
+                            </div>
                         </div>
-                    </div>
-                    <div class="card">
-                        <img
-                            src="path/to/social-media-icon.png"
-                            alt="Social Media Service Icon"
-                        />
-                        <div class="card-content">
-                            <h3>Social Media</h3>
-                            <p>
-                                Enhance your online presence and engage with
-                                your audience.
-                            </p>
+
+                        <div class="space-y-3">
+                            <button
+                                type="button"
+                                class="btn btn-outline w-full border border-gray-300 py-3 rounded-lg flex items-center justify-center space-x-2 hover:bg-gray-50"
+                            >
+                                <i class="fab fa-google text-red-500"></i>
+                                <span>Continue with Google</span>
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-outline w-full border border-gray-300 py-3 rounded-lg flex items-center justify-center space-x-2 hover:bg-gray-50"
+                            >
+                                <i class="fab fa-facebook text-blue-600"></i>
+                                <span>Continue with Facebook</span>
+                            </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
-            </section>
-            <section class="testimonials">
-                <h2>What Our Clients Say</h2>
-                <div class="carousel your-carousel-class">
-                    <div class="testimonial active">
-                        <h3>Client Name 1</h3>
-                        <p>
-                            "This company provided exceptional service and
-                            support. Highly recommend!"
-                        </p>
-                        <img
-                            src="path/to/client_logo_1.png"
-                            alt="A modern logo design for a tech company"
-                        />
-                    </div>
-                    <div class="testimonial">
-                        <h3>Client Name 2</h3>
-                        <p>
-                            "Their innovative solutions transformed our
-                            business. We're very satisfied!"
-                        </p>
-                        <img
-                            src="path/to/client_logo_2.png"
-                            alt="A vibrant image representing a healthy lifestyle"
-                        />
-                    </div>
-                    <!-- Additional testimonials can be added here -->
-                </div>
-                <div class="carousel-controls">
-                    <button class="prev">Previous</button>
-                    <button class="next">Next</button>
-                </div>
-            </section>
-            <section class="section" id="call-to-action">
-                <h2>Stay Updated!</h2>
-                <p>
-                    Sign up for our newsletter to receive the latest updates and
-                    exclusive offers. Don't miss out on our upcoming demos!
-                </p>
-                <form id="signupForm">
-                    <input
-                        type="email"
-                        name="email"
-                        placeholder="Enter your email"
-                        required=""
-                    />
-                    <input
-                        type="password"
-                        name="password"
-                        placeholder="Create a password"
-                        required=""
-                    />
-                    <button type="submit">Sign Up</button>
-                    <div id="errorMessage" style="color: red"></div>
-                </form>
-            </section>
-            <footer class="section">
-                <div class="social-icons">
-                    <a
-                        href="https://facebook.com"
-                        target="_blank"
-                        aria-label="Facebook"
-                    >
-                        <img src="facebook-icon.png" alt="Facebook Icon" />
-                    </a>
-                    <a
-                        href="https://twitter.com"
-                        target="_blank"
-                        aria-label="Twitter"
-                    >
-                        <img src="twitter-icon.png" alt="Twitter Icon" />
-                    </a>
-                    <a
-                        href="https://linkedin.com"
-                        target="_blank"
-                        aria-label="LinkedIn"
-                    >
-                        <img src="linkedin-icon.png" alt="LinkedIn Icon" />
-                    </a>
-                </div>
-                <p>Contact us: info@example.com | +1 (234) 567-890</p>
-                <nav>
-                    <a href="#home">Home</a> | <a href="#about">About</a> |
-                    <a href="#services">Services</a> |
-                    <a href="#contact">Contact</a>
-                </nav>
-            </footer>
+            </div>
         </div>
-        <!-- Dynamic Script Loading -->
-
         <!-- Component Scripts -->
-
-        <script>
-            // Global State Management
-
-            // Header State Management
-            let isMenuOpen = false;
-
-            const toggleMenu = () => {
-                isMenuOpen = !isMenuOpen;
-                mobileMenu.classList.toggle('active', isMenuOpen);
-            };
-
-            menuToggle.addEventListener('click', toggleMenu);
-
-            // Section-specific Logic
-
-            // Header Section Logic
-            const menuToggle = document.querySelector('.menu-toggle');
-            const mobileMenu = document.querySelector('.mobile-menu');
-
-            menuToggle.addEventListener('click', () => {
-                mobileMenu.classList.toggle('active');
-            });
-
-            // Testimonials Section Section Logic
-            $(document).ready(function () {
-                $('.your-carousel-class').slick({
-                    dots: true,
-                    infinite: true,
-                    speed: 500,
-                    slidesToShow: 1,
-                    slidesToScroll: 1,
-                });
-            });
-
-            // Call to Action Section Section Logic
-            function validateForm() {
-                const form = document.getElementById('signupForm');
-                const email = form.email.value;
-                const password = form.password.value;
-                const errorMessage = document.getElementById('errorMessage');
-
-                errorMessage.textContent = '';
-
-                if (!email.includes('@')) {
-                    errorMessage.textContent +=
-                        'Please enter a valid email address.\n';
-                }
-                if (password.length < 6) {
-                    errorMessage.textContent +=
-                        'Password must be at least 6 characters long.\n';
-                }
-
-                return errorMessage.textContent === '';
-            }
-
-            document
-                .getElementById('signupForm')
-                .addEventListener('submit', function (event) {
-                    if (!validateForm()) {
-                        event.preventDefault();
-                    }
-                });
-
-            // Event Delegations
-
-            // Testimonials Section Event Delegation
-            $('.your-carousel-class').on('click', '.slick-slide', function () {
-                // Handle click event on carousel slides
-                console.log('Slide clicked:', $(this).data('slide-index'));
-            });
-
-            // Call to Action Section Event Delegation
-            document
-                .getElementById('signupForm')
-                .addEventListener('submit', function (event) {
-                    if (!validateForm()) {
-                        event.preventDefault();
-                    }
-                });
-        </script>
     </body>
 </html>

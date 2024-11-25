@@ -1,5 +1,8 @@
 import re
+import asyncio
 from datetime import datetime, UTC
+from litellm.exceptions import InternalServerError
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from pprint import pprint
 import replicate
 import logging
@@ -47,40 +50,51 @@ model_dict = {
     '4o-mini': {'model': 'openai/gpt-4o-mini', 'max_tokens': 4096},
     '4o': {'model': 'openai/gpt-4o', 'max_tokens': 4096},
 }
-lm = LM(model_dict['4o-mini']['model'], max_tokens=model_dict['4o-mini']['max_tokens'], cache=False)
-strong_lm = LM(model_dict['4o-mini']['model'], max_tokens=model_dict['4o-mini']['max_tokens'], cache=False)
+lm = LM(model_dict['haiku']['model'], max_tokens=model_dict['haiku']['max_tokens'], cache=False)
+strong_lm = LM(model_dict['sonnet']['model'], max_tokens=model_dict['sonnet']['max_tokens'], cache=False)
 configure(lm=lm)
 logger = logging.getLogger('app.component_builder')
 ssh_manager = SSHManager(is_dev_mode=True, logger=logger)
-class WebAppArchitect(Signature):
-    """Design a modern, responsive web app UI using Tailwind CSS for styling.
+class ComplexityAnalyzer(Signature):
+    """Simple examples: Forms, Tables, Cards, individual components.
+    Complex examples: Entire pages, entire apps, entire dashboards."""
+    description = InputField(desc="User's requirements")
+    complexity_level = OutputField(desc="simple or complex")
+class WebComponentArchitect(Signature):
+    """Design a modern, responsive web component using Tailwind's component classes.
     Focus on:
-    - Tailwind's utility-first approach for styling
+    - Using Tailwind's preset component classes (like btn, card, etc.)
+    - Component-level classes instead of utility classes
     - Vanilla JavaScript for interactivity
-    - Responsive design using Tailwind's breakpoint system
-    - Modern layout patterns with Tailwind's flex and grid utilities
-    - Simple, clean animations using Tailwind's transition utilities."""
+    - Responsive design patterns
+    """ 
     description = InputField(desc='The user\'s requirements')
-    component_blueprint = OutputField(desc='Detailed high-level web app UI description and purpose')
-    global_css = OutputField(desc='Global Tailwind configurations and any necessary custom CSS')
-    global_javascript = OutputField(desc='Clean, vanilla JavaScript code') 
-class SectionArchitect(Signature):
-    """Design section-specific UI components using modern Tailwind patterns.
-    Implement:
-    - Tailwind's built-in animation and transition classes
-    - Simple interactive elements using vanilla JavaScript
-    - Tailwind's state modifiers (hover, focus, etc.)
-    - Responsive patterns using Tailwind breakpoints
-    - Clean event handling with vanilla JavaScript"""
-    global_css = InputField()
-    component_blueprint = InputField()
-    sections: List[Dict[Literal[
-        "section_name",
-        "section_details",
+    global_css = OutputField()
+    component_spec: Dict[Literal[
+        'component_name',
+        "layout_structure",
+        "component_hierarchy",
         "image_requirements",
         "css_style_and_animation_instructions",
         "javascript_instructions"
-    ], str]] = OutputField(desc='Instructions using Tailwind classes and vanilla JavaScript')  
+    ], str] = OutputField()
+class WebAppArchitect(Signature):
+    """Design a modern, responsive web app UI using Tailwind's component classes.
+    Focus on:
+    - Using Tailwind's preset component classes (like btn, card, etc.)
+    - Component-level classes instead of utility classes
+    - Vanilla JavaScript for interactivity
+    - Responsive design patterns"""
+    description = InputField(desc='The user\'s requirements')
+    sections: List[Dict[Literal[
+        "section_name",
+        "layout_structure",
+        "component_hierarchy",
+        "image_requirements",
+        "css_style_and_animation_instructions",
+        "javascript_instructions"
+    ], str]] = OutputField() 
+    global_css = OutputField(desc='Global Tailwind configurations and any necessary custom CSS')
 class InteractionLogic(Signature):
     """Define interactive behaviors with awareness of component-wide context"""
     javascript_instructions = InputField()
@@ -113,11 +127,32 @@ class ComponentStructure(Signature):
     - Simple state management with data attributes
     - Clean, readable markup structure
     - Use Font Awesome version 6 Icons"""
-    section_details = InputField()
+    layout_structure = InputField()
+    component_hierarchy = InputField()
     section_css_rules = InputField()
     section_javascript = InputField()
     image_details = InputField(desc='image paths are local to the server')
     markup = OutputField(desc='Response should contain HTML with Tailwind classes')
+
+@retry(
+    retry=retry_if_exception_type(InternalServerError),
+    wait=wait_exponential(multiplier=1, min=4, max=10),
+    stop=stop_after_attempt(3),
+    before_sleep=lambda retry_state: logger.info(f"Retrying due to overload... attempt {retry_state.attempt_number}")
+)
+async def execute_llm_call(func, *args, **kwargs):
+    try:
+        # Check if the function is a coroutine function (async)
+        if asyncio.iscoroutinefunction(func):
+            return await func(*args, **kwargs)
+        # If it's a regular function, run it directly
+        return func(*args, **kwargs)
+    except InternalServerError as e:
+        logger.warning(f"LLM overload error: {str(e)}")
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error in LLM call: {str(e)}")
+        raise
 
 def test_component_builder(prompt):
     try:
@@ -141,74 +176,84 @@ def test_component_builder(prompt):
 async def component_builder_pipeline(prompt, db):
     start = time.time()
     logger.info(f"Starting pipeline: {prompt[:100]}...") 
+    parts = []
+    styles = []
+    markup = []
+    images = []
+    section_logic = {}
     try:
-        yield format_sse({"type": "progress", "message": "🎯 Analyzing requirements..."}) 
-        # Generate initial component definition with enhanced context
-        with context(lm=strong_lm):
-            web_app_architect = ChainOfThought(WebAppArchitect)(description=prompt)
-            section_architect = ChainOfThought(SectionArchitect)(
-                global_css=web_app_architect.global_css,
-                component_blueprint=web_app_architect.component_blueprint
-            )
-        yield format_sse({
-            "type": "progress", 
-            "message": 'Design complete'
-        }) 
+        yield format_sse({"type": "progress", "message": "🎯 Analyzing requirements..."})
+        complexity_analysis = await execute_llm_call(
+            ChainOfThought(ComplexityAnalyzer),
+            description=prompt
+        )
+        print(f"complexity_analysis: {complexity_analysis.complexity_level}")
+        if complexity_analysis.complexity_level == "complex":
+            yield format_sse({"type": "progress", "message": "🚧 Breaking down complex request..."})
+            with context(lm=strong_lm):
+                web_app_architect = await execute_llm_call(
+                    ChainOfThought(WebAppArchitect), description=prompt
+                )
+            parts.extend(web_app_architect.sections)
+            styles.append(web_app_architect.global_css)
+            name = 'section_name'
+            yield format_sse({
+                "type": "progress", 
+                "message": 'Design complete'
+            })
+        else:
+            yield format_sse({"type": "progress", "message": "🏗️ Designing component..."})
+            with context(lm=strong_lm):
+                component_architect = await execute_llm_call(
+                    ChainOfThought(WebComponentArchitect), description=prompt
+                )
+            parts.append(component_architect.component_spec)
+            styles.append(f"/*Global CSS*/\n{component_architect.global_css}\n/*End Global CSS*/")
+            name = 'component_name'
+
     except Exception as e:
         logger.error(f"Definition failed: {str(e)}", exc_info=True)
         yield format_sse({"type": "error", "message": str(e)})
         return 
-    styles = []
-    markup = []
-    images = []
-    section_logic = {} 
-    try:
-        yield format_sse({"type": "progress", "message": "🎨 Generating global styles..."}) 
-        
-        styles.append(f"""
-            /* Global Styles */
-            {web_app_architect.global_css}
-        """) 
-    except Exception as e:
-        logger.error(f"Style failed: {str(e)}", exc_info=True)
-        yield format_sse({"type": "error", "message": str(e)})
-        return 
-    
+
     # Section loop
-    for i, section in enumerate(section_architect.sections, 1):
+    for i, section in enumerate(parts, 1):
         try:
-            yield format_sse({
-                "type": "progress",
-                "message": f"🏗️ Section {i}/{len(section_architect.sections)}: {section['section_name']}"
-            })
+            if len(parts) > 1:
+                yield format_sse({
+                    "type": "progress",
+                "message": f"🏗️ Section {i}/{len(parts)}: {section[name]}"
+                })
 
             # Generate images
-            if 'image_requirements' in section:
-                section_images = generate_section_image_details(
-                    image_instructions=section['image_requirements']
-                )
-                images.extend(section_images)
+            section_images = []
+            # if 'image_requirements' in section:
+            #     section_images = await generate_section_image_details(
+            #         image_instructions=section['image_requirements']
+            #     )
+            #     images.extend(section_images)
 
             # Generate section-specific styles
-            section_style = generate_section_style(
+            section_style = await generate_section_style(
                 style_instructions=section['css_style_and_animation_instructions'],
-                global_css=web_app_architect.global_css
+                global_css=styles[-1]
             )
 
             styles.append(f"""
-                /* {section['section_name']} */
+                /* {section[name]} */
                 {section_style['css_rules']}
                 {section_style['transitions']}
             """)
 
             # Generate section logic
-            logic = build_section_logic(
+            logic = await build_section_logic(
                 javascript_instructions=section['javascript_instructions']
             )
-            section_logic[section['section_name']] = logic 
+            section_logic[section[name]] = logic 
             # Build section structure
-            markup.append(build_component_section(
-                section_details=section['section_details'],
+            markup.append(await build_component_section(
+                layout_structure=section['layout_structure'],
+                component_hierarchy=section['component_hierarchy'],
                 javascript=logic.get('javascript', ''),
                 section_style=section_style,
                 image_details=section_images,
@@ -223,7 +268,7 @@ async def component_builder_pipeline(prompt, db):
                 "content": current_component
             }) 
         except Exception as e:
-            logger.error(f"Section {section['section_name']} failed: {str(e)}")
+            logger.error(f"Section {section[name]} failed: {str(e)}")
             yield format_sse({
                 "type": "warning",
                 "message": f"Section issue: {str(e)}"
@@ -233,7 +278,7 @@ async def component_builder_pipeline(prompt, db):
         styles=f"<style>{' '.join(styles)}</style>",
         markup=markup,
         section_logic=section_logic
-    ) 
+    )
     
     # Add timestamp to each image and insert into MongoDB
     current_time = datetime.now(UTC)
@@ -343,11 +388,11 @@ def flatten_section_logic(section_logic: Dict[str, Dict[str, str]]) -> str:
 """
     return final_js
 
-def generate_section_style(style_instructions, global_css):
+async def generate_section_style(style_instructions, global_css):
     """Generate context-aware styles for a section"""
     try:
-        section_style = Predict(SectionStyle)
-        style_response = section_style(
+        style_response = await execute_llm_call(
+            Predict(SectionStyle),
             style_instructions=style_instructions,
             global_css=global_css
         )
@@ -358,11 +403,14 @@ def generate_section_style(style_instructions, global_css):
     except Exception as e:
         raise Exception(f"Error generating section styles: {str(e)}")
 
-def build_section_logic(javascript_instructions):
+async def build_section_logic(javascript_instructions):
     """Generate context-aware logic for a section"""
     try:
         result = {}
-        section_logic = Predict(InteractionLogic)(javascript_instructions=javascript_instructions)
+        section_logic = await execute_llm_call(
+            Predict(InteractionLogic),
+            javascript_instructions=javascript_instructions
+        )
         if section_logic.needs_javascript:
             result['javascript'] = section_logic.javascript
         if section_logic.need_state_management:
@@ -374,14 +422,15 @@ def build_section_logic(javascript_instructions):
     except Exception as e:
         raise Exception(f"Error generating section logic: {str(e)}")
 
-def generate_section_image_details(image_instructions):
+async def generate_section_image_details(image_instructions):
     """Generate image details for a section"""
     try:
         with context(lm=strong_lm):
-            image_generator = ChainOfThought(SectionImageDetails)
-            image_response = image_generator(
+            image_response = await execute_llm_call(
+                ChainOfThought(SectionImageDetails),
                 image_instructions=image_instructions
-            ) 
+            )
+
             detailed_images = []
             image_generator = ImageGenerator(ssh_manager)
             for image in image_response.image_details:
@@ -398,8 +447,9 @@ def generate_section_image_details(image_instructions):
     except Exception as e:
         raise Exception(f"Error generating image details: {str(e)}") 
 
-def build_component_section(
-    section_details, 
+async def build_component_section(
+    layout_structure,
+    component_hierarchy,
     javascript, 
     section_style=None,
     image_details=None,
@@ -410,13 +460,14 @@ def build_component_section(
     """
     try:
         with context(lm=strong_lm):
-            structure = Predict(ComponentStructure)
-            structure_response = structure(
-                section_details=section_details,
+            structure_response = await execute_llm_call(
+                Predict(ComponentStructure),
+                layout_structure=layout_structure,
+                component_hierarchy=component_hierarchy,
                 section_css_rules=section_style['css_rules'],
                 section_javascript=javascript,
                 image_details=image_details,
-            ) 
+            )
             
             # Combine the markup with accessibility features
             cleaned_markup = clean_markup(structure_response.markup)
