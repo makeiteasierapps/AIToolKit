@@ -34,7 +34,7 @@ def initialize_llm(lm='4o-mini', strong_lm='4o-mini'):
     strong_lm_instance = LM(MODEL_DICT[strong_lm]['model'], max_tokens=MODEL_DICT[strong_lm]['max_tokens'], cache=False)
     configure(lm=lm_instance)
     
-    return lm_instance, strong_lm_instance
+    return strong_lm_instance
 
 @retry(
     retry=retry_if_exception_type(InternalServerError),

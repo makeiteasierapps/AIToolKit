@@ -109,10 +109,10 @@ class ComponentStructure(Signature):
     layout_structure = InputField()
     section_css_rules = InputField()
     section_javascript = InputField()
-    image_details = InputField(desc='image paths are local to the server')
+    image_details = InputField(desc='image paths are local to the server, use all of the images in your response')
     markup = OutputField(desc='Response should contain HTML with Tailwind classes')
 
-lm, strong_lm = initialize_llm()
+strong_lm = initialize_llm('4o-mini', 'sonnet')
 
 async def component_builder_pipeline(prompt, db):
     start = time.time()
@@ -128,7 +128,7 @@ async def component_builder_pipeline(prompt, db):
             ChainOfThought(ComplexityAnalyzer),
             description=prompt
         )
-        print(f"complexity_analysis: {complexity_analysis.complexity_level}")
+
         if complexity_analysis.complexity_level == "complex":
             yield format_sse({"type": "progress", "message": "🚧 Breaking down complex request..."})
             with context(lm=strong_lm):
@@ -163,16 +163,16 @@ async def component_builder_pipeline(prompt, db):
             if len(parts) > 1:
                 yield format_sse({
                     "type": "progress",
-                "message": f"🏗️ Section {i}/{len(parts)}: {section[name]}"
+                    "message": f"🏗️ Section {i}/{len(parts)}: {section[name]}"
                 })
 
             # Generate images
             section_images = []
-            # if 'image_requirements' in section:
-            #     section_images = await generate_section_image_details(
-            #         image_instructions=section['image_requirements']
-            #     )
-            #     images.extend(section_images)
+            if 'image_requirements' in section:
+                section_images = await generate_section_image_details(
+                    image_instructions=section['image_requirements']
+                )
+                images.extend(section_images)
 
             # Generate section-specific styles
             section_style = await generate_section_style(
