@@ -9,9 +9,8 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from site_builder import page_builder_pipeline
 from MongoDbClient import MongoDbClient
-from component_builder import component_builder_pipeline, test_component_builder
+from component_builder import component_builder_pipeline
 
-# Configure logging only for our application modules
 logging.basicConfig(
     level=logging.INFO,  # Default level
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -56,10 +55,6 @@ async def home(request: Request):
 @app.get("/site_builder", response_class=HTMLResponse)
 async def site_builder(request: Request):
     return templates.TemplateResponse("site_builder.html", {"request": request})
-
-@app.post("/test")
-async def component_builder(description: WebsiteDescription):
-    pass
 
 @app.post("/page_builder")
 async def start_pipeline(request: Request, description: WebsiteDescription):

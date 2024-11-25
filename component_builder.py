@@ -1,17 +1,11 @@
 import re
-import asyncio
 from datetime import datetime, UTC
-from litellm.exceptions import InternalServerError
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
-from pprint import pprint
-import replicate
 import logging
 import time
 from typing import List, Dict, Literal
 import json
-import os
-from dspy import  LM, configure, InputField, OutputField, Signature, ChainOfThought, context, Predict
-from dotenv import load_dotenv
+from dspy import InputField, OutputField, Signature, ChainOfThought, context, Predict
+from llm_untils import execute_llm_call, initialize_llm
 from SSHManager import SSHManager
 from ImageGenManager import ImageGenerator
 COMPONENT_SCAFFOLD = '''
@@ -39,25 +33,12 @@ COMPONENT_SCAFFOLD = '''
 </body>
 </html>
 '''
-load_dotenv()
-os.environ.get("OPENAI_API_KEY")
-os.environ.get("ANTHROPIC_API_KEY")
-os.environ.get("REPLICATE_API_TOKEN")
-model_dict = {
-    'sonnet': {'model': 'anthropic/claude-3-5-sonnet-latest', 'max_tokens': 8192},
-    'haiku': {'model': 'anthropic/claude-3-haiku-20240307', 'max_tokens': 4096},
-    'opus': {'model': 'anthropic/claude-3-opus-latest', 'max_tokens': 4096},
-    '4o-mini': {'model': 'openai/gpt-4o-mini', 'max_tokens': 4096},
-    '4o': {'model': 'openai/gpt-4o', 'max_tokens': 4096},
-}
-lm = LM(model_dict['haiku']['model'], max_tokens=model_dict['haiku']['max_tokens'], cache=False)
-strong_lm = LM(model_dict['sonnet']['model'], max_tokens=model_dict['sonnet']['max_tokens'], cache=False)
-configure(lm=lm)
+
 logger = logging.getLogger('app.component_builder')
 ssh_manager = SSHManager(is_dev_mode=True, logger=logger)
 class ComplexityAnalyzer(Signature):
-    """Simple examples: Forms, Tables, Cards, individual components.
-    Complex examples: Entire pages, entire apps, entire dashboards."""
+    """Simple examples: Forms, Tables, Cards, individual components, etc.
+    Complex examples: Landing Pages, entire Apps, Dashboards, etc."""
     description = InputField(desc="User's requirements")
     complexity_level = OutputField(desc="simple or complex")
 class WebComponentArchitect(Signature):
@@ -134,44 +115,7 @@ class ComponentStructure(Signature):
     image_details = InputField(desc='image paths are local to the server')
     markup = OutputField(desc='Response should contain HTML with Tailwind classes')
 
-@retry(
-    retry=retry_if_exception_type(InternalServerError),
-    wait=wait_exponential(multiplier=1, min=4, max=10),
-    stop=stop_after_attempt(3),
-    before_sleep=lambda retry_state: logger.info(f"Retrying due to overload... attempt {retry_state.attempt_number}")
-)
-async def execute_llm_call(func, *args, **kwargs):
-    try:
-        # Check if the function is a coroutine function (async)
-        if asyncio.iscoroutinefunction(func):
-            return await func(*args, **kwargs)
-        # If it's a regular function, run it directly
-        return func(*args, **kwargs)
-    except InternalServerError as e:
-        logger.warning(f"LLM overload error: {str(e)}")
-        raise
-    except Exception as e:
-        logger.error(f"Unexpected error in LLM call: {str(e)}")
-        raise
-
-def test_component_builder(prompt):
-    try:
-        input = {
-            "prompt": prompt,
-            "guidance": 3.5
-        }
-
-        output = replicate.run(
-            "black-forest-labs/flux-dev",
-            input=input
-        )
-        print(f"output: {output}")
-        for index, item in enumerate(output):
-            with open(f"output_{index}.webp", "wb") as file:
-                file.write(item.read())
-    except Exception as e:
-        logger.error(f"Component architect failed: {str(e)}", exc_info=True)
-        return {"status": "error", "message": str(e)}
+lm, strong_lm = initialize_llm()
 
 async def component_builder_pipeline(prompt, db):
     start = time.time()
