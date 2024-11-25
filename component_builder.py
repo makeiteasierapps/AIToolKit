@@ -54,7 +54,6 @@ class WebComponentArchitect(Signature):
     component_spec: Dict[Literal[
         'component_name',
         "layout_structure",
-        "component_hierarchy",
         "image_requirements",
         "css_style_and_animation_instructions",
         "javascript_instructions"
@@ -70,12 +69,11 @@ class WebAppArchitect(Signature):
     sections: List[Dict[Literal[
         "section_name",
         "layout_structure",
-        "component_hierarchy",
         "image_requirements",
         "css_style_and_animation_instructions",
         "javascript_instructions"
     ], str]] = OutputField() 
-    global_css = OutputField(desc='Global Tailwind configurations and any necessary custom CSS')
+    global_css = OutputField()
 class InteractionLogic(Signature):
     """Define interactive behaviors with awareness of component-wide context"""
     javascript_instructions = InputField()
@@ -109,7 +107,6 @@ class ComponentStructure(Signature):
     - Clean, readable markup structure
     - Use Font Awesome version 6 Icons"""
     layout_structure = InputField()
-    component_hierarchy = InputField()
     section_css_rules = InputField()
     section_javascript = InputField()
     image_details = InputField(desc='image paths are local to the server')
@@ -193,11 +190,10 @@ async def component_builder_pipeline(prompt, db):
             logic = await build_section_logic(
                 javascript_instructions=section['javascript_instructions']
             )
-            section_logic[section[name]] = logic 
+            section_logic[section[name]] = logic
             # Build section structure
             markup.append(await build_component_section(
                 layout_structure=section['layout_structure'],
-                component_hierarchy=section['component_hierarchy'],
                 javascript=logic.get('javascript', ''),
                 section_style=section_style,
                 image_details=section_images,
@@ -393,7 +389,6 @@ async def generate_section_image_details(image_instructions):
 
 async def build_component_section(
     layout_structure,
-    component_hierarchy,
     javascript, 
     section_style=None,
     image_details=None,
@@ -407,7 +402,6 @@ async def build_component_section(
             structure_response = await execute_llm_call(
                 Predict(ComponentStructure),
                 layout_structure=layout_structure,
-                component_hierarchy=component_hierarchy,
                 section_css_rules=section_style['css_rules'],
                 section_javascript=javascript,
                 image_details=image_details,

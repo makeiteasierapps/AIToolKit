@@ -25,18 +25,15 @@ async def lifespan(app: FastAPI):
     
     yield
 
-def create_app() -> FastAPI:
-    app = FastAPI(lifespan=lifespan)
-    
-    # Mount static files
-    app.mount("/static", StaticFiles(directory="static"), name="static")
-    
-    # Include routes
-    app.include_router(router)
-    
-    return app
+# Create the FastAPI instance at module level
+app = FastAPI(lifespan=lifespan)
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Include routes
+app.include_router(router)
 
 if __name__ == "__main__":
     load_dotenv()
-    app = create_app()
     run_server(app)
