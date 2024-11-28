@@ -1,0 +1,95 @@
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 56px);
+    padding: 2rem;
+}
+
+.login-card {
+    background: linear-gradient(145deg, rgba(18, 18, 18, 0.8), rgba(18, 18, 18, 0.6));
+    border: 1px solid rgba(47, 255, 209, 0.2);
+    border-radius: 16px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 400px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.login-card h1 {
+    font-size: 2.5rem;
+    background: linear-gradient(45deg, var(--accent-1), #2fffd1);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-weight: 500;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--primary-text);
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(47, 255, 209, 0.2);
+    border-radius: 8px;
+    color: var(--primary-text);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--accent-1);
+    box-shadow: 0 0 0 2px rgba(47, 255, 209, 0.1);
+}
+
+.form-footer {
+    margin-top: 1.5rem;
+    text-align: center;
+    color: var(--secondary-text);
+}
+
+.form-footer a {
+    color: var(--accent-1);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.form-footer a:hover {
+    color: var(--accent-2);
+}
+
+.btn-login {
+    width: 100%;
+    padding: 0.75rem;
+    background: rgba(47, 255, 209, 0.1);
+    border: 1px solid rgba(47, 255, 209, 0.2);
+    border-radius: 8px;
+    color: var(--accent-1);
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+}
+
+.btn-login:hover {
+    background-color: var(--accent-1);
+    color: var(--primary-bg);
+}
+
+.error-message {
+    color: #ff4d4d;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    text-align: center;
+}
