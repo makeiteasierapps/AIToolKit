@@ -5,7 +5,13 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.authentication import (
+    AuthCredentials,
+    AuthenticationBackend, 
+    SimpleUser, 
+    AuthenticationError
+)
+from starlette.middleware.authentication import AuthenticationMiddleware
 from fastapi.responses import RedirectResponse
 from config.logging_config import setup_logging
 from config.server_config import run_server
@@ -15,21 +21,21 @@ from component_builder import component_builder_pipeline
 
 logger = setup_logging()
 
-class AuthMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request, call_next):
+class SessionAuthBackend(AuthenticationBackend):
+    async def authenticate(self, conn):
         # Paths that don't require authentication
-        public_paths = ["/login", "/static"]
+        public_paths = ["/login", "/static", "/signup"]
         
         # Check if the path is public
-        if any(request.url.path.startswith(path) for path in public_paths):
-            return await call_next(request)
-        
-        # Check if user is authenticated
-        if not request.session.get("authenticated"):
-            return RedirectResponse(url="/login", status_code=303)
-        
-        response = await call_next(request)
-        return response
+        if any(conn.url.path.startswith(path) for path in public_paths):
+            return None
+            
+        # Get session auth status from scope directly
+        if not conn.scope.get("session", {}).get("authenticated"):
+            return None
+            
+        username = conn.scope.get("session", {}).get("username", "user")
+        return AuthCredentials(["authenticated"]), SimpleUser(username)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -47,14 +53,18 @@ async def lifespan(app: FastAPI):
 # Create the FastAPI instance at module level
 app = FastAPI(lifespan=lifespan)
 
-# Add SessionMiddleware
+# Add SessionMiddleware first
 app.add_middleware(
-    SessionMiddleware, 
+    SessionMiddleware,
     secret_key=os.getenv("SESSION_SECRET_KEY", "your-secret-key-here")
 )
 
-# Add AuthMiddleware
-app.add_middleware(AuthMiddleware)
+# Add AuthenticationMiddleware with our custom backend
+app.add_middleware(
+    AuthenticationMiddleware,
+    backend=SessionAuthBackend(),
+    on_error=lambda _, exc: RedirectResponse(url="/login", status_code=303)
+)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")

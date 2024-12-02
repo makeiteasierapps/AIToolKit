@@ -23,8 +23,6 @@ async def get_user_by_email(db, email: str):
 
 @router.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
-    if request.session.get("authenticated"):
-        return RedirectResponse(url="/", status_code=303)
     return request.app.state.templates.TemplateResponse(
         "login.html", 
         {"request": request}
@@ -32,8 +30,6 @@ async def login_page(request: Request):
 
 @router.get("/signup", response_class=HTMLResponse)
 async def signup_page(request: Request):
-    if request.session.get("authenticated"):
-        return RedirectResponse(url="/", status_code=303)
     return request.app.state.templates.TemplateResponse(
         "signup.html", 
         {"request": request}
@@ -127,14 +123,20 @@ async def logout(request: Request):
 
 @router.get("/", response_class=HTMLResponse)
 async def home(request: Request):
+    if not request.user.is_authenticated:
+        return RedirectResponse(url="/login", status_code=303)
     return request.app.state.templates.TemplateResponse("home.html", {"request": request})
 
 @router.get("/site_builder", response_class=HTMLResponse)
 async def site_builder(request: Request):
+    if not request.user.is_authenticated:
+        return RedirectResponse(url="/login", status_code=303)
     return request.app.state.templates.TemplateResponse("site_builder.html", {"request": request})
 
 @router.post("/page_builder")
 async def start_pipeline(request: Request, description: WebsiteDescription):
+    if not request.user.is_authenticated:
+        return RedirectResponse(url="/login", status_code=303)
     db = request.app.state.db
     if not description.website_description.strip():
         return StreamingResponse(
