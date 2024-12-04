@@ -4,6 +4,11 @@ from fastapi.responses import HTMLResponse, StreamingResponse, RedirectResponse
 from pydantic import BaseModel, EmailStr
 from typing import AsyncGenerator
 import bcrypt
+import logging
+from starlette.authentication import requires
+
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -16,10 +21,18 @@ class UserSignup(BaseModel):
     password: str
 
 async def get_user(db, username: str):
-    return await db.users.find_one({"username": username})
+    try:
+        return await db.users.find_one({"username": username})
+    except Exception as e:
+        logger.error(f"Error getting user: {str(e)}", exc_info=True)
+        return None
 
 async def get_user_by_email(db, email: str):
-    return await db.users.find_one({"email": email})
+    try:
+        return await db.users.find_one({"email": email})
+    except Exception as e:
+        logger.error(f"Error getting user by email: {str(e)}", exc_info=True)
+        return None
 
 @router.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
@@ -45,27 +58,35 @@ async def signup(
     db = request.app.state.db
     
     # Check if username or email already exists
-    if await get_user(db, username):
+    try:
+        if await get_user(db, username):
+            return request.app.state.templates.TemplateResponse(
+                "signup.html",
+                {
+                    "request": request,
+                    "error": "Username already exists"
+                }
+            )
+    
+        if await get_user_by_email(db, email):
+            return request.app.state.templates.TemplateResponse(
+                "signup.html",
+                {
+                    "request": request,
+                    "error": "Email already registered"
+                }
+            )
+    except Exception as e:
+        logger.error(f"Error checking for existing user: {str(e)}", exc_info=True)
         return request.app.state.templates.TemplateResponse(
             "signup.html",
             {
                 "request": request,
-                "error": "Username already exists"
+                "error": f"An error occurred during signup: {str(e)}"
             }
         )
-    
-    if await get_user_by_email(db, email):
-        return request.app.state.templates.TemplateResponse(
-            "signup.html",
-            {
-                "request": request,
-                "error": "Email already registered"
-            }
-        )
-    
     # Hash password and create user
     hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
-    
     new_user = {
         "username": username,
         "email": email,
@@ -78,6 +99,7 @@ async def signup(
         await db.users.insert_one(new_user)
         request.session["authenticated"] = True
         request.session["username"] = username
+        request.session["email"] = email
         return RedirectResponse(url="/", status_code=303)
     except Exception as e:
         return request.app.state.templates.TemplateResponse(
@@ -97,24 +119,35 @@ async def login(
     db = request.app.state.db
     user = await get_user(db, username)
     
-    if user and bcrypt.checkpw(password.encode(), user["password"]):
-        # Update last login
-        await db.users.update_one(
-            {"username": username},
-            {"$set": {"last_login": datetime.utcnow()}}
-        )
-        
-        request.session["authenticated"] = True
-        request.session["username"] = username
-        return RedirectResponse(url="/", status_code=303)
+    try:
+        if user and bcrypt.checkpw(password.encode(), user["password"]):
+            # Update last login
+            await db.users.update_one(
+                {"username": username},
+                {"$set": {"last_login": datetime.utcnow()}}
+            )
+            request.session["authenticated"] = True
+            request.session["username"] = username
+            request.session["email"] = user["email"]
+            logger.info(f"User {username} logged in")
+            return RedirectResponse(url="/", status_code=303)
     
-    return request.app.state.templates.TemplateResponse(
-        "login.html",
-        {
-            "request": request,
-            "error": "Invalid username or password"
-        }
-    )
+        return request.app.state.templates.TemplateResponse(
+            "login.html",
+            {
+                "request": request,
+                "error": "Invalid username or password"
+            }
+            )
+    except Exception as e:
+        logger.error(f"Error logging in: {str(e)}", exc_info=True)
+        return request.app.state.templates.TemplateResponse(
+            "login.html",
+            {
+                "request": request,
+                "error": f"An error occurred during login: {str(e)}"
+            }
+        )
 
 @router.get("/logout")
 async def logout(request: Request):
@@ -122,7 +155,9 @@ async def logout(request: Request):
     return RedirectResponse(url="/login")
 
 @router.get("/", response_class=HTMLResponse)
+@requires("authenticated", redirect="login")
 async def home(request: Request):
+    print(request.user)
     if not request.user.is_authenticated:
         return RedirectResponse(url="/login", status_code=303)
     return request.app.state.templates.TemplateResponse("home.html", {"request": request})
