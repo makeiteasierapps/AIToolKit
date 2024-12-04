@@ -1,6 +1,14 @@
 import os
 import gunicorn.app.base
 import uvicorn
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from starlette.middleware.sessions import SessionMiddleware
+from starlette.middleware.authentication import AuthenticationMiddleware
+from config.authentication import SessionAuthBackend, on_auth_error
+from MongoDbClient import MongoDbClient
+from component_builder import component_builder_pipeline
 
 def get_server_config():
     return {
@@ -36,3 +44,39 @@ def run_server(app):
         )
     else:
         StandaloneApplication(app, get_server_config()).run()
+
+class ServerConfig:
+    def __init__(self, app: FastAPI, session_secret_key: str):
+        self.app = app
+        self.session_secret_key = session_secret_key
+
+    def setup_middlewares(self):
+        self.app.add_middleware(
+            SessionMiddleware,
+            secret_key=self.session_secret_key,
+            https_only=True
+        )
+        self.app.add_middleware(
+            AuthenticationMiddleware,
+            backend=SessionAuthBackend(),
+            on_error=on_auth_error
+        )
+
+    def setup_static_files(self):
+        self.app.mount("/static", StaticFiles(directory="static"), name="static")
+        self.app.mount(
+            "/mnt/media_storage/generated", 
+            StaticFiles(directory="mnt/media_storage/generated"), 
+            name="generated_media"
+        )
+
+    def setup_state(self):
+        mongo_client = MongoDbClient.get_instance("ai-toolkit")
+        self.app.state.db = mongo_client.db
+        self.app.state.templates = Jinja2Templates(directory="templates")
+        self.app.state.component_builder_pipeline = component_builder_pipeline
+
+    def configure(self):
+        self.setup_middlewares()
+        self.setup_static_files()
+        self.setup_state()

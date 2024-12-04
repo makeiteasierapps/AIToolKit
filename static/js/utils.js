@@ -72,6 +72,27 @@ function hideError() {
     // Remove show class to trigger hide animation
     errorContainer.classList.remove('show');
 }
+
+async function handleLogout() {
+    try {
+        const response = await fetch('/logout', {
+            method: 'POST',
+            credentials: 'include',
+            // Remove redirect: 'follow' as we'll handle it manually
+        });
+
+        if (response.ok) {
+            // If logout successful, manually redirect to login page
+            window.location.href = '/login';
+        } else {
+            const data = await response.json();
+            showError(data.detail || 'Logout failed');
+        }
+    } catch (error) {
+        showError('Network error during logout');
+    }
+}
+
 // Initialize error handling
 document.addEventListener('DOMContentLoaded', () => {
     const errorContainer = document.querySelector('.error-container');
@@ -101,4 +122,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    const logoutButton = document.getElementById('logoutButton');
+    if (logoutButton) {
+        logoutButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleLogout();
+        });
+    }
 });
