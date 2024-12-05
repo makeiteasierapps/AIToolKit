@@ -75,7 +75,12 @@ async def register_user(
     }
     
     await db.users.insert_one(user_data)
-    return {"message": "User created successfully"}
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": form_data.username}, 
+        expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
 
 @auth_routes.post("/logout")
 async def logout(request: Request):
