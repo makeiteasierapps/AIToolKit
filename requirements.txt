@@ -7,10 +7,8 @@ gunicorn==23.0.0
 python-dotenv==1.0.1
 replicate
 motor
-bcrypt
 pydantic[email]>=2.2.0
 python-multipart
-starlette
-itsdangerous
 tenacity
 paramiko
+PyJWT==2.10.1

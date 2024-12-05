@@ -18,7 +18,7 @@ logger = setup_logging()
 class SessionManager:
     def __init__(self, db):
         self.db = db
-        self.session_expiry = timedelta(hours=24)  # Configurable expiration time
+        self.session_expiry = timedelta(hours=24)
 
     async def create_session(self, user_id: str) -> dict:
         session_id = secrets.token_urlsafe(32)

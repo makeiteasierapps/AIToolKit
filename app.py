@@ -1,15 +1,12 @@
 import os
 from contextlib import asynccontextmanager
-from dotenv import load_dotenv
 from fastapi import FastAPI
 from config.logging_config import setup_logging
 from config.server_config import ServerConfig, run_server
 from routes.site_routes import site_router
-from routes.auth_routes import auth_router
+from routes.auth_routes import auth_routes
 
-load_dotenv()
 logger = setup_logging()
-SESSION_SECRET_KEY = os.getenv("SESSION_SECRET_KEY")
 
 @asynccontextmanager
 async def lifespan(application: FastAPI):
@@ -20,12 +17,12 @@ async def lifespan(application: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 # Configure server
-server_config = ServerConfig(app, SESSION_SECRET_KEY)
+server_config = ServerConfig(app)
 server_config.configure()
 
 # Include routes
 app.include_router(site_router)
-app.include_router(auth_router)
+app.include_router(auth_routes)
 
 if __name__ == "__main__":
     run_server(app)

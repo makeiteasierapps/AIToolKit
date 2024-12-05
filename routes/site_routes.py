@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse, StreamingResponse
 from pydantic import BaseModel
-from typing import AsyncGenerator
-from starlette.authentication import requires
+from typing import AsyncGenerator, Annotated
 from config.logging_config import setup_logging
+from config.Oauth2 import get_current_user
 
 
 logger = setup_logging()
@@ -15,18 +15,31 @@ class WebsiteDescription(BaseModel):
 
 
 @site_router.get("/", response_class=HTMLResponse)
-@requires("authenticated", redirect="login")
-async def home(request: Request):
-    return request.app.state.templates.TemplateResponse("home.html", {"request": request})
+async def home(
+    request: Request,
+    current_user: Annotated[dict, Depends(get_current_user)]
+):
+    return request.app.state.templates.TemplateResponse(
+        "home.html", 
+        {"request": request, "user": current_user}
+    )
 
 @site_router.get("/site_builder", response_class=HTMLResponse)
-@requires("authenticated", redirect="login")
-async def site_builder(request: Request):
-    return request.app.state.templates.TemplateResponse("site_builder.html", {"request": request})
+async def site_builder(
+    request: Request,
+    current_user: Annotated[dict, Depends(get_current_user)]
+):
+    return request.app.state.templates.TemplateResponse(
+        "site_builder.html", 
+        {"request": request, "user": current_user}
+    )
 
 @site_router.post("/page_builder")
-@requires("authenticated", redirect="login")
-async def start_pipeline(request: Request, description: WebsiteDescription):
+async def start_pipeline(
+    request: Request,
+    description: WebsiteDescription,
+    current_user: Annotated[dict, Depends(get_current_user)]
+):
     db = request.app.state.db
     if not description.website_description.strip():
         return StreamingResponse(

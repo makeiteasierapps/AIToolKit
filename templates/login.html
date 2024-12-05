@@ -5,7 +5,7 @@ block extra_css %}
 <div class="login-container">
     <div class="login-card">
         <h1>Login</h1>
-        <form id="login-form" method="POST" action="/login">
+        <form id="login-form" method="POST" action="/auth/token">
             <div class="form-group">
                 <label for="username">Username</label>
                 <input
@@ -31,7 +31,7 @@ block extra_css %}
             {% endif %}
             <button type="submit" class="btn-login">Sign In</button>
             <div class="form-footer">
-                Don't have an account? <a href="/signup">Sign Up</a>
+                Don't have an account? <a href="/auth/register">Sign Up</a>
             </div>
         </form>
     </div>

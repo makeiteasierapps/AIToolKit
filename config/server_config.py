@@ -4,9 +4,9 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from starlette.middleware.sessions import SessionMiddleware
-from starlette.middleware.authentication import AuthenticationMiddleware
-from config.authentication import SessionAuthBackend, on_auth_error
+from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi.requests import Request
+from fastapi.responses import RedirectResponse
 from MongoDbClient import MongoDbClient
 from component_builder import component_builder_pipeline
 
@@ -45,22 +45,28 @@ def run_server(app):
     else:
         StandaloneApplication(app, get_server_config()).run()
 
-class ServerConfig:
-    def __init__(self, app: FastAPI, session_secret_key: str):
-        self.app = app
-        self.session_secret_key = session_secret_key
+class AuthMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        # Skip auth check for these paths
+        public_paths = ['/auth/login', '/auth/register', '/auth/token', 
+                       '/static/', '/favicon.ico']
+        
+        if any(request.url.path.startswith(path) for path in public_paths):
+            return await call_next(request)
 
-    def setup_middlewares(self):
-        self.app.add_middleware(
-            SessionMiddleware,
-            secret_key=self.session_secret_key,
-            https_only=True
-        )
-        self.app.add_middleware(
-            AuthenticationMiddleware,
-            backend=SessionAuthBackend(),
-            on_error=on_auth_error
-        )
+        # Check for token in header
+        auth_header = request.headers.get('Authorization')
+        
+        # If no token and requesting HTML page, redirect to login
+        if not auth_header and request.headers.get('accept', '').startswith('text/html'):
+            return RedirectResponse(url='/auth/login')
+            
+        # Otherwise, proceed with request (API calls will get 401 as needed)
+        return await call_next(request)
+
+class ServerConfig:
+    def __init__(self, app: FastAPI):
+        self.app = app
 
     def setup_static_files(self):
         self.app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -77,6 +83,6 @@ class ServerConfig:
         self.app.state.component_builder_pipeline = component_builder_pipeline
 
     def configure(self):
-        self.setup_middlewares()
+        self.app.add_middleware(AuthMiddleware)
         self.setup_static_files()
         self.setup_state()

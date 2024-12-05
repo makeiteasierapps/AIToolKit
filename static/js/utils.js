@@ -73,6 +73,34 @@ function hideError() {
     errorContainer.classList.remove('show');
 }
 
+// Add this function to handle protected route navigation
+async function checkAuthAndRedirect() {
+    console.log('running function')
+    const currentPath = window.location.pathname;
+    // Skip check for login and signup pages
+    if (['/auth/login', '/auth/register'].includes(currentPath)) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/auth/me', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        });
+
+        console.log(response)
+
+        if (!response.ok) {
+            // Redirect to login if unauthorized
+            window.location.href = '/auth/login';
+        }
+    } catch (error) {
+        console.error('Auth check failed:', error);
+        window.location.href = '/auth/login';
+    }
+}
+
 async function handleLogout() {
     try {
         const response = await fetch('/logout', {
@@ -130,4 +158,6 @@ document.addEventListener('DOMContentLoaded', () => {
             handleLogout();
         });
     }
+
+    checkAuthAndRedirect();
 });
