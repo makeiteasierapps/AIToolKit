@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 import os
 from typing import Annotated
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 import jwt
 from passlib.context import CryptContext
@@ -50,7 +50,7 @@ async def get_user(db, username: str):
 
 async def authenticate_user(db, username: str, password: str):
     user = await get_user(db, username)
-    if not user or not verify_password(password, user["password"]):
+    if not user or not verify_password(password, user["hashed_password"]):
         return False
     return user
 
@@ -64,7 +64,10 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db):
+async def get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)],
+    request: Request
+) -> dict:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -79,6 +82,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db):
     except jwt.exceptions.InvalidTokenError:
         raise credentials_exception
 
+    db = request.app.state.db
     user = await get_user(db, token_data.username)
     if user is None:
         raise credentials_exception

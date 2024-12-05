@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from typing import AsyncGenerator, Annotated
 from config.logging_config import setup_logging
 from config.Oauth2 import get_current_user
+from fastapi.responses import RedirectResponse
 
 
 logger = setup_logging()
@@ -13,12 +14,17 @@ site_router = APIRouter()
 class WebsiteDescription(BaseModel):
     website_description: str
 
+def get_db(request: Request):
+    return request.app.state.db
 
 @site_router.get("/", response_class=HTMLResponse)
 async def home(
     request: Request,
-    current_user: Annotated[dict, Depends(get_current_user)]
+    current_user: Annotated[dict, Depends(get_current_user)] = None
 ):
+    if not current_user:
+        return RedirectResponse(url="/auth/login")
+    
     return request.app.state.templates.TemplateResponse(
         "home.html", 
         {"request": request, "user": current_user}

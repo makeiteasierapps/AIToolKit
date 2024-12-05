@@ -1,12 +1,12 @@
 import os
 import gunicorn.app.base
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.requests import Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, JSONResponse
 from MongoDbClient import MongoDbClient
 from component_builder import component_builder_pipeline
 
@@ -55,14 +55,23 @@ class AuthMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         # Check for token in header
-        auth_header = request.headers.get('Authorization')
+        auth_header = request.headers.get('authorization')
         
-        # If no token and requesting HTML page, redirect to login
-        if not auth_header and request.headers.get('accept', '').startswith('text/html'):
+        if auth_header and auth_header.startswith('Bearer '):
+            # Token exists, let the request proceed to the route handler
+            # where get_current_user will properly validate the token
+            return await call_next(request)
+            
+        # If no valid token and requesting HTML page, redirect to login
+        if request.headers.get('accept', '').startswith('text/html'):
+            print("No auth header and requesting HTML page")
             return RedirectResponse(url='/auth/login')
             
-        # Otherwise, proceed with request (API calls will get 401 as needed)
-        return await call_next(request)
+        # For API calls without token, return 401
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={"detail": "Not authenticated"}
+        )
 
 class ServerConfig:
     def __init__(self, app: FastAPI):

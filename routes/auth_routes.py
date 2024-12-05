@@ -7,7 +7,6 @@ from config.Oauth2 import (
     create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES,
     get_current_user, authenticate_user
 )
-from fastapi.responses import HTMLResponse
 
 from config.logging_config import setup_logging
 
@@ -17,11 +16,12 @@ auth_routes = APIRouter(prefix="/auth", tags=["authentication"])
 def get_db(request: Request):
     return request.app.state.db
 
-@auth_routes.get("/login", response_class=HTMLResponse)
-async def login_page(request: Request):
+@auth_routes.get("/login")
+@auth_routes.get("/register")
+async def auth_page(request: Request):
     return request.app.state.templates.TemplateResponse(
-        "login.html", 
-        {"request": request}
+        "auth.html",
+        {"request": request, "error": None}
     )
 
 @auth_routes.post("/token")
@@ -31,7 +31,6 @@ async def login_for_access_token(
 ) -> Token:
     # Find user in database
     user = await authenticate_user(db, form_data.username, form_data.password)
-    print(user)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -45,13 +44,6 @@ async def login_for_access_token(
         expires_delta=access_token_expires
     )
     return Token(access_token=access_token, token_type="bearer")
-
-@auth_routes.get("/register", response_class=HTMLResponse)
-async def signup_page(request: Request):
-    return request.app.state.templates.TemplateResponse(
-        "signup.html", 
-        {"request": request}
-    )
 
 @auth_routes.post("/register")
 async def register_user(
@@ -99,5 +91,4 @@ async def logout(request: Request):
 async def read_users_me(
     current_user: Annotated[dict, Depends(get_current_user)]
 ):
-    print(current_user)
     return current_user
