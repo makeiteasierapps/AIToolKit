@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from config.Oauth2 import (
     Token, get_password_hash, 
     create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES,
-    get_current_user, authenticate_user
+    get_current_user, authenticate_user, refresh_access_token
 )
 
 from config.logging_config import setup_logging
@@ -92,3 +92,8 @@ async def read_users_me(
     current_user: Annotated[dict, Depends(get_current_user)]
 ):
     return current_user
+
+@auth_routes.post("/refresh")
+async def refresh_token(token: str):
+    new_access_token = refresh_access_token(token)
+    return {"access_token": new_access_token, "token_type": "bearer"}

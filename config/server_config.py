@@ -57,21 +57,18 @@ class AuthMiddleware(BaseHTTPMiddleware):
         # Check for token in header
         auth_header = request.headers.get('authorization')
         
-        if auth_header and auth_header.startswith('Bearer '):
-            # Token exists, let the request proceed to the route handler
-            # where get_current_user will properly validate the token
-            return await call_next(request)
+        if not auth_header or not auth_header.startswith('Bearer '):
+            # If no valid token and requesting HTML page, redirect to login
+            if request.headers.get('accept', '').startswith('text/html'):
+                return RedirectResponse(url='/auth/login')
             
-        # If no valid token and requesting HTML page, redirect to login
-        if request.headers.get('accept', '').startswith('text/html'):
-            print("No auth header and requesting HTML page")
-            return RedirectResponse(url='/auth/login')
+            # For API calls without token, return 401
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content={"detail": "Not authenticated"}
+            )
             
-        # For API calls without token, return 401
-        return JSONResponse(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            content={"detail": "Not authenticated"}
-        )
+        return await call_next(request)
 
 class ServerConfig:
     def __init__(self, app: FastAPI):
