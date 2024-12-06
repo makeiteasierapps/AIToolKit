@@ -54,10 +54,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if any(request.url.path.startswith(path) for path in public_paths):
             return await call_next(request)
 
-        # Check for token in header
-        auth_header = request.headers.get('authorization')
-        
-        if not auth_header or not auth_header.startswith('Bearer '):
+        print(request.cookies)
+        # Check for token in cookies
+        access_token = request.cookies.get('access_token')
+        if not access_token or not access_token.startswith('Bearer '):
             # If no valid token and requesting HTML page, redirect to login
             if request.headers.get('accept', '').startswith('text/html'):
                 return RedirectResponse(url='/auth/login')
@@ -67,6 +67,11 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content={"detail": "Not authenticated"}
             )
+        
+        # Add the token to the request headers for downstream middleware/dependencies
+        request.headers.__dict__["_list"].append(
+            (b'authorization', access_token.encode())
+        )
             
         return await call_next(request)
 

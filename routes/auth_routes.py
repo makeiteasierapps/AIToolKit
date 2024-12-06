@@ -1,5 +1,6 @@
 from datetime import timedelta
 from typing import Annotated
+from fastapi.responses import JSONResponse
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from config.Oauth2 import (
@@ -28,8 +29,7 @@ async def auth_page(request: Request):
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db = Depends(get_db)
-) -> Token:
-    # Find user in database
+) -> JSONResponse:
     user = await authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -43,7 +43,22 @@ async def login_for_access_token(
         data={"sub": user["username"]}, 
         expires_delta=access_token_expires
     )
-    return Token(access_token=access_token, token_type="bearer")
+    
+    response = JSONResponse({"status": "success"})
+    response.set_cookie(
+        key="access_token",
+        value=f"Bearer {access_token}",
+        httponly=True,
+        secure=True,  # Enable in production with HTTPS
+        samesite="lax",
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    )
+    return response
+
+@auth_routes.post("/refresh")
+async def refresh_token(token: str):
+    new_access_token = refresh_access_token(token)
+    return {"access_token": new_access_token, "token_type": "bearer"}
 
 @auth_routes.post("/register")
 async def register_user(
@@ -76,24 +91,12 @@ async def register_user(
 
 @auth_routes.post("/logout")
 async def logout(request: Request):
-    try:
-        session_id = request.session.get("session_id")
-        if session_id:
-            pass
-    except Exception as e:
-        logger.error(f"Error during logout: {str(e)}")
-        raise HTTPException(status_code=500, detail="Error during logout")
-    
-    request.session.clear()
-    return {"status": "success"}
+    response = JSONResponse({"status": "success"})
+    response.delete_cookie(key="access_token")
+    return response
 
 @auth_routes.get("/me")
 async def read_users_me(
     current_user: Annotated[dict, Depends(get_current_user)]
 ):
     return current_user
-
-@auth_routes.post("/refresh")
-async def refresh_token(token: str):
-    new_access_token = refresh_access_token(token)
-    return {"access_token": new_access_token, "token_type": "bearer"}

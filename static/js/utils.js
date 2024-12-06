@@ -111,8 +111,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  checkAuthAndRedirect();
-
   const signupForm = document.getElementById("signup-form");
   if (signupForm) {
     signupForm.addEventListener("submit", handleSignup);

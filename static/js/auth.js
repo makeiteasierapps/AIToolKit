@@ -1,23 +1,18 @@
 class Auth {
     static getAuthHeaders() {
-        const token = localStorage.getItem('access_token');
-        return token ? {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        } : {
-            'Content-Type': 'application/json'
+        return {
+            'Content-Type': 'application/json',
         };
     }
 
     static async handleResponse(response) {
         if (response.status === 401) {
-            localStorage.removeItem('access_token');
             if (!window.location.pathname.includes('/auth/login')) {
                 window.location.href = '/auth/login';
             }
             throw new Error('Unauthorized');
         }
-        
+
         const data = await response.json();
         if (!response.ok) {
             throw new Error(data.detail || 'Request failed');
@@ -34,13 +29,13 @@ class Auth {
             method: 'POST',
             body: formData,
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            credentials: 'include',
         });
 
         const data = await this.handleResponse(response);
-        if (data.access_token) {
-            localStorage.setItem('access_token', data.access_token);
+        if (data.status === 'success') {
             window.location.href = '/';
         }
     }
@@ -48,7 +43,7 @@ class Auth {
     static async signup(formData) {
         const response = await fetch('/auth/register', {
             method: 'POST',
-            body: formData
+            body: formData,
         });
 
         const data = await this.handleResponse(response);
@@ -60,19 +55,16 @@ class Auth {
 
     static async logout() {
         try {
-            const response = await fetch('/logout', {
+            const response = await fetch('/auth/logout', {
                 method: 'POST',
-                headers: this.getAuthHeaders()
+                credentials: 'include',
             });
 
             if (response.ok) {
-                localStorage.removeItem('access_token');
                 window.location.href = '/auth/login';
             }
         } catch (error) {
             console.error('Logout failed:', error);
-            // Force logout on frontend anyway
-            localStorage.removeItem('access_token');
             window.location.href = '/auth/login';
         }
     }
@@ -81,11 +73,12 @@ class Auth {
 // Event handlers
 async function handleLogin(event) {
     event.preventDefault();
-    
-    const errorDiv = document.querySelector('.error-message') || 
-                    document.createElement('div');
+
+    const errorDiv =
+        document.querySelector('.error-message') ||
+        document.createElement('div');
     errorDiv.className = 'error-message';
-    
+
     try {
         await Auth.login(
             document.getElementById('login-username').value,
@@ -100,11 +93,12 @@ async function handleLogin(event) {
 
 async function handleSignup(event) {
     event.preventDefault();
-    
-    const errorDiv = document.querySelector('.error-message') || 
-                    document.createElement('div');
+
+    const errorDiv =
+        document.querySelector('.error-message') ||
+        document.createElement('div');
     errorDiv.className = 'error-message';
-    
+
     try {
         const formData = new FormData(event.target);
         await Auth.signup(formData);

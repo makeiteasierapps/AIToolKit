@@ -1,78 +1,122 @@
-{% extends "base.html" %}
-{% block title %}{{ "Login" if is_login else "Sign Up" }} - AI ToolKit{% endblock %}
-{% block extra_css %}
+{% extends "base.html" %} {% block title %}{{ "Login" if is_login else "Sign Up"
+}} - AI ToolKit{% endblock %} {% block extra_css %}
 <link href="/static/css/login.css" rel="stylesheet" />
-{% endblock %}
-{% block content %}
+{% endblock %} {% block content %}
 <div class="login-container">
     <div class="login-card">
         <!-- Login Form -->
-        <form id="login-form" method="POST" action="/auth/token" style="display: none;">
+        <form
+            id="login-form"
+            method="POST"
+            action="/auth/token"
+            style="display: none"
+        >
             <h1>Login</h1>
             <div class="form-group">
                 <label for="login-username">Username</label>
-                <input type="text" class="form-control" id="login-username" name="username" required />
+                <input
+                    type="text"
+                    class="form-control"
+                    id="login-username"
+                    name="username"
+                    required
+                />
             </div>
             <div class="form-group">
                 <label for="login-password">Password</label>
-                <input type="password" class="form-control" id="login-password" name="password" required />
+                <input
+                    type="password"
+                    class="form-control"
+                    id="login-password"
+                    name="password"
+                    required
+                />
             </div>
             {% if error %}
             <div class="error-message">{{ error }}</div>
             {% endif %}
             <button type="submit" class="btn-login">Sign In</button>
             <div class="form-footer">
-                Don't have an account? <a href="#" class="toggle-form" data-show="signup">Sign Up</a>
+                Don't have an account?
+                <a href="#" class="toggle-form" data-show="signup">Sign Up</a>
             </div>
         </form>
 
         <!-- Signup Form -->
-        <form id="signup-form" method="POST" action="/auth/register" style="display: none;">
+        <form
+            id="signup-form"
+            method="POST"
+            action="/auth/register"
+            style="display: none"
+        >
             <h1>Sign Up</h1>
             <div class="form-group">
                 <label for="signup-username">Username</label>
-                <input type="text" class="form-control" id="signup-username" name="username" required />
+                <input
+                    type="text"
+                    class="form-control"
+                    id="signup-username"
+                    name="username"
+                    required
+                />
             </div>
             <div class="form-group">
                 <label for="signup-email">Email</label>
-                <input type="email" class="form-control" id="signup-email" name="email" required />
+                <input
+                    type="email"
+                    class="form-control"
+                    id="signup-email"
+                    name="email"
+                    required
+                />
             </div>
             <div class="form-group">
                 <label for="signup-password">Password</label>
-                <input type="password" class="form-control" id="signup-password" name="password" required />
+                <input
+                    type="password"
+                    class="form-control"
+                    id="signup-password"
+                    name="password"
+                    required
+                />
             </div>
             {% if error %}
             <div class="error-message">{{ error }}</div>
             {% endif %}
             <button type="submit" class="btn-login">Sign Up</button>
             <div class="form-footer">
-                Already have an account? <a href="#" class="toggle-form" data-show="login">Login</a>
+                Already have an account?
+                <a href="#" class="toggle-form" data-show="login">Login</a>
             </div>
         </form>
     </div>
 </div>
-<script src="/static/js/auth.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Show initial form based on URL or default to login
-    const initialForm = window.location.pathname.includes('register') ? 'signup' : 'login';
-    showForm(initialForm);
+    document.addEventListener('DOMContentLoaded', function () {
+        // Show initial form based on URL or default to login
+        const initialForm = window.location.pathname.includes('register')
+            ? 'signup'
+            : 'login';
+        showForm(initialForm);
 
-    // Add click handlers for form toggles
-    document.querySelectorAll('.toggle-form').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            showForm(this.dataset.show);
+        // Add click handlers for form toggles
+        document.querySelectorAll('.toggle-form').forEach((link) => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                showForm(this.dataset.show);
+            });
         });
-    });
 
-    function showForm(formType) {
-        document.getElementById('login-form').style.display = formType === 'login' ? 'block' : 'none';
-        document.getElementById('signup-form').style.display = formType === 'signup' ? 'block' : 'none';
-        // Update URL without page reload
-        const newPath = formType === 'login' ? '/auth/login' : '/auth/register';
-        history.pushState({}, '', newPath);
-    }
-});
+        function showForm(formType) {
+            document.getElementById('login-form').style.display =
+                formType === 'login' ? 'block' : 'none';
+            document.getElementById('signup-form').style.display =
+                formType === 'signup' ? 'block' : 'none';
+            // Update URL without page reload
+            const newPath =
+                formType === 'login' ? '/auth/login' : '/auth/register';
+            history.pushState({}, '', newPath);
+        }
+    });
 </script>
 {% endblock %}

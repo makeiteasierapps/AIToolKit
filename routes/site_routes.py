@@ -22,8 +22,9 @@ async def home(
     request: Request,
     current_user: Annotated[dict, Depends(get_current_user)] = None
 ):
-    if not current_user:
-        return RedirectResponse(url="/auth/login")
+
+    if not current_user and request.headers.get('accept', '').startswith('text/html'):
+        return RedirectResponse(url='/auth/login')
     
     return request.app.state.templates.TemplateResponse(
         "home.html", 
