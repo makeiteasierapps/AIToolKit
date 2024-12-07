@@ -78,10 +78,11 @@ class ServerConfig:
         self.app = app
 
     def setup_static_files(self):
-        self.app.mount("/static", StaticFiles(directory="static"), name="static")
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.app.mount("/static", StaticFiles(directory=os.path.join(project_root, "static")), name="static")
         self.app.mount(
-            "/mnt/media_storage/generated", 
-            StaticFiles(directory="mnt/media_storage/generated"), 
+            "/mnt/media_storage/generated",
+            StaticFiles(directory="/mnt/media_storage/generated"),
             name="generated_media"
         )
 
