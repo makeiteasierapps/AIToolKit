@@ -79,10 +79,23 @@ class ServerConfig:
 
     def setup_static_files(self):
         project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        IS_LOCAL_DEV = os.getenv("IS_LOCAL_DEV", "false") == "true"
+
+        # Mount static files directory
         self.app.mount("/static", StaticFiles(directory=os.path.join(project_root, "static")), name="static")
+        
+        # Set media storage path based on environment
+        if IS_LOCAL_DEV:
+            media_path = os.path.join(project_root, "mnt", "media_storage", "generated")
+        else:
+            media_path = "/mnt/media_storage/generated"
+
+        # Create directory if it doesn't exist
+        os.makedirs(media_path, exist_ok=True)
+
         self.app.mount(
             "/mnt/media_storage/generated",
-            StaticFiles(directory="/mnt/media_storage/generated"),
+            StaticFiles(directory=media_path),
             name="generated_media"
         )
 
