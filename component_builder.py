@@ -1,5 +1,5 @@
 import re
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 import logging
 import time
 from typing import List, Dict, Literal
@@ -217,7 +217,7 @@ async def component_builder_pipeline(prompt, db):
     )
     
     # Add timestamp to each image and insert into MongoDB
-    current_time = datetime.now(UTC)
+    current_time = datetime.now(timezone.utc)
     image_documents = [
         {**image, "created_at": current_time} 
         for image in images
