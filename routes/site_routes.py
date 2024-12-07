@@ -13,6 +13,7 @@ class WebsiteDescription(BaseModel):
     website_description: str
 
 class User(BaseModel):
+    user_id: str
     username: str
     disabled: bool
 
@@ -22,7 +23,7 @@ def get_db(request: Request):
 @site_router.get("/", response_class=HTMLResponse)
 async def home(
     request: Request,
-    current_user: Annotated[User, Depends(get_current_user)] = None
+    current_user: Annotated[User, Depends(get_current_user)]
 ):
 
     return request.app.state.templates.TemplateResponse(
