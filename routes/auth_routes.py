@@ -1,12 +1,11 @@
-from datetime import timedelta
 from typing import Annotated
-from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+from fastapi.responses import Response
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from config.Oauth2 import (
-    Token, get_password_hash, 
-    create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES,
-    get_current_user, authenticate_user, refresh_access_token
+    get_password_hash, 
+    get_current_user, authenticate_user, refresh_access_token, create_token_pair
 )
 
 from config.logging_config import setup_logging
@@ -14,8 +13,13 @@ from config.logging_config import setup_logging
 logger = setup_logging()
 auth_routes = APIRouter(prefix="/auth", tags=["authentication"])
 
-def get_db(request: Request):
-    return request.app.state.db
+class RefreshTokenRequest(BaseModel):
+    token: str
+
+class User(BaseModel):
+    user_id: str
+    username: str
+    disabled: bool
 
 @auth_routes.get("/login")
 @auth_routes.get("/register")
@@ -25,12 +29,18 @@ async def auth_page(request: Request):
         {"request": request, "error": None}
     )
 
+@auth_routes.get("/validate")
+async def validate_session(current_user: User = Depends(get_current_user)):
+    print(current_user)
+    return {"status": "valid", "user": current_user}
+
 @auth_routes.post("/token")
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    db = Depends(get_db)
-) -> JSONResponse:
-    user = await authenticate_user(db, form_data.username, form_data.password)
+    response: Response,
+    request: Request,
+):
+    user = await authenticate_user(request.app.state.db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -38,33 +48,52 @@ async def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user["username"]}, 
-        expires_delta=access_token_expires
-    )
+    token_pair = create_token_pair({"sub": user["username"]})
     
-    response = JSONResponse({"status": "success"})
+    # Set the access token in cookie
     response.set_cookie(
         key="access_token",
-        value=f"Bearer {access_token}",
+        value=f"Bearer {token_pair.access_token}",
         httponly=True,
-        secure=True,  # Enable in production with HTTPS
-        samesite="lax",
-        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60
+        secure=True,
+        samesite="strict"
     )
-    return response
+    
+    return {
+        "status": "success",
+        "refresh_token": token_pair.refresh_token
+    }
 
 @auth_routes.post("/refresh")
-async def refresh_token(token: str):
-    new_access_token = refresh_access_token(token)
-    return {"access_token": new_access_token, "token_type": "bearer"}
+async def refresh_token(
+    request: RefreshTokenRequest,
+    response: Response
+):
+    try:
+        new_access_token = refresh_access_token(request.token)
+        response.set_cookie(
+            key="access_token",
+            value=f"Bearer {new_access_token}",
+            httponly=True,
+            secure=True,
+            samesite="strict"
+        )
+        return {"access_token": new_access_token, "token_type": "bearer"}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid refresh token"
+        )
 
 @auth_routes.post("/register")
 async def register_user(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    db = Depends(get_db)
+    response: Response,
+    request: Request
 ):
+    db = request.app.state.db
     # Check if user exists
     existing_user = await db.users.find_one({"username": form_data.username})
     if existing_user:
@@ -82,18 +111,22 @@ async def register_user(
     }
     
     await db.users.insert_one(user_data)
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": form_data.username}, 
-        expires_delta=access_token_expires
+
+    token_pair = create_token_pair({"sub": form_data.username})
+    
+    response.set_cookie(
+        key="access_token",
+        value=f"Bearer {token_pair.access_token}",
+        httponly=True,
+        secure=True,
+        samesite="lax",
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"status": "success", "refresh_token": token_pair.refresh_token}
 
 @auth_routes.post("/logout")
-async def logout(request: Request):
-    response = JSONResponse({"status": "success"})
+async def logout(response: Response):
     response.delete_cookie(key="access_token")
-    return response
+    return {"status": "success"}
 
 @auth_routes.get("/me")
 async def read_users_me(

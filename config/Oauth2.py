@@ -22,9 +22,8 @@ class TokenData(BaseModel):
     username: str | None = None
 
 class User(BaseModel):
+    user_id: str
     username: str
-    email: str | None = None
-    full_name: str | None = None
     disabled: bool | None = None
 
 class TokenPair(BaseModel):
@@ -34,7 +33,6 @@ class TokenPair(BaseModel):
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 # Security utilities
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -48,7 +46,11 @@ def get_password_hash(password):
 
 async def get_user(db, username: str):
     try:
-        return await db.users.find_one({"username": username})
+        user = await db.users.find_one({"username": username})
+        if user:
+            user["user_id"] = str(user["_id"])
+            user.pop("_id")
+        return user
     except Exception as e:
         logger.error(f"Error getting user: {str(e)}", exc_info=True)
         return None
@@ -93,26 +95,17 @@ async def get_current_user(
         raise credentials_exception
     return user
 
-async def get_current_active_user(
-    current_user: Annotated[User, Depends(get_current_user)],
-):
-    if current_user.disabled:
-        raise HTTPException(status_code=400, detail="Inactive user")
-    return current_user
-
 def create_token_pair(user_data: dict):
-    # Short-lived access token (30 mins)
     access_token = create_access_token(
         data=user_data,
-        expires_delta=timedelta(minutes=30)
+        expires_delta=timedelta(hours=3)
     )
-    
-    # Long-lived refresh token (7 days)
+
     refresh_token = create_access_token(
         data={"sub": user_data["sub"], "type": "refresh"},
         expires_delta=timedelta(days=7)
     )
-    
+
     return TokenPair(
         access_token=access_token,
         refresh_token=refresh_token,

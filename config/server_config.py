@@ -47,14 +47,12 @@ def run_server(app):
 
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        # Skip auth check for these paths
         public_paths = ['/auth/login', '/auth/register', '/auth/token', 
-                       '/static/', '/favicon.ico']
+                       '/static/', '/favicon.ico', '/auth/refresh']
         
         if any(request.url.path.startswith(path) for path in public_paths):
             return await call_next(request)
 
-        print(request.cookies)
         # Check for token in cookies
         access_token = request.cookies.get('access_token')
         if not access_token or not access_token.startswith('Bearer '):
