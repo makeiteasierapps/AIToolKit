@@ -13,3 +13,4 @@ tenacity
 paramiko
 PyJWT==2.10.1
 passlib
+fastapi
