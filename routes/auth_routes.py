@@ -13,6 +13,11 @@ from config.logging_config import setup_logging
 logger = setup_logging()
 auth_routes = APIRouter(prefix="/auth", tags=["authentication"])
 
+class UserRegistration(BaseModel):
+    username: str
+    email: str
+    password: str 
+
 class RefreshTokenRequest(BaseModel):
     token: str
 
@@ -89,13 +94,13 @@ async def refresh_token(
 
 @auth_routes.post("/register")
 async def register_user(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    user_data: UserRegistration,
     response: Response,
     request: Request
 ):
     db = request.app.state.db
     # Check if user exists
-    existing_user = await db.users.find_one({"username": form_data.username})
+    existing_user = await db.users.find_one({"username": user_data.username})
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -103,16 +108,16 @@ async def register_user(
         )
     
     # Create new user
-    hashed_password = get_password_hash(form_data.password)
+    hashed_password = get_password_hash(user_data.password)
     user_data = {
-        "username": form_data.username,
+        "username": user_data.username,
         "hashed_password": hashed_password,
         "disabled": False
     }
     
     await db.users.insert_one(user_data)
 
-    token_pair = create_token_pair({"sub": form_data.username})
+    token_pair = create_token_pair({"sub": user_data["username"]})
     
     response.set_cookie(
         key="access_token",

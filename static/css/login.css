@@ -1,3 +1,25 @@
+.form-control:-webkit-autofill,
+.form-control:-webkit-autofill:hover,
+.form-control:-webkit-autofill:focus,
+.form-control:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px rgba(255, 255, 255, 0.05) inset !important;
+    -webkit-text-fill-color: var(--accent-1) !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+} 
+@keyframes spin {
+    to { transform: rotate(360deg); }
+} 
+
 .login-container {
     display: flex;
     justify-content: center;
@@ -28,6 +50,17 @@
     font-weight: 500;
 }
 
+.password-requirements {
+    font-size: 0.8em;
+    color: #666;
+    margin-top: 5px;
+} 
+.password-match-message {
+    font-size: 0.8em;
+    color: #dc3545;
+    margin-top: 5px;
+} 
+
 .form-group {
     margin-bottom: 1.5rem;
 }
@@ -38,19 +71,45 @@
     color: var(--primary-text);
 }
 
+.form-control:invalid {
+    border-color: inherit;
+    box-shadow: none;
+} 
+
 .form-control {
     width: 100%;
     padding: 0.75rem 1rem;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(47, 255, 209, 0.2);
     border-radius: 8px;
-    color: var(--primary-text);
+    color: var(--accent-1);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.form-control.is-invalid {
+    border-color: #dc3545;
+    padding-right: calc(1.5em + 0.75rem);
+} 
+.form-control.is-valid {
+    border-color: #28a745;
+    padding-right: calc(1.5em + 0.75rem);
+} 
+
+.validation-message {
+    display: none;
+}
+
+.form-control.is-invalid + .validation-message {
+    display: block;
+    color: #dc3545;
+    font-size: 0.875em;
+    margin-top: 0.25rem;
 }
 
 .form-control:focus {
     outline: none;
     border-color: var(--accent-1);
+    color: var(--accent-1);
+    background-color: rgba(47, 255, 209, 0.1);
     box-shadow: 0 0 0 2px rgba(47, 255, 209, 0.1);
 }
 
