@@ -7,28 +7,67 @@ class ConwayBackground {
         this.fadeSpeed = 0.15;
         this.cells = [];
         this.running = true;
-        // Set canvas size to window size
-        this.resize();
-        window.addEventListener('resize', () => this.resize());
-        // Initialize grid
-        this.initGrid();
-        // Start the animation loop
-        this.animate();
-        // Add click listener for interaction
-        this.canvas.addEventListener('click', (e) => this.handleClick(e));
-    }
-    resize() {
+        // Initialize canvas size
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
         this.columns = Math.floor(this.canvas.width / this.cellSize);
         this.rows = Math.floor(this.canvas.height / this.cellSize);
+        // Set up resize handling with debounce
+        this.lastResizeTime = 0;
+        this.resizeThrottleDelay = 16; // About 60fps
+        window.addEventListener('resize', () => this.throttledResize());
+
+        this.initGrid();
+        this.animate();
+        this.canvas.addEventListener('click', (e) => this.handleClick(e));
+    }
+    throttledResize() {
+        const now = Date.now();
+        if (now - this.lastResizeTime >= this.resizeThrottleDelay) {
+            this.lastResizeTime = now;
+            this.handleResize();
+        }
+    }
+    handleResize() {
+        // Store old dimensions and cells
+        const oldCells = this.cells;
+        const oldColumns = this.columns;
+        const oldRows = this.rows;
+        // Update canvas size
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+        this.columns = Math.floor(this.canvas.width / this.cellSize);
+        this.rows = Math.floor(this.canvas.height / this.cellSize);
+        // Only recreate grid if dimensions actually changed
+        if (this.columns !== oldColumns || this.rows !== oldRows) {
+            // Reuse existing array when possible
+            if (!this.cells || this.cells.length !== this.columns) {
+                this.cells = new Array(this.columns);
+            }
+            // Efficient array initialization
+            for (let i = 0; i < this.columns; i++) {
+                if (!this.cells[i] || this.cells[i].length !== this.rows) {
+                    this.cells[i] = new Array(this.rows);
+                }
+                for (let j = 0; j < this.rows; j++) {
+                    if (i < oldColumns && j < oldRows) {
+                        // Preserve existing cells
+                        this.cells[i][j] = oldCells[i][j];
+                    } else {
+                        // Initialize new cells with lower probability
+                        this.cells[i][j] = Math.random() < 0.03;
+                    }
+                }
+            }
+        }
+        // Force immediate redraw
+        this.draw();
     }
     initGrid() {
         this.cells = new Array(this.columns);
         for (let i = 0; i < this.columns; i++) {
             this.cells[i] = new Array(this.rows);
             for (let j = 0; j < this.rows; j++) {
-                // Random initial state with 8% chance of being alive
                 this.cells[i][j] = Math.random() < 0.08;
             }
         }
@@ -39,7 +78,6 @@ class ConwayBackground {
                 const col = (x + i + this.columns) % this.columns;
                 const row = (y + j + this.rows) % this.rows;
                 if (Math.random() < 0.7) {
-                    // 70% chance to create a cell
                     this.cells[col][row] = true;
                 }
             }
@@ -66,10 +104,8 @@ class ConwayBackground {
             for (let j = 0; j < this.rows; j++) {
                 let neighbors = this.getNeighbors(i, j);
                 if (this.cells[i][j]) {
-                    // Cell is alive
                     newCells[i][j] = neighbors === 2 || neighbors === 3;
                 } else {
-                    // Cell is dead
                     newCells[i][j] = neighbors === 3;
                 }
             }
@@ -79,14 +115,11 @@ class ConwayBackground {
     draw() {
         this.ctx.fillStyle = `rgba(0, 0, 0, ${this.fadeSpeed})`;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        this.ctx.fillStyle = `rgba(47, 255, 209, ${this.opacity})`;
         for (let i = 0; i < this.columns; i++) {
             for (let j = 0; j < this.rows; j++) {
                 if (this.cells[i][j]) {
-                    // Add a gentle glow effect
                     const centerX = i * this.cellSize + this.cellSize / 2;
                     const centerY = j * this.cellSize + this.cellSize / 2;
-                    // Create gradient for each cell
                     const gradient = this.ctx.createRadialGradient(
                         centerX,
                         centerY,
@@ -114,15 +147,12 @@ class ConwayBackground {
             }
         }
     }
-
     handleClick(event) {
         const rect = this.canvas.getBoundingClientRect();
         const x = Math.floor((event.clientX - rect.left) / this.cellSize);
         const y = Math.floor((event.clientY - rect.top) / this.cellSize);
-        // Create a cluster of cells instead of a glider
         this.createCells(x, y, 3);
     }
-
     animate() {
         if (this.running) {
             this.update();
@@ -140,7 +170,6 @@ class ConwayBackground {
         }
     }
 }
-// Initialize when the document is loaded
 document.addEventListener('DOMContentLoaded', () => {
     const conway = new ConwayBackground();
 });

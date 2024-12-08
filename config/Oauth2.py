@@ -8,6 +8,7 @@ import jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from config.logging_config import setup_logging
+from UserModel import User
 
 logger = setup_logging()
 
@@ -20,11 +21,6 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: str | None = None
-
-class User(BaseModel):
-    user_id: str
-    username: str
-    disabled: bool | None = None
 
 class TokenPair(BaseModel):
     access_token: str
@@ -44,19 +40,23 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(password):
     return pwd_context.hash(password)
 
-async def get_user(db, username: str):
+async def get_user(db, username: str) -> User | None:
     try:
-        user = await db.users.find_one({"username": username})
-        if user:
-            user["user_id"] = str(user["_id"])
-            user.pop("_id")
-        return user
+        user_dict = await db.users.find_one({"username": username})
+        if user_dict:
+            user_dict["user_id"] = str(user_dict["_id"])
+            user_dict.pop("_id")
+            user_dict.pop("hashed_password")
+            print(user_dict)
+            return User(**user_dict)
+        return None
     except Exception as e:
         logger.error(f"Error getting user: {str(e)}", exc_info=True)
         return None
 
 async def authenticate_user(db, username: str, password: str):
     user = await get_user(db, username)
+    print(user)
     if not user or not verify_password(password, user["hashed_password"]):
         return False
     return user

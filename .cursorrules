@@ -2,6 +2,8 @@ This is a vanilla html and js project.
 
 I am using FastAPI for the backend.
 
+I am using Pymongo/Mongodb for the database.
+
 I am using Bootstrap for the frontend framework. Please do not use Bootstrap utility classes. Only use bootstrap for component classes.
 
 The goal of this project: Create an open source toolkit for AI agents.

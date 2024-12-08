@@ -1,75 +1,7 @@
-import {
-    checkRequestLimit,
-    incrementRequestCount,
-    saveThumbnail,
-} from './storage.js';
-
+import { buildPage, saveThumbnail, showProgressOverlay, hideProgressOverlay, startNewMessageGroup } from './storage.js';
 import { createThumbnail, loadSavedThumbnails } from './thumbnailManager.js';
 
-let currentMessageGroup = null;
 
-// Function to handle submitting the description
-function showProgressOverlay() {
-    document.getElementById('progress-overlay').classList.remove('d-none');
-}
-
-function hideProgressOverlay() {
-    document.getElementById('progress-overlay').classList.add('d-none');
-}
-
-let pendingImageLoads = Promise.resolve();
-
-async function addProgressItem(type, content, imageUrl = null) {
-    const streamContainer = document.getElementById('progress-stream');
-
-    if (type === 'message') {
-        if (!currentMessageGroup) {
-            currentMessageGroup = document.createElement('div');
-            currentMessageGroup.className = 'progress-item mb-3';
-            streamContainer.appendChild(currentMessageGroup);
-        }
-
-        const messageDiv = document.createElement('div');
-        messageDiv.textContent = content;
-        currentMessageGroup.appendChild(messageDiv);
-    } else if (type === 'image') {
-        if (!currentMessageGroup.imageContainer) {
-            currentMessageGroup.imageContainer = document.createElement('div');
-            currentMessageGroup.imageContainer.className = 'image-grid mt-2';
-            currentMessageGroup.imageContainer.style.display = 'grid';
-            currentMessageGroup.imageContainer.style.gridTemplateColumns =
-                'repeat(auto-fill, minmax(150px, 1fr))';
-            currentMessageGroup.imageContainer.style.gap = '8px';
-            currentMessageGroup.appendChild(currentMessageGroup.imageContainer);
-        }
-
-        const imageLoadPromise = new Promise((resolve, reject) => {
-            const img = document.createElement('img');
-            img.src = imageUrl;
-            img.alt = content;
-            img.style.width = '100%';
-            img.style.height = '100px';
-            img.style.objectFit = 'cover';
-            img.style.borderRadius = '4px';
-
-            img.onload = () => {
-                currentMessageGroup.imageContainer.appendChild(img);
-                resolve();
-            };
-            img.onerror = reject;
-        });
-
-        pendingImageLoads = pendingImageLoads.then(() => imageLoadPromise);
-        return pendingImageLoads;
-    }
-
-    // Auto-scroll to the bottom
-    streamContainer.scrollTop = streamContainer.scrollHeight;
-}
-
-function startNewMessageGroup() {
-    currentMessageGroup = null;
-}
 
 async function handleSubmitDescription() {
     const submitButton = document.getElementById('submit-description');
@@ -85,24 +17,10 @@ async function handleSubmitDescription() {
             return;
         }
 
-        if (!checkRequestLimit()) {
-            showError(
-                'You have reached the maximum number of requests. Thank you for trying it out!'
-            );
-            return;
-        }
-
-        incrementRequestCount();
         // Reset progress containers
         document.getElementById('progress-stream').innerHTML = '';
         startNewMessageGroup();
-        const response = await fetch('/page_builder', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                website_description: description,
-            }),
-        });
+        const response = await buildPage(description);
 
         if (!response.ok) {
             throw new Error(
@@ -111,66 +29,6 @@ async function handleSubmitDescription() {
         }
 
         showProgressOverlay();
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-
-        while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value);
-            // Split the chunk into individual SSE messages
-            const messages = chunk.split('data: ').filter((msg) => msg.trim());
-
-            for (const msg of messages) {
-                try {
-                    const jsonData = JSON.parse(msg.trim());
-                    switch (jsonData.type) {
-                        case 'error':
-                            showError(jsonData.message);
-                            return;
-
-                        case 'progress':
-                            await pendingImageLoads;
-                            await addProgressItem('message', jsonData.message);
-                            break;
-
-                        case 'section_complete':
-                            console.log('Section Complete:', jsonData.content);
-                            await pendingImageLoads;
-                            // Update the preview with the intermediate component
-                            updatePreviewIframe(jsonData.content);
-                            break;
-
-                        case 'component_complete':
-                            console.log('Component Complete', jsonData.content);
-                            await pendingImageLoads;
-                            updatePreviewIframe(jsonData.content);
-                            await addProgressItem(
-                                'message',
-                                'Component build complete!'
-                            );
-                            break;
-
-                        case 'image':
-                            await addProgressItem(
-                                'image',
-                                jsonData.description,
-                                jsonData.url
-                            );
-                            break;
-                    }
-                } catch (e) {
-                    console.error(
-                        'Error processing message:',
-                        e,
-                        '\nMessage was:',
-                        msg
-                    );
-                    showError('Error processing server response');
-                }
-            }
-        }
     } catch (error) {
         console.error('Error submitting description:', error);
         showError(`Failed to generate website: ${error.message}`);

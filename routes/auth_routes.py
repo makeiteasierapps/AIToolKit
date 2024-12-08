@@ -7,7 +7,7 @@ from config.Oauth2 import (
     get_password_hash, 
     get_current_user, authenticate_user, refresh_access_token, create_token_pair
 )
-
+from UserModel import User
 from config.logging_config import setup_logging
 
 logger = setup_logging()
@@ -20,11 +20,6 @@ class UserRegistration(BaseModel):
 
 class RefreshTokenRequest(BaseModel):
     token: str
-
-class User(BaseModel):
-    user_id: str
-    username: str
-    disabled: bool
 
 @auth_routes.get("/login")
 @auth_routes.get("/register")
@@ -112,7 +107,8 @@ async def register_user(
     user_data = {
         "username": user_data.username,
         "hashed_password": hashed_password,
-        "disabled": False
+        "disabled": False,
+        "api_request_count": 0
     }
     
     await db.users.insert_one(user_data)
