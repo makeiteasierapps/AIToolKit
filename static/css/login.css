@@ -20,12 +20,128 @@
     to { transform: rotate(360deg); }
 } 
 
-.login-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 56px);
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-header h1 {
+    color: var(--primary-color);
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.auth-header .lead {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+.trial-info {
+    background: linear-gradient(145deg, rgba(var(--primary-rgb), 0.1), rgba(var(--primary-rgb), 0.05));
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.trial-info h2 {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.trial-info p {
+    color: var(--text-color);
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.login-card {
+    background: var(--card-bg);
+    border-radius: 12px;
     padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(18, 18, 18, 0.85));
+}
+
+.auth-content {
+    width: 100%;
+    max-width: 1000px;
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 4rem;
+    align-items: center;
+}
+
+.brand-section {
+    color: var(--accent-1);
+}
+
+.brand-section h1 {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(45deg, var(--accent-1), #2fffd1);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.brand-section .lead {
+    font-size: 1.5rem;
+    color: var(--text-color);
+    margin-bottom: 2.5rem;
+}
+
+.trial-info {
+    background: linear-gradient(145deg, rgba(47, 255, 209, 0.1), rgba(47, 255, 209, 0.05));
+    border: 1px solid rgba(47, 255, 209, 0.1);
+    padding: 2rem;
+    border-radius: 16px;
+}
+
+.trial-info h2 {
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(45deg, var(--accent-1), #2fffd1);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.trial-info p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--text-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .auth-content {
+        grid-template-columns: 1fr;
+        max-width: 500px;
+        gap: 2rem;
+    }
+    
+    .brand-section {
+        text-align: center;
+    }
+    
+    .brand-section h1 {
+        font-size: 2.5rem;
+    }
+    
+    .brand-section .lead {
+        font-size: 1.25rem;
+    }
 }
 
 .login-card {

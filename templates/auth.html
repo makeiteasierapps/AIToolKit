@@ -4,136 +4,147 @@ extra_css %}
 <link href="/static/css/login.css" rel="stylesheet" />
 {% endblock %} {% block content %}
 <div class="login-container">
-    <div class="login-card">
-        <!-- Login Form -->
-        <form
-            id="login-form"
-            method="POST"
-            action="/auth/token"
-            style="display: none"
-        >
-            <h1>Login</h1>
-            <div class="form-group">
-                <label for="login-username">Username</label>
-                <input
-                    type="text"
-                    class="form-control"
-                    id="login-username"
-                    name="username"
-                />
-            </div>
-            <div class="form-group">
-                <label for="login-password">Password</label>
-                <input
-                    type="password"
-                    class="form-control"
-                    id="login-password"
-                    name="password"
-                />
-            </div>
-            {% if error %}
-            <div class="error-message">{{ error }}</div>
-            {% endif %}
-            <button type="submit" class="btn-login">Sign In</button>
-            <div class="form-footer">
-                Don't have an account?
-                <a href="#" class="toggle-form" data-show="signup">Sign Up</a>
-            </div>
-        </form>
-
-        <!-- Signup Form -->
-        <form
-            id="signup-form"
-            method="POST"
-            action="/auth/register"
-            style="display: none"
-        >
-            <h1>Sign Up</h1>
-            <div class="form-group">
-                <label for="signup-username">Username</label>
-                <input
-                    type="text"
-                    class="form-control"
-                    id="signup-username"
-                    name="username"
-                    data-validation="required minlength-3"
-                />
-            </div>
-            <div class="form-group">
-                <label for="signup-email">Email</label>
-                <input
-                    type="email"
-                    class="form-control"
-                    id="signup-email"
-                    name="email"
-                    data-validation="required email"
-                />
-            </div>
-            <div class="form-group">
-                <label for="signup-password">Password</label>
-                <input
-                    type="password"
-                    class="form-control"
-                    id="signup-password"
-                    name="password"
-                    data-validation="required password"
-                />
-                <small class="password-requirements">
-                    Password must be at least 8 characters long and contain at
-                    least one letter, one number, and one special character.
-                </small>
-            </div>
-            <div class="form-group">
-                <label for="signup-confirm-password">Confirm Password</label>
-                <input
-                    type="password"
-                    class="form-control"
-                    id="signup-confirm-password"
-                    name="confirm_password"
-                    data-validation="required password-match"
-                />
-                <small class="password-match-message" style="display: none">
-                    Passwords do not match
-                </small>
-            </div>
-
-            {% if error %}
-            <div class="error-message">{{ error }}</div>
-            {% endif %}
-            <button type="submit" class="btn-login">Sign Up</button>
-            <div class="form-footer">
-                Already have an account?
-                <a href="#" class="toggle-form" data-show="login">Login</a>
-            </div>
-        </form>
+  <div class="auth-content">
+    <div class="brand-section">
+      <h1>AI ToolKit</h1>
+      <p class="lead">Build and experiment with AI tools</p>
+    
+      <div class="trial-info">
+        <h2>Try it Free</h2>
+        <p>Get started with 10 free iterations to build your project. Experience the power of AI-assisted development.</p>
+      </div>
     </div>
+
+    <div class="login-card">
+      <!-- Login Form -->
+      <form
+        id="login-form"
+        method="POST"
+        action="/auth/token"
+        style="display: none"
+      >
+        <h1>Login</h1>
+        <div class="form-group">
+          <label for="login-username">Username</label>
+          <input
+            type="text"
+            class="form-control"
+            id="login-username"
+            name="username"
+          />
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            id="login-password"
+            name="password"
+          />
+        </div>
+        {% if error %}
+        <div class="error-message">{{ error }}</div>
+        {% endif %}
+        <button type="submit" class="btn-login">Sign In</button>
+        <div class="form-footer">
+          Don't have an account?
+          <a href="#" class="toggle-form" data-show="signup">Sign Up</a>
+        </div>
+      </form>
+
+      <!-- Signup Form -->
+      <form
+        id="signup-form"
+        method="POST"
+        action="/auth/register"
+        style="display: none"
+      >
+        <h1>Sign Up</h1>
+        <div class="form-group">
+          <label for="signup-username">Username</label>
+          <input
+            type="text"
+            class="form-control"
+            id="signup-username"
+            name="username"
+            data-validation="required minlength-3"
+          />
+        </div>
+        <div class="form-group">
+          <label for="signup-email">Email</label>
+          <input
+            type="email"
+            class="form-control"
+            id="signup-email"
+            name="email"
+            data-validation="required email"
+          />
+        </div>
+        <div class="form-group">
+          <label for="signup-password">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            id="signup-password"
+            name="password"
+            data-validation="required password"
+          />
+          <small class="password-requirements">
+            Password must be at least 8 characters long and contain at least one
+            letter, one number, and one special character.
+          </small>
+        </div>
+        <div class="form-group">
+          <label for="signup-confirm-password">Confirm Password</label>
+          <input
+            type="password"
+            class="form-control"
+            id="signup-confirm-password"
+            name="confirm_password"
+            data-validation="required password-match"
+          />
+          <small class="password-match-message" style="display: none">
+            Passwords do not match
+          </small>
+        </div>
+
+        {% if error %}
+        <div class="error-message">{{ error }}</div>
+        {% endif %}
+        <button type="submit" class="btn-login">Sign Up</button>
+        <div class="form-footer">
+          Already have an account?
+          <a href="#" class="toggle-form" data-show="login">Login</a>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Show initial form based on URL or default to login
-        const initialForm = window.location.pathname.includes('register')
-            ? 'signup'
-            : 'login';
-        showForm(initialForm);
+  document.addEventListener("DOMContentLoaded", function () {
+    // Show initial form based on URL or default to login
+    const initialForm = window.location.pathname.includes("register")
+      ? "signup"
+      : "login";
+    showForm(initialForm);
 
-        // Add click handlers for form toggles
-        document.querySelectorAll('.toggle-form').forEach((link) => {
-            link.addEventListener('click', function (e) {
-                e.preventDefault();
-                showForm(this.dataset.show);
-            });
-        });
-
-        function showForm(formType) {
-            document.getElementById('login-form').style.display =
-                formType === 'login' ? 'block' : 'none';
-            document.getElementById('signup-form').style.display =
-                formType === 'signup' ? 'block' : 'none';
-            // Update URL without page reload
-            const newPath =
-                formType === 'login' ? '/auth/login' : '/auth/register';
-            history.pushState({}, '', newPath);
-        }
+    // Add click handlers for form toggles
+    document.querySelectorAll(".toggle-form").forEach((link) => {
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        showForm(this.dataset.show);
+      });
     });
+
+    function showForm(formType) {
+      document.getElementById("login-form").style.display =
+        formType === "login" ? "block" : "none";
+      document.getElementById("signup-form").style.display =
+        formType === "signup" ? "block" : "none";
+      // Update URL without page reload
+      const newPath = formType === "login" ? "/auth/login" : "/auth/register";
+      history.pushState({}, "", newPath);
+    }
+  });
 </script>
 {% endblock %}
