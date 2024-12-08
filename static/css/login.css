@@ -7,6 +7,25 @@
     transition: background-color 5000s ease-in-out 0s;
 }
 
+#gameCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    pointer-events: auto;
+}
+
+.background-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(18, 18, 18, 0.6); /* Adjust opacity as needed */
+    z-index: 0;
+    pointer-events: none; /* Allow clicks to pass through */
+}
+
 .spinner {
     display: inline-block;
     width: 20px;
@@ -65,6 +84,7 @@
 }
 
 .login-container {
+    z-index: 4;
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -76,36 +96,39 @@
 .auth-content {
     width: 100%;
     max-width: 1000px;
-    display: grid;
-    grid-template-columns: 1fr 400px;
-    gap: 4rem;
+    display: flex;
     align-items: center;
+    flex-direction: column;
 }
 
 .brand-section {
+    z-index: 2;
     color: var(--accent-1);
+    text-align: center;
+    width: 100%;
 }
 
 .brand-section h1 {
     font-size: 3.5rem;
     margin-bottom: 1rem;
-    background: linear-gradient(45deg, var(--accent-1), #2fffd1);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    text-shadow: 0 0 20px rgba(47, 255, 209, 0.3);
 }
 
 .brand-section .lead {
     font-size: 1.5rem;
     color: var(--text-color);
     margin-bottom: 2.5rem;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
 
 .trial-info {
-    background: linear-gradient(145deg, rgba(47, 255, 209, 0.1), rgba(47, 255, 209, 0.05));
-    border: 1px solid rgba(47, 255, 209, 0.1);
-    padding: 2rem;
+    background: rgba(0, 255, 209, 0.05);
+    border: 1px solid rgba(47, 255, 209, 0.2);
+    backdrop-filter: blur(36px);
     border-radius: 16px;
+    padding: 1rem;
+    width: 100%;
+    max-width: 400px;
 }
 
 .trial-info h2 {
@@ -121,27 +144,6 @@
     font-size: 1.1rem;
     line-height: 1.6;
     color: var(--text-color);
-}
-
-/* Responsive adjustments */
-@media (max-width: 992px) {
-    .auth-content {
-        grid-template-columns: 1fr;
-        max-width: 500px;
-        gap: 2rem;
-    }
-    
-    .brand-section {
-        text-align: center;
-    }
-    
-    .brand-section h1 {
-        font-size: 2.5rem;
-    }
-    
-    .brand-section .lead {
-        font-size: 1.25rem;
-    }
 }
 
 .login-card {
@@ -195,9 +197,10 @@
 .form-control {
     width: 100%;
     padding: 0.75rem 1rem;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 255, 209, 0.05);
     border: 1px solid rgba(47, 255, 209, 0.2);
     border-radius: 8px;
+    backdrop-filter: blur(8px);
     color: var(--accent-1);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
@@ -267,4 +270,19 @@
     font-size: 0.875rem;
     margin-top: 0.5rem;
     text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {    
+    .brand-section {
+        text-align: center;
+    }
+    
+    .brand-section h1 {
+        font-size: 2.5rem;
+    }
+    
+    .brand-section .lead {
+        font-size: 1.25rem;
+    }
 }
