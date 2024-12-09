@@ -1,17 +1,37 @@
-import { pageBuilder } from './PageBuilder.js';
-
 export const SPINNER_TEMPLATE = `
     <div class="spinner-border" role="status">
         <span class="visually-hidden">Loading...</span>
     </div>
 `;
 
-export async function createThumbnail(
-    iframe,
-    htmlContent,
-    title,
-    thumbnailId = 'thumbnail-' + Date.now()
-) {
+// Thumbnail storage functions
+export async function saveThumbnail(thumbnailData) {
+    const response = await fetch('/api/thumbnails', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(thumbnailData),
+    });
+    return response.json();
+}
+
+export async function deleteThumbnail(thumbnailId) {
+    await fetch(`/api/thumbnails/${thumbnailId}`, {
+        method: 'DELETE',
+    });
+}
+
+async function getSavedThumbnails() {
+    const response = await fetch('/api/thumbnails');
+    const data = await response.json();
+    return data;
+}
+
+export async function createThumbnail(iframe, htmlContent, title) {
+    const thumbnailId = Array.from({ length: 24 }, () =>
+        Math.floor(Math.random() * 16).toString(16)
+    ).join('');
     // Clone the template
     const template = document.getElementById('thumbnail-template');
     const thumbnailWrapper = template.content
@@ -94,7 +114,7 @@ export async function createThumbnail(
 }
 
 export async function loadSavedThumbnails() {
-    const savedThumbnails = await pageBuilder.getSavedThumbnails();
+    const savedThumbnails = await getSavedThumbnails();
     const container = document.getElementById('thumbnails-container');
 
     for (const thumbnailData of savedThumbnails) {
@@ -102,16 +122,16 @@ export async function loadSavedThumbnails() {
         const iframe = document.createElement('iframe');
         document.body.appendChild(iframe);
         iframe.contentWindow.document.open();
-        iframe.contentWindow.document.write(thumbnailData.html);
+        iframe.contentWindow.document.write(thumbnailData.thumbnail_data.html);
         const thumbnail = await createThumbnail(
             iframe,
-            thumbnailData.html,
-            thumbnailData.title,
-            thumbnailData.id
+            thumbnailData.thumbnail_data.html,
+            thumbnailData.thumbnail_data.title,
+            thumbnailData.thumbnail_data.id
         );
 
         iframe.contentWindow.document.close();
-        thumbnail.id = thumbnailData.id;
+        thumbnail.id = thumbnailData.thumbnail_data.id;
         container.appendChild(thumbnail);
         document.body.removeChild(iframe);
     }

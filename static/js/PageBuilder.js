@@ -173,29 +173,6 @@ class PageBuilder {
         this.pendingImageLoads = imageLoadPromise;
         await this.pendingImageLoads;
     }
-
-    // Thumbnail storage functions
-    async saveThumbnail(thumbnailData) {
-        const response = await fetch('/api/thumbnails', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(thumbnailData),
-        });
-        return response.json();
-    }
-
-    async deleteThumbnail(thumbnailId) {
-        await fetch(`/api/thumbnails/${thumbnailId}`, {
-            method: 'DELETE',
-        });
-    }
-
-    async getSavedThumbnails() {
-        const response = await fetch('/api/thumbnails');
-        return response.json();
-    }
 }
 
 // Export a singleton instance

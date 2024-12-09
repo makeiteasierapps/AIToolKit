@@ -33,12 +33,14 @@ async def save_thumbnail(
     db = Depends(get_db)
 ):
     new_thumbnail = {
+        "_id": ObjectId(thumbnail_data["id"]),
+        "title": thumbnail_data["title"],
+        "html": thumbnail_data["html"],
         "user_id": user.user_id,
-        "thumbnail_data": thumbnail_data,
         "created_at": datetime.now(timezone.utc)
     }
-    result = await db.thumbnails.insert_one(new_thumbnail)
-    new_thumbnail["_id"] = str(result.inserted_id)
+    await db.thumbnails.insert_one(new_thumbnail)
+    new_thumbnail["_id"] = str(new_thumbnail["_id"])
     return new_thumbnail
 
 @page_builder_router.delete("/api/thumbnails/{thumbnail_id}")

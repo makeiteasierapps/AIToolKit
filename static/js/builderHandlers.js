@@ -1,5 +1,9 @@
 import { pageBuilder } from './PageBuilder.js';
-import { createThumbnail, loadSavedThumbnails } from './thumbnailManager.js';
+import {
+    createThumbnail,
+    loadSavedThumbnails,
+    saveThumbnail,
+} from './thumbnailManager.js';
 import { showError, hideError } from './utils.js';
 async function handleSubmitDescription() {
     const submitButton = document.getElementById('submit-description');
@@ -71,7 +75,7 @@ async function handleSavePage() {
             timestamp: Date.now(),
         });
 
-        updatePreviewIframe('');
+        pageBuilder.updatePreviewIframe('');
     } finally {
         saveOverlay.classList.add('d-none');
     }
