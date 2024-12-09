@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 from typing import AsyncGenerator, Annotated
 from config.logging_config import setup_logging
 from config.Oauth2 import get_current_user
-from UserModel import User
+from models.UserModel import User
 
 logger = setup_logging()
 

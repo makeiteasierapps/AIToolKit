@@ -8,7 +8,7 @@ import jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from config.logging_config import setup_logging
-from UserModel import User
+from models.UserModel import User
 
 logger = setup_logging()
 

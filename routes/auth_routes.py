@@ -7,7 +7,7 @@ from config.Oauth2 import (
     get_password_hash, 
     get_current_user, authenticate_user, refresh_access_token, create_token_pair
 )
-from UserModel import User
+from models.UserModel import User
 from config.logging_config import setup_logging
 
 logger = setup_logging()

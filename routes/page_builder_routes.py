@@ -3,12 +3,12 @@ from fastapi import APIRouter, Request, Depends, HTTPException
 from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel
 from typing import Annotated
-from UserModel import User
+from models.UserModel import User
 from config.logging_config import setup_logging
 from bson import ObjectId
 from datetime import datetime, timezone
 from config.Oauth2 import get_current_user
-from component_builder import component_builder_pipeline
+from page_builder.page_builder import page_builder_pipeline
 logger = setup_logging()
 
 class WebsiteDescription(BaseModel):
@@ -129,7 +129,7 @@ async def start_pipeline(
     async def generate():
         try:
             # Process the actual page building
-            async for html_update in component_builder_pipeline(description.website_description, db):
+            async for html_update in page_builder_pipeline(description.website_description, db):
                 if not html_update.startswith('data: '):
                     html_update = f'data: {html_update}'
                 yield f"{html_update}\n\n"
