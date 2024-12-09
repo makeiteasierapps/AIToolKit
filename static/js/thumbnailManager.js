@@ -122,16 +122,16 @@ export async function loadSavedThumbnails() {
         const iframe = document.createElement('iframe');
         document.body.appendChild(iframe);
         iframe.contentWindow.document.open();
-        iframe.contentWindow.document.write(thumbnailData.thumbnail_data.html);
+        iframe.contentWindow.document.write(thumbnailData.html);
         const thumbnail = await createThumbnail(
             iframe,
-            thumbnailData.thumbnail_data.html,
-            thumbnailData.thumbnail_data.title,
-            thumbnailData.thumbnail_data.id
+            thumbnailData.html,
+            thumbnailData.title,
+            thumbnailData._id
         );
 
         iframe.contentWindow.document.close();
-        thumbnail.id = thumbnailData.thumbnail_data.id;
+        thumbnail.id = thumbnailData.id;
         container.appendChild(thumbnail);
         document.body.removeChild(iframe);
     }

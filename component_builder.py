@@ -38,8 +38,8 @@ logger = logging.getLogger('app.component_builder')
 ssh_manager = SSHManager(is_dev_mode=True, logger=logger)
 class ComplexityAnalyzer(Signature):
     """Simple examples: Forms, Tables, Cards, individual components, etc.
-    Complex examples: Landing Pages, entire Apps, Dashboards, etc."""
-    description = InputField(desc="User's requirements")
+    Complex examples: Landing Pages, entire Apps, Dashboards, multiple components etc."""
+    description = InputField(desc="User prompt")
     complexity_level = OutputField(desc="simple or complex")
 class WebComponentArchitect(Signature):
     """Design a modern, responsive web component using Tailwind's component classes.
@@ -121,11 +121,11 @@ async def component_builder_pipeline(prompt, db):
     try:
         yield format_sse({"type": "progress", "message": "🎯 Analyzing requirements..."})
         complexity_analysis = await execute_llm_call(
-            ChainOfThought(ComplexityAnalyzer),
+            Predict(ComplexityAnalyzer),
             description=prompt
         )
 
-        if complexity_analysis.complexity_level == "complex":
+        if complexity_analysis.complexity_level.lower() == "complex":
             yield format_sse({"type": "progress", "message": "🚧 Breaking down complex request..."})
             with context(lm=strong_lm):
                 web_app_architect = await execute_llm_call(

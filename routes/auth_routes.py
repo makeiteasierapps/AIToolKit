@@ -31,7 +31,6 @@ async def auth_page(request: Request):
 
 @auth_routes.get("/validate")
 async def validate_session(current_user: User = Depends(get_current_user)):
-    print(current_user)
     return {"status": "valid", "user": current_user}
 
 @auth_routes.post("/token")

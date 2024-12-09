@@ -388,6 +388,7 @@ class AuthUI {
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
     if (!window.location.pathname.includes('/auth/')) {
+        console.log('validating session');
         await Auth.validateSession();
     }
     AuthUI.init();

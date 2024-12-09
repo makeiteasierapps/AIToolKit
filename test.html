@@ -13,91 +13,281 @@
         />
         <!-- Component Styles -->
         <style>
-            @import url('https://fonts.googleapis.com/2?family=Poppins:wght@400;500;600;700&display=swap');
-
+            /* Custom Colors */
             :root {
-                --primary-color: #4f46e5;
-                --secondary-color: #818cf8;
+                --color-sage-50: #f6f7f6;
+                --color-sage-100: #e3e6e3;
+                --color-sage-800: #2c332c;
             }
 
+            /* Global Styles */
             body {
-                font-family: 'Poppins', sans-serif;
+                font-family: 'Inter', sans-serif;
+                scroll-behavior: smooth;
             }
 
-            .card {
-                transition: transform 0.3s ease;
+            /* Animations */
+            .animate-fade-in {
+                animation: fadeIn 0.8s ease-out;
             }
 
-            .card:hover {
-                transform: translateY(-5px);
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
             }
 
-            .btn {
-                transition: all 0.3s ease;
+            /* Smooth Transitions */
+            .transition-duration-300 {
+                transition-duration: 300ms;
             }
 
-            .btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            /* Custom Scrollbar */
+            ::-webkit-scrollbar {
+                width: 8px;
             }
 
-            .carousel {
-                transition: all 0.5s ease;
+            ::-webkit-scrollbar-track {
+                background: var(--color-sage-50);
             }
 
-            .form-control input:focus,
-            .form-control select:focus {
-                border-color: var(--primary-color);
-                outline: none;
-                box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+            ::-webkit-scrollbar-thumb {
+                background: var(--color-sage-800);
+                border-radius: 4px;
+            }
+
+            /* Responsive Adjustments */
+            @media (max-width: 768px) {
+                .chat-window {
+                    width: calc(100vw - 2rem);
+                    right: 1rem;
+                }
             }
             /* Hero Section */
-            .book-now-btn {
-                background-color: var(--primary-color);
-                color: white;
-                padding: 12px 24px;
-                border-radius: 8px;
-                border: none;
-                font-weight: 600;
-                cursor: pointer;
-            }
-
-            .book-now-btn:hover {
-                background-color: var(--secondary-color);
-                transform: scale(1.05);
-                box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
-            }
-            .book-now-btn {
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-
-            /* Services Section */
-            .card {
-                transform-origin: center;
+            .parallax-section {
+                position: relative;
+                background-attachment: fixed;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-size: cover;
+                transform-style: preserve-3d;
                 will-change: transform;
             }
 
-            .card:hover {
-                transform: scale(1.03);
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            }
-            .card {
-                transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
-            }
-
-            /* Testimonials Section */
-            .carousel-item {
+            .stats-container {
                 opacity: 0;
-                display: none;
-                will-change: opacity;
+                transform: translateY(20px);
             }
 
-            .carousel-item.active {
+            .stats-container.visible {
                 opacity: 1;
-                display: block;
+                transform: translateY(0);
             }
-            .carousel-item {
-                transition: opacity 0.6s ease-in-out;
+
+            .text-content {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            .text-content.visible {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            @media (max-width: 768px) {
+                .parallax-section {
+                    background-attachment: scroll;
+                }
+            }
+            .stats-container {
+                transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+            }
+
+            .text-content {
+                transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+            }
+
+            @keyframes slideInParallax {
+                from {
+                    transform: translateY(50px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            .parallax-content {
+                animation: slideInParallax 1s ease-out forwards;
+            }
+
+            /* 3D Product Showcase */
+            .product-view {
+                position: relative;
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            .product-view:hover {
+                transform: scale(1.02);
+            }
+
+            .control-button {
+                background: transparent;
+                border: 2px solid #333;
+                padding: 8px 16px;
+                cursor: pointer;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .control-button:hover {
+                background: rgba(51, 51, 51, 0.1);
+            }
+
+            .control-button:active {
+                transform: scale(0.98);
+            }
+
+            .product-gallery {
+                position: relative;
+                overflow: hidden;
+            }
+
+            .product-image {
+                backface-visibility: hidden;
+                -webkit-backface-visibility: hidden;
+            }
+            .product-view {
+                transition: all 0.3s ease-in-out;
+            }
+
+            .control-button {
+                transition: background 0.2s ease, transform 0.2s ease;
+            }
+
+            .product-image {
+                transition: transform 0.4s ease-out;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .fade-enter {
+                animation: fadeIn 0.4s ease-out forwards;
+            }
+
+            /* Testimonials */
+            .video-card {
+                position: relative;
+                border-radius: 8px;
+                overflow: hidden;
+                background: #f5f5f5;
+                cursor: pointer;
+            }
+
+            .video-card video {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                loading: lazy;
+            }
+
+            .video-card .overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .video-card:hover .overlay {
+                background: rgba(0, 0, 0, 0.2);
+            }
+            .video-card {
+                transition: transform 0.3s ease-in-out,
+                    box-shadow 0.3s ease-in-out;
+            }
+
+            .video-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            }
+
+            .video-card .overlay {
+                transition: background-color 0.3s ease-in-out;
+            }
+
+            @keyframes videoCardLoad {
+                from {
+                    opacity: 0;
+                    transform: scale(0.95);
+                }
+                to {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+            }
+
+            .video-card.loading {
+                animation: videoCardLoad 0.5s ease-out forwards;
+            }
+
+            /* Chatbot */
+            .chat-window {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                width: 300px;
+                background: #ffffff;
+                border-radius: 12px;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+                opacity: 0;
+                transform: translateX(100%);
+            }
+
+            .chat-window.active {
+                opacity: 1;
+                transform: translateX(0);
+            }
+
+            .button {
+                padding: 10px 20px;
+                border-radius: 6px;
+                border: none;
+                background: #f5f5f5;
+                cursor: pointer;
+            }
+
+            .button:hover {
+                background: #e8e8e8;
+                transform: translateY(-2px);
+            }
+            .chat-window {
+                transition: transform 0.4s ease-out, opacity 0.3s ease-in;
+            }
+
+            .button {
+                transition: background-color 0.2s ease, transform 0.2s ease;
             }
 
             @keyframes slideIn {
@@ -111,39 +301,8 @@
                 }
             }
 
-            @keyframes slideOut {
-                from {
-                    opacity: 1;
-                    transform: translateX(0);
-                }
-                to {
-                    opacity: 0;
-                    transform: translateX(-100%);
-                }
-            }
-
-            /* Booking Section */
-            input:focus,
-            textarea:focus,
-            select:focus {
-                outline: none;
-                border-color: #4a90e2;
-                box-shadow: 0 0 5px rgba(74, 144, 226, 0.3);
-            }
-
-            input:focus::placeholder,
-            textarea:focus::placeholder {
-                opacity: 0.7;
-            }
-            input,
-            textarea,
-            select {
-                transition: all 0.2s ease-in-out;
-            }
-
-            input::placeholder,
-            textarea::placeholder {
-                transition: opacity 0.15s ease-in-out;
+            .chat-window.entering {
+                animation: slideIn 0.4s ease-out forwards;
             }
         </style>
         <style>
@@ -254,7 +413,7 @@
                 --tw-contain-layout: ;
                 --tw-contain-paint: ;
                 --tw-contain-style: ;
-            } /* ! tailwindcss v3.4.15 | MIT License | https://tailwindcss.com */
+            } /* ! tailwindcss v3.4.16 | MIT License | https://tailwindcss.com */
             *,
             ::after,
             ::before {
@@ -490,6 +649,9 @@
                     max-width: 1536px;
                 }
             }
+            .fixed {
+                position: fixed;
+            }
             .absolute {
                 position: absolute;
             }
@@ -499,61 +661,45 @@
             .inset-0 {
                 inset: 0px;
             }
-            .left-0 {
-                left: 0px;
+            .bottom-20 {
+                bottom: 5rem;
+            }
+            .bottom-4 {
+                bottom: 1rem;
+            }
+            .bottom-6 {
+                bottom: 1.5rem;
+            }
+            .left-4 {
+                left: 1rem;
             }
             .right-0 {
                 right: 0px;
             }
-            .top-1\/2 {
-                top: 50%;
+            .right-6 {
+                right: 1.5rem;
+            }
+            .z-10 {
+                z-index: 10;
+            }
+            .z-20 {
+                z-index: 20;
+            }
+            .z-50 {
+                z-index: 50;
             }
             .mx-auto {
                 margin-left: auto;
                 margin-right: auto;
             }
-            .my-4 {
-                margin-top: 1rem;
-                margin-bottom: 1rem;
-            }
-            .-ml-4 {
-                margin-left: -1rem;
-            }
-            .-mr-4 {
-                margin-right: -1rem;
+            .mb-12 {
+                margin-bottom: 3rem;
             }
             .mb-4 {
                 margin-bottom: 1rem;
             }
             .mb-6 {
                 margin-bottom: 1.5rem;
-            }
-            .mb-8 {
-                margin-bottom: 2rem;
-            }
-            .ml-2 {
-                margin-left: 0.5rem;
-            }
-            .mr-2 {
-                margin-right: 0.5rem;
-            }
-            .mr-3 {
-                margin-right: 0.75rem;
-            }
-            .mr-4 {
-                margin-right: 1rem;
-            }
-            .mt-4 {
-                margin-top: 1rem;
-            }
-            .mt-6 {
-                margin-top: 1.5rem;
-            }
-            .mt-auto {
-                margin-top: auto;
-            }
-            .block {
-                display: block;
             }
             .flex {
                 display: flex;
@@ -564,47 +710,52 @@
             .hidden {
                 display: none;
             }
-            .h-12 {
-                height: 3rem;
+            .aspect-video {
+                aspect-ratio: 16 / 9;
             }
-            .h-3 {
-                height: 0.75rem;
+            .h-14 {
+                height: 3.5rem;
             }
-            .h-64 {
-                height: 16rem;
+            .h-8 {
+                height: 2rem;
+            }
+            .h-80 {
+                height: 20rem;
+            }
+            .h-96 {
+                height: 24rem;
+            }
+            .h-\[600px\] {
+                height: 600px;
             }
             .h-full {
                 height: 100%;
             }
-            .min-h-\[600px\] {
-                min-height: 600px;
+            .h-screen {
+                height: 100vh;
             }
-            .w-12 {
-                width: 3rem;
+            .min-h-screen {
+                min-height: 100vh;
             }
-            .w-3 {
-                width: 0.75rem;
+            .w-14 {
+                width: 3.5rem;
+            }
+            .w-8 {
+                width: 2rem;
+            }
+            .w-96 {
+                width: 24rem;
             }
             .w-full {
                 width: 100%;
             }
-            .max-w-7xl {
-                max-width: 80rem;
+            .max-w-\[80\%\] {
+                max-width: 80%;
             }
-            .max-w-lg {
-                max-width: 32rem;
+            .flex-shrink-0 {
+                flex-shrink: 0;
             }
-            .max-w-md {
-                max-width: 28rem;
-            }
-            .max-w-xl {
-                max-width: 36rem;
-            }
-            .flex-1 {
-                flex: 1 1 0%;
-            }
-            .-translate-y-1\/2 {
-                --tw-translate-y: -50%;
+            .transform {
                 transform: translate(
                         var(--tw-translate-x),
                         var(--tw-translate-y)
@@ -613,23 +764,26 @@
                     skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x))
                     scaleY(var(--tw-scale-y));
             }
-            .cursor-pointer {
-                cursor: pointer;
-            }
             .grid-cols-1 {
                 grid-template-columns: repeat(1, minmax(0, 1fr));
-            }
-            .flex-col {
-                flex-direction: column;
             }
             .items-center {
                 align-items: center;
             }
+            .justify-end {
+                justify-content: flex-end;
+            }
             .justify-center {
                 justify-content: center;
             }
+            .justify-between {
+                justify-content: space-between;
+            }
             .gap-2 {
                 gap: 0.5rem;
+            }
+            .gap-3 {
+                gap: 0.75rem;
             }
             .gap-6 {
                 gap: 1.5rem;
@@ -637,13 +791,24 @@
             .gap-8 {
                 gap: 2rem;
             }
-            .space-y-4 > :not([hidden]) ~ :not([hidden]) {
-                --tw-space-y-reverse: 0;
-                margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));
-                margin-bottom: calc(1rem * var(--tw-space-y-reverse));
+            .space-x-2 > :not([hidden]) ~ :not([hidden]) {
+                --tw-space-x-reverse: 0;
+                margin-right: calc(0.5rem * var(--tw-space-x-reverse));
+                margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
+            }
+            .space-x-4 > :not([hidden]) ~ :not([hidden]) {
+                --tw-space-x-reverse: 0;
+                margin-right: calc(1rem * var(--tw-space-x-reverse));
+                margin-left: calc(1rem * calc(1 - var(--tw-space-x-reverse)));
             }
             .overflow-hidden {
                 overflow: hidden;
+            }
+            .overflow-y-auto {
+                overflow-y: auto;
+            }
+            .rounded-2xl {
+                border-radius: 1rem;
             }
             .rounded-full {
                 border-radius: 9999px;
@@ -651,27 +816,48 @@
             .rounded-lg {
                 border-radius: 0.5rem;
             }
+            .rounded-xl {
+                border-radius: 0.75rem;
+            }
+            .rounded-t-lg {
+                border-top-left-radius: 0.5rem;
+                border-top-right-radius: 0.5rem;
+            }
             .border {
                 border-width: 1px;
             }
-            .border-gray-100 {
+            .border-t {
+                border-top-width: 1px;
+            }
+            .border-gray-200 {
                 --tw-border-opacity: 1;
-                border-color: rgb(243 244 246 / var(--tw-border-opacity, 1));
+                border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
             }
-            .bg-gray-50 {
-                --tw-bg-opacity: 1;
-                background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1));
+            .border-gray-300 {
+                --tw-border-opacity: 1;
+                border-color: rgb(209 213 219 / var(--tw-border-opacity, 1));
             }
-            .bg-orange-400 {
+            .bg-emerald-100 {
                 --tw-bg-opacity: 1;
-                background-color: rgb(251 146 60 / var(--tw-bg-opacity, 1));
+                background-color: rgb(209 250 229 / var(--tw-bg-opacity, 1));
+            }
+            .bg-emerald-600 {
+                --tw-bg-opacity: 1;
+                background-color: rgb(5 150 105 / var(--tw-bg-opacity, 1));
+            }
+            .bg-gray-100 {
+                --tw-bg-opacity: 1;
+                background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
             }
             .bg-white {
                 --tw-bg-opacity: 1;
                 background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
             }
-            .bg-white\/20 {
-                background-color: rgb(255 255 255 / 0.2);
+            .bg-white\/10 {
+                background-color: rgb(255 255 255 / 0.1);
+            }
+            .bg-white\/80 {
+                background-color: rgb(255 255 255 / 0.8);
             }
             .bg-gradient-to-b {
                 background-image: linear-gradient(
@@ -679,18 +865,39 @@
                     var(--tw-gradient-stops)
                 );
             }
-            .bg-gradient-to-br {
+            .bg-gradient-to-r {
                 background-image: linear-gradient(
-                    to bottom right,
+                    to right,
                     var(--tw-gradient-stops)
                 );
             }
-            .from-blue-50 {
-                --tw-gradient-from: #eff6ff var(--tw-gradient-from-position);
-                --tw-gradient-to: rgb(239 246 255 / 0)
+            .bg-gradient-to-t {
+                background-image: linear-gradient(
+                    to top,
+                    var(--tw-gradient-stops)
+                );
+            }
+            .from-black\/60 {
+                --tw-gradient-from: rgb(0 0 0 / 0.6)
+                    var(--tw-gradient-from-position);
+                --tw-gradient-to: rgb(0 0 0 / 0) var(--tw-gradient-to-position);
+                --tw-gradient-stops: var(--tw-gradient-from),
+                    var(--tw-gradient-to);
+            }
+            .from-emerald-900\/80 {
+                --tw-gradient-from: rgb(6 78 59 / 0.8)
+                    var(--tw-gradient-from-position);
+                --tw-gradient-to: rgb(6 78 59 / 0)
                     var(--tw-gradient-to-position);
                 --tw-gradient-stops: var(--tw-gradient-from),
                     var(--tw-gradient-to);
+            }
+            .to-teal-800\/80 {
+                --tw-gradient-to: rgb(17 94 89 / 0.8)
+                    var(--tw-gradient-to-position);
+            }
+            .to-transparent {
+                --tw-gradient-to: transparent var(--tw-gradient-to-position);
             }
             .to-white {
                 --tw-gradient-to: #fff var(--tw-gradient-to-position);
@@ -698,26 +905,34 @@
             .object-cover {
                 object-fit: cover;
             }
-            .p-2 {
-                padding: 0.5rem;
+            .p-3 {
+                padding: 0.75rem;
+            }
+            .p-4 {
+                padding: 1rem;
             }
             .p-6 {
                 padding: 1.5rem;
-            }
-            .p-8 {
-                padding: 2rem;
             }
             .px-4 {
                 padding-left: 1rem;
                 padding-right: 1rem;
             }
-            .py-12 {
-                padding-top: 3rem;
-                padding-bottom: 3rem;
+            .px-6 {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
             }
-            .py-6 {
-                padding-top: 1.5rem;
-                padding-bottom: 1.5rem;
+            .py-16 {
+                padding-top: 4rem;
+                padding-bottom: 4rem;
+            }
+            .py-2 {
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
+            }
+            .py-20 {
+                padding-top: 5rem;
+                padding-bottom: 5rem;
             }
             .text-center {
                 text-align: center;
@@ -734,6 +949,10 @@
                 font-size: 2.25rem;
                 line-height: 2.5rem;
             }
+            .text-5xl {
+                font-size: 3rem;
+                line-height: 1;
+            }
             .text-lg {
                 font-size: 1.125rem;
                 line-height: 1.75rem;
@@ -749,44 +968,22 @@
             .font-bold {
                 font-weight: 700;
             }
-            .font-medium {
-                font-weight: 500;
-            }
             .font-semibold {
                 font-weight: 600;
-            }
-            .italic {
-                font-style: italic;
-            }
-            .leading-tight {
-                line-height: 1.25;
-            }
-            .text-blue-500 {
-                --tw-text-opacity: 1;
-                color: rgb(59 130 246 / var(--tw-text-opacity, 1));
-            }
-            .text-gray-500 {
-                --tw-text-opacity: 1;
-                color: rgb(107 114 128 / var(--tw-text-opacity, 1));
-            }
-            .text-gray-600 {
-                --tw-text-opacity: 1;
-                color: rgb(75 85 99 / var(--tw-text-opacity, 1));
-            }
-            .text-gray-700 {
-                --tw-text-opacity: 1;
-                color: rgb(55 65 81 / var(--tw-text-opacity, 1));
             }
             .text-gray-800 {
                 --tw-text-opacity: 1;
                 color: rgb(31 41 55 / var(--tw-text-opacity, 1));
             }
-            .text-red-500 {
+            .text-white {
                 --tw-text-opacity: 1;
-                color: rgb(239 68 68 / var(--tw-text-opacity, 1));
+                color: rgb(255 255 255 / var(--tw-text-opacity, 1));
             }
             .opacity-0 {
                 opacity: 0;
+            }
+            .opacity-80 {
+                opacity: 0.8;
             }
             .shadow-2xl {
                 --tw-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
@@ -810,6 +1007,50 @@
                 box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000),
                     var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
             }
+            .outline-none {
+                outline: 2px solid transparent;
+                outline-offset: 2px;
+            }
+            .backdrop-blur-lg {
+                --tw-backdrop-blur: blur(16px);
+                -webkit-backdrop-filter: var(--tw-backdrop-blur)
+                    var(--tw-backdrop-brightness) var(--tw-backdrop-contrast)
+                    var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate)
+                    var(--tw-backdrop-invert) var(--tw-backdrop-opacity)
+                    var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+                backdrop-filter: var(--tw-backdrop-blur)
+                    var(--tw-backdrop-brightness) var(--tw-backdrop-contrast)
+                    var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate)
+                    var(--tw-backdrop-invert) var(--tw-backdrop-opacity)
+                    var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+            }
+            .backdrop-blur-md {
+                --tw-backdrop-blur: blur(12px);
+                -webkit-backdrop-filter: var(--tw-backdrop-blur)
+                    var(--tw-backdrop-brightness) var(--tw-backdrop-contrast)
+                    var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate)
+                    var(--tw-backdrop-invert) var(--tw-backdrop-opacity)
+                    var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+                backdrop-filter: var(--tw-backdrop-blur)
+                    var(--tw-backdrop-brightness) var(--tw-backdrop-contrast)
+                    var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate)
+                    var(--tw-backdrop-invert) var(--tw-backdrop-opacity)
+                    var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+            }
+            .transition {
+                transition-property: color, background-color, border-color, fill,
+                    stroke, opacity, box-shadow, transform, filter,
+                    -webkit-text-decoration-color, -webkit-backdrop-filter;
+                transition-property: color, background-color, border-color,
+                    text-decoration-color, fill, stroke, opacity, box-shadow,
+                    transform, filter, backdrop-filter;
+                transition-property: color, background-color, border-color,
+                    text-decoration-color, fill, stroke, opacity, box-shadow,
+                    transform, filter, backdrop-filter,
+                    -webkit-text-decoration-color, -webkit-backdrop-filter;
+                transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                transition-duration: 150ms;
+            }
             .transition-all {
                 transition-property: all;
                 transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -831,21 +1072,26 @@
                 transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
                 transition-duration: 150ms;
             }
-            .transition-shadow {
-                transition-property: box-shadow;
-                transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-                transition-duration: 150ms;
-            }
             .transition-transform {
                 transition-property: transform;
                 transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
                 transition-duration: 150ms;
             }
-            .duration-200 {
-                transition-duration: 200ms;
-            }
             .duration-300 {
                 transition-duration: 300ms;
+            }
+            .duration-500 {
+                transition-duration: 500ms;
+            }
+            .hover\:-translate-y-1:hover {
+                --tw-translate-y: -0.25rem;
+                transform: translate(
+                        var(--tw-translate-x),
+                        var(--tw-translate-y)
+                    )
+                    rotate(var(--tw-rotate)) skewX(var(--tw-skew-x))
+                    skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x))
+                    scaleY(var(--tw-scale-y));
             }
             .hover\:scale-105:hover {
                 --tw-scale-x: 1.05;
@@ -858,35 +1104,909 @@
                     skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x))
                     scaleY(var(--tw-scale-y));
             }
-            .hover\:border-blue-400:hover {
-                --tw-border-opacity: 1;
-                border-color: rgb(96 165 250 / var(--tw-border-opacity, 1));
-            }
-            .hover\:bg-blue-600:hover {
+            .hover\:bg-emerald-700:hover {
                 --tw-bg-opacity: 1;
-                background-color: rgb(37 99 235 / var(--tw-bg-opacity, 1));
+                background-color: rgb(4 120 87 / var(--tw-bg-opacity, 1));
             }
-            .hover\:text-white:hover {
+            .hover\:text-emerald-200:hover {
                 --tw-text-opacity: 1;
-                color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+                color: rgb(167 243 208 / var(--tw-text-opacity, 1));
+            }
+            .hover\:opacity-100:hover {
+                opacity: 1;
+            }
+            .focus\:border-emerald-600:focus {
+                --tw-border-opacity: 1;
+                border-color: rgb(5 150 105 / var(--tw-border-opacity, 1));
+            }
+            .focus\:ring-2:focus {
+                --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0
+                    var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+                --tw-ring-shadow: var(--tw-ring-inset) 0 0 0
+                    calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+                box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+                    var(--tw-shadow, 0 0 #0000);
+            }
+            .focus\:ring-emerald-600:focus {
+                --tw-ring-opacity: 1;
+                --tw-ring-color: rgb(5 150 105 / var(--tw-ring-opacity, 1));
+            }
+            .group:hover .group-hover\:scale-105 {
+                --tw-scale-x: 1.05;
+                --tw-scale-y: 1.05;
+                transform: translate(
+                        var(--tw-translate-x),
+                        var(--tw-translate-y)
+                    )
+                    rotate(var(--tw-rotate)) skewX(var(--tw-skew-x))
+                    skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x))
+                    scaleY(var(--tw-scale-y));
             }
             .group:hover .group-hover\:opacity-100 {
                 opacity: 1;
             }
             @media (min-width: 768px) {
+                .md\:grid-cols-2 {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
                 .md\:grid-cols-3 {
                     grid-template-columns: repeat(3, minmax(0, 1fr));
                 }
+                .md\:text-6xl {
+                    font-size: 3.75rem;
+                    line-height: 1;
+                }
+            }
+        </style>
+        <style>
+            *,
+            ::before,
+            ::after {
+                --tw-border-spacing-x: 0;
+                --tw-border-spacing-y: 0;
+                --tw-translate-x: 0;
+                --tw-translate-y: 0;
+                --tw-rotate: 0;
+                --tw-skew-x: 0;
+                --tw-skew-y: 0;
+                --tw-scale-x: 1;
+                --tw-scale-y: 1;
+                --tw-pan-x: ;
+                --tw-pan-y: ;
+                --tw-pinch-zoom: ;
+                --tw-scroll-snap-strictness: proximity;
+                --tw-gradient-from-position: ;
+                --tw-gradient-via-position: ;
+                --tw-gradient-to-position: ;
+                --tw-ordinal: ;
+                --tw-slashed-zero: ;
+                --tw-numeric-figure: ;
+                --tw-numeric-spacing: ;
+                --tw-numeric-fraction: ;
+                --tw-ring-inset: ;
+                --tw-ring-offset-width: 0px;
+                --tw-ring-offset-color: #fff;
+                --tw-ring-color: rgb(59 130 246 / 0.5);
+                --tw-ring-offset-shadow: 0 0 #0000;
+                --tw-ring-shadow: 0 0 #0000;
+                --tw-shadow: 0 0 #0000;
+                --tw-shadow-colored: 0 0 #0000;
+                --tw-blur: ;
+                --tw-brightness: ;
+                --tw-contrast: ;
+                --tw-grayscale: ;
+                --tw-hue-rotate: ;
+                --tw-invert: ;
+                --tw-saturate: ;
+                --tw-sepia: ;
+                --tw-drop-shadow: ;
+                --tw-backdrop-blur: ;
+                --tw-backdrop-brightness: ;
+                --tw-backdrop-contrast: ;
+                --tw-backdrop-grayscale: ;
+                --tw-backdrop-hue-rotate: ;
+                --tw-backdrop-invert: ;
+                --tw-backdrop-opacity: ;
+                --tw-backdrop-saturate: ;
+                --tw-backdrop-sepia: ;
+                --tw-contain-size: ;
+                --tw-contain-layout: ;
+                --tw-contain-paint: ;
+                --tw-contain-style: ;
+            }
+            ::backdrop {
+                --tw-border-spacing-x: 0;
+                --tw-border-spacing-y: 0;
+                --tw-translate-x: 0;
+                --tw-translate-y: 0;
+                --tw-rotate: 0;
+                --tw-skew-x: 0;
+                --tw-skew-y: 0;
+                --tw-scale-x: 1;
+                --tw-scale-y: 1;
+                --tw-pan-x: ;
+                --tw-pan-y: ;
+                --tw-pinch-zoom: ;
+                --tw-scroll-snap-strictness: proximity;
+                --tw-gradient-from-position: ;
+                --tw-gradient-via-position: ;
+                --tw-gradient-to-position: ;
+                --tw-ordinal: ;
+                --tw-slashed-zero: ;
+                --tw-numeric-figure: ;
+                --tw-numeric-spacing: ;
+                --tw-numeric-fraction: ;
+                --tw-ring-inset: ;
+                --tw-ring-offset-width: 0px;
+                --tw-ring-offset-color: #fff;
+                --tw-ring-color: rgb(59 130 246 / 0.5);
+                --tw-ring-offset-shadow: 0 0 #0000;
+                --tw-ring-shadow: 0 0 #0000;
+                --tw-shadow: 0 0 #0000;
+                --tw-shadow-colored: 0 0 #0000;
+                --tw-blur: ;
+                --tw-brightness: ;
+                --tw-contrast: ;
+                --tw-grayscale: ;
+                --tw-hue-rotate: ;
+                --tw-invert: ;
+                --tw-saturate: ;
+                --tw-sepia: ;
+                --tw-drop-shadow: ;
+                --tw-backdrop-blur: ;
+                --tw-backdrop-brightness: ;
+                --tw-backdrop-contrast: ;
+                --tw-backdrop-grayscale: ;
+                --tw-backdrop-hue-rotate: ;
+                --tw-backdrop-invert: ;
+                --tw-backdrop-opacity: ;
+                --tw-backdrop-saturate: ;
+                --tw-backdrop-sepia: ;
+                --tw-contain-size: ;
+                --tw-contain-layout: ;
+                --tw-contain-paint: ;
+                --tw-contain-style: ;
+            } /* ! tailwindcss v3.4.16 | MIT License | https://tailwindcss.com */
+            *,
+            ::after,
+            ::before {
+                box-sizing: border-box;
+                border-width: 0;
+                border-style: solid;
+                border-color: #e5e7eb;
+            }
+            ::after,
+            ::before {
+                --tw-content: '';
+            }
+            :host,
+            html {
+                line-height: 1.5;
+                -webkit-text-size-adjust: 100%;
+                -moz-tab-size: 4;
+                tab-size: 4;
+                font-family: ui-sans-serif, system-ui, sans-serif,
+                    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+                    'Noto Color Emoji';
+                font-feature-settings: normal;
+                font-variation-settings: normal;
+                -webkit-tap-highlight-color: transparent;
+            }
+            body {
+                margin: 0;
+                line-height: inherit;
+            }
+            hr {
+                height: 0;
+                color: inherit;
+                border-top-width: 1px;
+            }
+            abbr:where([title]) {
+                -webkit-text-decoration: underline dotted;
+                text-decoration: underline dotted;
+            }
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6 {
+                font-size: inherit;
+                font-weight: inherit;
+            }
+            a {
+                color: inherit;
+                text-decoration: inherit;
+            }
+            b,
+            strong {
+                font-weight: bolder;
+            }
+            code,
+            kbd,
+            pre,
+            samp {
+                font-family: ui-monospace, SFMono-Regular, Menlo, Monaco,
+                    Consolas, 'Liberation Mono', 'Courier New', monospace;
+                font-feature-settings: normal;
+                font-variation-settings: normal;
+                font-size: 1em;
+            }
+            small {
+                font-size: 80%;
+            }
+            sub,
+            sup {
+                font-size: 75%;
+                line-height: 0;
+                position: relative;
+                vertical-align: baseline;
+            }
+            sub {
+                bottom: -0.25em;
+            }
+            sup {
+                top: -0.5em;
+            }
+            table {
+                text-indent: 0;
+                border-color: inherit;
+                border-collapse: collapse;
+            }
+            button,
+            input,
+            optgroup,
+            select,
+            textarea {
+                font-family: inherit;
+                font-feature-settings: inherit;
+                font-variation-settings: inherit;
+                font-size: 100%;
+                font-weight: inherit;
+                line-height: inherit;
+                letter-spacing: inherit;
+                color: inherit;
+                margin: 0;
+                padding: 0;
+            }
+            button,
+            select {
+                text-transform: none;
+            }
+            button,
+            input:where([type='button']),
+            input:where([type='reset']),
+            input:where([type='submit']) {
+                -webkit-appearance: button;
+                background-color: transparent;
+                background-image: none;
+            }
+            :-moz-focusring {
+                outline: auto;
+            }
+            :-moz-ui-invalid {
+                box-shadow: none;
+            }
+            progress {
+                vertical-align: baseline;
+            }
+            ::-webkit-inner-spin-button,
+            ::-webkit-outer-spin-button {
+                height: auto;
+            }
+            [type='search'] {
+                -webkit-appearance: textfield;
+                outline-offset: -2px;
+            }
+            ::-webkit-search-decoration {
+                -webkit-appearance: none;
+            }
+            ::-webkit-file-upload-button {
+                -webkit-appearance: button;
+                font: inherit;
+            }
+            summary {
+                display: list-item;
+            }
+            blockquote,
+            dd,
+            dl,
+            figure,
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6,
+            hr,
+            p,
+            pre {
+                margin: 0;
+            }
+            fieldset {
+                margin: 0;
+                padding: 0;
+            }
+            legend {
+                padding: 0;
+            }
+            menu,
+            ol,
+            ul {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+            dialog {
+                padding: 0;
+            }
+            textarea {
+                resize: vertical;
+            }
+            input::placeholder,
+            textarea::placeholder {
+                opacity: 1;
+                color: #9ca3af;
+            }
+            [role='button'],
+            button {
+                cursor: pointer;
+            }
+            :disabled {
+                cursor: default;
+            }
+            audio,
+            canvas,
+            embed,
+            iframe,
+            img,
+            object,
+            svg,
+            video {
+                display: block;
+                vertical-align: middle;
+            }
+            img,
+            video {
+                max-width: 100%;
+                height: auto;
+            }
+            [hidden]:where(:not([hidden='until-found'])) {
+                display: none;
+            }
+            .container {
+                width: 100%;
+            }
+            @media (min-width: 640px) {
+                .container {
+                    max-width: 640px;
+                }
+            }
+            @media (min-width: 768px) {
+                .container {
+                    max-width: 768px;
+                }
             }
             @media (min-width: 1024px) {
-                .lg\:flex-row-reverse {
-                    flex-direction: row-reverse;
+                .container {
+                    max-width: 1024px;
                 }
-                .lg\:text-left {
-                    text-align: left;
+            }
+            @media (min-width: 1280px) {
+                .container {
+                    max-width: 1280px;
                 }
-                .lg\:text-5xl {
-                    font-size: 3rem;
+            }
+            @media (min-width: 1536px) {
+                .container {
+                    max-width: 1536px;
+                }
+            }
+            .fixed {
+                position: fixed;
+            }
+            .absolute {
+                position: absolute;
+            }
+            .relative {
+                position: relative;
+            }
+            .inset-0 {
+                inset: 0px;
+            }
+            .bottom-20 {
+                bottom: 5rem;
+            }
+            .bottom-4 {
+                bottom: 1rem;
+            }
+            .bottom-6 {
+                bottom: 1.5rem;
+            }
+            .left-4 {
+                left: 1rem;
+            }
+            .right-0 {
+                right: 0px;
+            }
+            .right-6 {
+                right: 1.5rem;
+            }
+            .z-10 {
+                z-index: 10;
+            }
+            .z-20 {
+                z-index: 20;
+            }
+            .z-50 {
+                z-index: 50;
+            }
+            .mx-auto {
+                margin-left: auto;
+                margin-right: auto;
+            }
+            .mb-12 {
+                margin-bottom: 3rem;
+            }
+            .mb-4 {
+                margin-bottom: 1rem;
+            }
+            .mb-6 {
+                margin-bottom: 1.5rem;
+            }
+            .flex {
+                display: flex;
+            }
+            .grid {
+                display: grid;
+            }
+            .hidden {
+                display: none;
+            }
+            .aspect-video {
+                aspect-ratio: 16 / 9;
+            }
+            .h-14 {
+                height: 3.5rem;
+            }
+            .h-8 {
+                height: 2rem;
+            }
+            .h-80 {
+                height: 20rem;
+            }
+            .h-96 {
+                height: 24rem;
+            }
+            .h-\[600px\] {
+                height: 600px;
+            }
+            .h-full {
+                height: 100%;
+            }
+            .h-screen {
+                height: 100vh;
+            }
+            .min-h-screen {
+                min-height: 100vh;
+            }
+            .w-14 {
+                width: 3.5rem;
+            }
+            .w-8 {
+                width: 2rem;
+            }
+            .w-96 {
+                width: 24rem;
+            }
+            .w-full {
+                width: 100%;
+            }
+            .max-w-\[80\%\] {
+                max-width: 80%;
+            }
+            .flex-shrink-0 {
+                flex-shrink: 0;
+            }
+            .transform {
+                transform: translate(
+                        var(--tw-translate-x),
+                        var(--tw-translate-y)
+                    )
+                    rotate(var(--tw-rotate)) skewX(var(--tw-skew-x))
+                    skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x))
+                    scaleY(var(--tw-scale-y));
+            }
+            .grid-cols-1 {
+                grid-template-columns: repeat(1, minmax(0, 1fr));
+            }
+            .items-center {
+                align-items: center;
+            }
+            .justify-end {
+                justify-content: flex-end;
+            }
+            .justify-center {
+                justify-content: center;
+            }
+            .justify-between {
+                justify-content: space-between;
+            }
+            .gap-2 {
+                gap: 0.5rem;
+            }
+            .gap-3 {
+                gap: 0.75rem;
+            }
+            .gap-6 {
+                gap: 1.5rem;
+            }
+            .gap-8 {
+                gap: 2rem;
+            }
+            .space-x-2 > :not([hidden]) ~ :not([hidden]) {
+                --tw-space-x-reverse: 0;
+                margin-right: calc(0.5rem * var(--tw-space-x-reverse));
+                margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
+            }
+            .space-x-4 > :not([hidden]) ~ :not([hidden]) {
+                --tw-space-x-reverse: 0;
+                margin-right: calc(1rem * var(--tw-space-x-reverse));
+                margin-left: calc(1rem * calc(1 - var(--tw-space-x-reverse)));
+            }
+            .overflow-hidden {
+                overflow: hidden;
+            }
+            .overflow-y-auto {
+                overflow-y: auto;
+            }
+            .rounded-2xl {
+                border-radius: 1rem;
+            }
+            .rounded-full {
+                border-radius: 9999px;
+            }
+            .rounded-lg {
+                border-radius: 0.5rem;
+            }
+            .rounded-xl {
+                border-radius: 0.75rem;
+            }
+            .rounded-t-lg {
+                border-top-left-radius: 0.5rem;
+                border-top-right-radius: 0.5rem;
+            }
+            .border {
+                border-width: 1px;
+            }
+            .border-t {
+                border-top-width: 1px;
+            }
+            .border-gray-200 {
+                --tw-border-opacity: 1;
+                border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
+            }
+            .border-gray-300 {
+                --tw-border-opacity: 1;
+                border-color: rgb(209 213 219 / var(--tw-border-opacity, 1));
+            }
+            .bg-emerald-100 {
+                --tw-bg-opacity: 1;
+                background-color: rgb(209 250 229 / var(--tw-bg-opacity, 1));
+            }
+            .bg-emerald-600 {
+                --tw-bg-opacity: 1;
+                background-color: rgb(5 150 105 / var(--tw-bg-opacity, 1));
+            }
+            .bg-gray-100 {
+                --tw-bg-opacity: 1;
+                background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
+            }
+            .bg-white {
+                --tw-bg-opacity: 1;
+                background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+            }
+            .bg-white\/10 {
+                background-color: rgb(255 255 255 / 0.1);
+            }
+            .bg-white\/80 {
+                background-color: rgb(255 255 255 / 0.8);
+            }
+            .bg-gradient-to-b {
+                background-image: linear-gradient(
+                    to bottom,
+                    var(--tw-gradient-stops)
+                );
+            }
+            .bg-gradient-to-r {
+                background-image: linear-gradient(
+                    to right,
+                    var(--tw-gradient-stops)
+                );
+            }
+            .bg-gradient-to-t {
+                background-image: linear-gradient(
+                    to top,
+                    var(--tw-gradient-stops)
+                );
+            }
+            .from-black\/60 {
+                --tw-gradient-from: rgb(0 0 0 / 0.6)
+                    var(--tw-gradient-from-position);
+                --tw-gradient-to: rgb(0 0 0 / 0) var(--tw-gradient-to-position);
+                --tw-gradient-stops: var(--tw-gradient-from),
+                    var(--tw-gradient-to);
+            }
+            .from-emerald-900\/80 {
+                --tw-gradient-from: rgb(6 78 59 / 0.8)
+                    var(--tw-gradient-from-position);
+                --tw-gradient-to: rgb(6 78 59 / 0)
+                    var(--tw-gradient-to-position);
+                --tw-gradient-stops: var(--tw-gradient-from),
+                    var(--tw-gradient-to);
+            }
+            .to-teal-800\/80 {
+                --tw-gradient-to: rgb(17 94 89 / 0.8)
+                    var(--tw-gradient-to-position);
+            }
+            .to-transparent {
+                --tw-gradient-to: transparent var(--tw-gradient-to-position);
+            }
+            .to-white {
+                --tw-gradient-to: #fff var(--tw-gradient-to-position);
+            }
+            .object-cover {
+                object-fit: cover;
+            }
+            .p-3 {
+                padding: 0.75rem;
+            }
+            .p-4 {
+                padding: 1rem;
+            }
+            .p-6 {
+                padding: 1.5rem;
+            }
+            .px-4 {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            .px-6 {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+            .py-16 {
+                padding-top: 4rem;
+                padding-bottom: 4rem;
+            }
+            .py-2 {
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
+            }
+            .py-20 {
+                padding-top: 5rem;
+                padding-bottom: 5rem;
+            }
+            .text-center {
+                text-align: center;
+            }
+            .text-2xl {
+                font-size: 1.5rem;
+                line-height: 2rem;
+            }
+            .text-3xl {
+                font-size: 1.875rem;
+                line-height: 2.25rem;
+            }
+            .text-4xl {
+                font-size: 2.25rem;
+                line-height: 2.5rem;
+            }
+            .text-5xl {
+                font-size: 3rem;
+                line-height: 1;
+            }
+            .text-lg {
+                font-size: 1.125rem;
+                line-height: 1.75rem;
+            }
+            .text-sm {
+                font-size: 0.875rem;
+                line-height: 1.25rem;
+            }
+            .text-xl {
+                font-size: 1.25rem;
+                line-height: 1.75rem;
+            }
+            .font-bold {
+                font-weight: 700;
+            }
+            .font-semibold {
+                font-weight: 600;
+            }
+            .text-gray-800 {
+                --tw-text-opacity: 1;
+                color: rgb(31 41 55 / var(--tw-text-opacity, 1));
+            }
+            .text-white {
+                --tw-text-opacity: 1;
+                color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+            }
+            .opacity-0 {
+                opacity: 0;
+            }
+            .opacity-80 {
+                opacity: 0.8;
+            }
+            .shadow-2xl {
+                --tw-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+                --tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color);
+                box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000),
+                    var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+            }
+            .shadow-lg {
+                --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+                    0 4px 6px -4px rgb(0 0 0 / 0.1);
+                --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color),
+                    0 4px 6px -4px var(--tw-shadow-color);
+                box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000),
+                    var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+            }
+            .shadow-xl {
+                --tw-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+                    0 8px 10px -6px rgb(0 0 0 / 0.1);
+                --tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color),
+                    0 8px 10px -6px var(--tw-shadow-color);
+                box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000),
+                    var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+            }
+            .outline-none {
+                outline: 2px solid transparent;
+                outline-offset: 2px;
+            }
+            .backdrop-blur-lg {
+                --tw-backdrop-blur: blur(16px);
+                -webkit-backdrop-filter: var(--tw-backdrop-blur)
+                    var(--tw-backdrop-brightness) var(--tw-backdrop-contrast)
+                    var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate)
+                    var(--tw-backdrop-invert) var(--tw-backdrop-opacity)
+                    var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+                backdrop-filter: var(--tw-backdrop-blur)
+                    var(--tw-backdrop-brightness) var(--tw-backdrop-contrast)
+                    var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate)
+                    var(--tw-backdrop-invert) var(--tw-backdrop-opacity)
+                    var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+            }
+            .backdrop-blur-md {
+                --tw-backdrop-blur: blur(12px);
+                -webkit-backdrop-filter: var(--tw-backdrop-blur)
+                    var(--tw-backdrop-brightness) var(--tw-backdrop-contrast)
+                    var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate)
+                    var(--tw-backdrop-invert) var(--tw-backdrop-opacity)
+                    var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+                backdrop-filter: var(--tw-backdrop-blur)
+                    var(--tw-backdrop-brightness) var(--tw-backdrop-contrast)
+                    var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate)
+                    var(--tw-backdrop-invert) var(--tw-backdrop-opacity)
+                    var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+            }
+            .transition {
+                transition-property: color, background-color, border-color, fill,
+                    stroke, opacity, box-shadow, transform, filter,
+                    -webkit-text-decoration-color, -webkit-backdrop-filter;
+                transition-property: color, background-color, border-color,
+                    text-decoration-color, fill, stroke, opacity, box-shadow,
+                    transform, filter, backdrop-filter;
+                transition-property: color, background-color, border-color,
+                    text-decoration-color, fill, stroke, opacity, box-shadow,
+                    transform, filter, backdrop-filter,
+                    -webkit-text-decoration-color, -webkit-backdrop-filter;
+                transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                transition-duration: 150ms;
+            }
+            .transition-all {
+                transition-property: all;
+                transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                transition-duration: 150ms;
+            }
+            .transition-colors {
+                transition-property: color, background-color, border-color, fill,
+                    stroke, -webkit-text-decoration-color;
+                transition-property: color, background-color, border-color,
+                    text-decoration-color, fill, stroke;
+                transition-property: color, background-color, border-color,
+                    text-decoration-color, fill, stroke,
+                    -webkit-text-decoration-color;
+                transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                transition-duration: 150ms;
+            }
+            .transition-opacity {
+                transition-property: opacity;
+                transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                transition-duration: 150ms;
+            }
+            .transition-transform {
+                transition-property: transform;
+                transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                transition-duration: 150ms;
+            }
+            .duration-300 {
+                transition-duration: 300ms;
+            }
+            .duration-500 {
+                transition-duration: 500ms;
+            }
+            .hover\:-translate-y-1:hover {
+                --tw-translate-y: -0.25rem;
+                transform: translate(
+                        var(--tw-translate-x),
+                        var(--tw-translate-y)
+                    )
+                    rotate(var(--tw-rotate)) skewX(var(--tw-skew-x))
+                    skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x))
+                    scaleY(var(--tw-scale-y));
+            }
+            .hover\:scale-105:hover {
+                --tw-scale-x: 1.05;
+                --tw-scale-y: 1.05;
+                transform: translate(
+                        var(--tw-translate-x),
+                        var(--tw-translate-y)
+                    )
+                    rotate(var(--tw-rotate)) skewX(var(--tw-skew-x))
+                    skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x))
+                    scaleY(var(--tw-scale-y));
+            }
+            .hover\:bg-emerald-700:hover {
+                --tw-bg-opacity: 1;
+                background-color: rgb(4 120 87 / var(--tw-bg-opacity, 1));
+            }
+            .hover\:text-emerald-200:hover {
+                --tw-text-opacity: 1;
+                color: rgb(167 243 208 / var(--tw-text-opacity, 1));
+            }
+            .hover\:opacity-100:hover {
+                opacity: 1;
+            }
+            .focus\:border-emerald-600:focus {
+                --tw-border-opacity: 1;
+                border-color: rgb(5 150 105 / var(--tw-border-opacity, 1));
+            }
+            .focus\:ring-2:focus {
+                --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0
+                    var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+                --tw-ring-shadow: var(--tw-ring-inset) 0 0 0
+                    calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+                box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+                    var(--tw-shadow, 0 0 #0000);
+            }
+            .focus\:ring-emerald-600:focus {
+                --tw-ring-opacity: 1;
+                --tw-ring-color: rgb(5 150 105 / var(--tw-ring-opacity, 1));
+            }
+            .group:hover .group-hover\:scale-105 {
+                --tw-scale-x: 1.05;
+                --tw-scale-y: 1.05;
+                transform: translate(
+                        var(--tw-translate-x),
+                        var(--tw-translate-y)
+                    )
+                    rotate(var(--tw-rotate)) skewX(var(--tw-skew-x))
+                    skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x))
+                    scaleY(var(--tw-scale-y));
+            }
+            .group:hover .group-hover\:opacity-100 {
+                opacity: 1;
+            }
+            @media (min-width: 768px) {
+                .md\:grid-cols-2 {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+                .md\:grid-cols-3 {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                }
+                .md\:text-6xl {
+                    font-size: 3.75rem;
                     line-height: 1;
                 }
             }
@@ -895,410 +2015,381 @@
     <body>
         <!-- Component Container -->
         <div id="component-root">
-            <section
-                class="hero min-h-[600px] bg-gradient-to-br from-base-200 to-base-100"
-            >
+            <section class="relative min-h-screen">
+                <!-- Video Background with Overlay -->
                 <div
-                    class="hero-content max-w-7xl mx-auto px-4 flex-col lg:flex-row-reverse gap-8 py-12"
+                    class="relative h-screen flex items-center justify-center overflow-hidden"
                 >
-                    <div class="flex-1 relative">
-                        <img
-                            src="hero-dog.jpg"
-                            alt="Professional pet groomer gently brushing a happy golden retriever in a well-lit modern grooming salon"
-                            class="w-full max-w-lg rounded-lg shadow-2xl hover:shadow-3xl transition-shadow duration-300"
-                            loading="lazy"
-                        />
-                    </div>
-                    <div class="flex-1 text-center lg:text-left">
-                        <h1
-                            class="text-4xl lg:text-5xl font-bold leading-tight text-base-content"
-                        >
-                            Professional Pet Care
-                            <span class="block text-primary"
-                                >You Can Trust</span
-                            >
-                        </h1>
-                        <p class="py-6 text-lg text-base-content/80 max-w-xl">
-                            Professional dog sitting and grooming services
-                            tailored to your furry friend's needs. Our certified
-                            groomers provide loving care in a safe, comfortable
-                            environment.
-                        </p>
-                        <button
-                            class="btn btn-primary btn-lg group relative overflow-hidden transition-all duration-300 hover:scale-105"
-                            data-booking-trigger=""
-                        >
-                            <i class="fa-solid fa-calendar-check mr-2"></i>
-                            Book Now
-                            <span
-                                class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                            ></span>
-                        </button>
-                    </div>
-                </div>
-            </section>
-            <section class="services-section py-12 bg-gray-50">
-                <div class="container mx-auto px-4">
-                    <h2
-                        class="text-center text-3xl font-bold mb-8 text-gray-800"
+                    <div
+                        class="absolute inset-0 bg-gradient-to-r from-emerald-900/80 to-teal-800/80 z-10"
+                    ></div>
+                    <video
+                        class="absolute w-full h-full object-cover"
+                        autoplay=""
+                        loop=""
+                        muted=""
+                        playsinline=""
                     >
-                        <i class="fas fa-paw mr-2"></i>Our Services
-                    </h2>
+                        <source src="nature-fashion.mp4" type="video/mp4" />
+                    </video>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <!-- Grooming Card -->
-                        <article
-                            class="card bg-white shadow-xl transition-transform duration-300"
+                    <!-- Hero Content -->
+                    <div class="container mx-auto px-4 z-20">
+                        <h1
+                            class="text-4xl md:text-6xl font-bold text-white mb-6 animate-fade-in"
                         >
-                            <figure class="relative h-64 overflow-hidden">
-                                <img
-                                    src="grooming.jpg"
-                                    alt="Professional pet groomer gently washing a happy golden retriever in a modern grooming salon"
-                                    class="w-full h-full object-cover"
-                                />
-                            </figure>
-                            <div class="card-body p-6">
-                                <h3
-                                    class="card-title text-xl font-semibold flex items-center"
-                                >
-                                    <i class="fas fa-cut mr-2"></i>Professional
-                                    Grooming
-                                </h3>
-                                <p class="text-gray-600 my-4">
-                                    Complete grooming services including bath,
-                                    haircut, and nail trimming
-                                </p>
-                                <div class="card-actions mt-auto">
-                                    <button
-                                        class="btn btn-outline hover:bg-primary hover:text-white transition-colors duration-300 w-full"
-                                    >
-                                        Learn More
-                                        <i class="fas fa-arrow-right ml-2"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </article>
+                            Fashion Forward, Planet First
+                        </h1>
 
-                        <!-- Dog Sitting Card -->
-                        <article
-                            class="card bg-white shadow-xl transition-transform duration-300"
-                        >
-                            <figure class="relative h-64 overflow-hidden">
-                                <img
-                                    src="sitting.jpg"
-                                    alt="Professional pet sitter playing with a dog in a cozy living room setting"
-                                    class="w-full h-full object-cover"
-                                />
-                            </figure>
-                            <div class="card-body p-6">
-                                <h3
-                                    class="card-title text-xl font-semibold flex items-center"
-                                >
-                                    <i class="fas fa-house-user mr-2"></i>Dog
-                                    Sitting
-                                </h3>
-                                <p class="text-gray-600 my-4">
-                                    Caring supervision for your pet while you're
-                                    away
-                                </p>
-                                <div class="card-actions mt-auto">
-                                    <button
-                                        class="btn btn-outline hover:bg-primary hover:text-white transition-colors duration-300 w-full"
-                                    >
-                                        Learn More
-                                        <i class="fas fa-arrow-right ml-2"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </article>
-
-                        <!-- Day Care Card -->
-                        <article
-                            class="card bg-white shadow-xl transition-transform duration-300"
-                        >
-                            <figure class="relative h-64 overflow-hidden">
-                                <img
-                                    src="daycare.jpg"
-                                    alt="Multiple dogs playing together in a supervised indoor daycare facility"
-                                    class="w-full h-full object-cover"
-                                />
-                            </figure>
-                            <div class="card-body p-6">
-                                <h3
-                                    class="card-title text-xl font-semibold flex items-center"
-                                >
-                                    <i class="fas fa-dog mr-2"></i>Day Care
-                                </h3>
-                                <p class="text-gray-600 my-4">
-                                    Fun and supervised day care services for
-                                    social dogs
-                                </p>
-                                <div class="card-actions mt-auto">
-                                    <button
-                                        class="btn btn-outline hover:bg-primary hover:text-white transition-colors duration-300 w-full"
-                                    >
-                                        Learn More
-                                        <i class="fas fa-arrow-right ml-2"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </article>
-                    </div>
-                </div>
-            </section>
-            <section class="bg-base-200 py-12">
-                <div class="container mx-auto px-4">
-                    <h2 class="text-center text-3xl font-bold mb-8">
-                        Happy Pet Parents
-                    </h2>
-
-                    <div class="carousel relative" data-carousel="">
+                        <!-- Stats Grid -->
                         <div
-                            class="carousel-slides"
-                            style="transform: translateX(0%)"
+                            class="stats-grid grid grid-cols-1 md:grid-cols-3 gap-6 text-white mb-12"
                         >
-                            <!-- Slide 1 -->
-                            <div class="carousel-slide active">
+                            <div
+                                class="stat-card backdrop-blur-lg bg-white/10 p-6 rounded-lg transform hover:scale-105 transition-transform"
+                            >
+                                <span
+                                    class="counter text-3xl font-bold"
+                                    data-target="85"
+                                    >85</span
+                                ><span class="text-3xl font-bold">%</span>
+                                <p class="text-lg">Recycled Materials</p>
+                            </div>
+                            <div
+                                class="stat-card backdrop-blur-lg bg-white/10 p-6 rounded-lg transform hover:scale-105 transition-transform"
+                            >
+                                <span
+                                    class="counter text-3xl font-bold"
+                                    data-target="100"
+                                    >100</span
+                                ><span class="text-3xl font-bold">%</span>
+                                <p class="text-lg">Sustainable Sources</p>
+                            </div>
+                            <div
+                                class="stat-card backdrop-blur-lg bg-white/10 p-6 rounded-lg transform hover:scale-105 transition-transform"
+                            >
+                                <span
+                                    class="counter text-3xl font-bold"
+                                    data-target="50"
+                                    >50</span
+                                ><span class="text-3xl font-bold">K</span>
+                                <p class="text-lg">Artisans Supported</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image Grid Section -->
+                <div class="container mx-auto px-4 py-16">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="group relative overflow-hidden rounded-xl">
+                            <img
+                                src="/mnt/media_storage/generated/fashion/sustainableworkshop_20241208225552.webp"
+                                alt="Sunlit artisanal workshop with seamstresses working on natural fabric garments"
+                                class="w-full h-80 object-cover transform transition-transform duration-500 group-hover:scale-105"
+                            />
+                            <div
+                                class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                            >
                                 <div
-                                    class="card bg-base-100 shadow-xl mx-auto max-w-md"
+                                    class="absolute bottom-4 left-4 text-white"
                                 >
-                                    <div class="card-body">
-                                        <div class="flex justify-center mb-4">
-                                            <div class="rating rating-lg">
-                                                <input
-                                                    type="radio"
-                                                    class="mask mask-star-2 bg-orange-400"
-                                                    checked=""
-                                                    disabled=""
-                                                />
-                                                <input
-                                                    type="radio"
-                                                    class="mask mask-star-2 bg-orange-400"
-                                                    checked=""
-                                                    disabled=""
-                                                />
-                                                <input
-                                                    type="radio"
-                                                    class="mask mask-star-2 bg-orange-400"
-                                                    checked=""
-                                                    disabled=""
-                                                />
-                                                <input
-                                                    type="radio"
-                                                    class="mask mask-star-2 bg-orange-400"
-                                                    checked=""
-                                                    disabled=""
-                                                />
-                                                <input
-                                                    type="radio"
-                                                    class="mask mask-star-2 bg-orange-400"
-                                                    checked=""
-                                                    disabled=""
-                                                />
-                                            </div>
-                                        </div>
-                                        <blockquote
-                                            class="text-center text-lg italic mb-6"
-                                        >
-                                            "The best grooming service we've
-                                            ever used! Our dog looks amazing and
-                                            loves visiting."
-                                        </blockquote>
-                                        <div
-                                            class="flex items-center justify-center mt-4"
-                                        >
-                                            <img
-                                                src="/mntclient1.jpg"
-                                                alt="Professional headshot of Sarah Johnson"
-                                                class="w-12 h-12 rounded-full mr-4 object-cover"
-                                            />
-                                            <div>
-                                                <h3 class="font-bold">
-                                                    Sarah Johnson
-                                                </h3>
-                                                <p
-                                                    class="text-sm text-gray-600"
-                                                >
-                                                    Dog Mom to Max
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <h3 class="text-xl font-semibold">
+                                        Artisanal Workshop
+                                    </h3>
+                                    <p class="text-sm">
+                                        Crafting sustainable fashion with care
+                                    </p>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Navigation Buttons -->
-                        <button
-                            class="absolute left-0 top-1/2 -translate-y-1/2 bg-base-100 p-2 rounded-full shadow-lg hover:bg-base-200 transition-colors duration-200 -ml-4"
-                            onclick="carouselActions.prev()"
-                            aria-label="Previous slide"
-                        >
-                            <i class="fas fa-chevron-left text-xl"></i>
-                        </button>
-                        <button
-                            class="absolute right-0 top-1/2 -translate-y-1/2 bg-base-100 p-2 rounded-full shadow-lg hover:bg-base-200 transition-colors duration-200 -mr-4"
-                            onclick="carouselActions.next()"
-                            aria-label="Next slide"
-                        >
-                            <i class="fas fa-chevron-right text-xl"></i>
-                        </button>
-
-                        <!-- Slide Indicators -->
-                        <div class="flex justify-center mt-6 gap-2">
-                            <button
-                                class="w-3 h-3 rounded-full bg-base-300 active:bg-primary"
-                                onclick="carouselActions.goToSlide(0)"
-                                aria-label="Go to slide 1"
-                            ></button>
-                            <button
-                                class="w-3 h-3 rounded-full bg-base-300 hover:bg-primary"
-                                onclick="carouselActions.goToSlide(1)"
-                                aria-label="Go to slide 2"
-                            ></button>
-                            <button
-                                class="w-3 h-3 rounded-full bg-base-300 hover:bg-primary"
-                                onclick="carouselActions.goToSlide(2)"
-                                aria-label="Go to slide 3"
-                            ></button>
+                        <div class="group relative overflow-hidden rounded-xl">
+                            <img
+                                src="/mnt/media_storage/generated/landscapes/cottonfieldsunset_20241208225602.webp"
+                                alt="Organic cotton field at sunset with workers carefully harvesting"
+                                class="w-full h-80 object-cover transform transition-transform duration-500 group-hover:scale-105"
+                            />
+                            <div
+                                class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                            >
+                                <div
+                                    class="absolute bottom-4 left-4 text-white"
+                                >
+                                    <h3 class="text-xl font-semibold">
+                                        Organic Cotton Fields
+                                    </h3>
+                                    <p class="text-sm">
+                                        Ethically sourced raw materials
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
-            <div class="py-12 bg-gradient-to-b from-blue-50 to-white">
+            <section
+                class="py-20 bg-gradient-to-b from-sage-50 to-white transition-all duration-300"
+            >
                 <div class="container mx-auto px-4">
                     <div
-                        class="card bg-white shadow-xl max-w-lg mx-auto rounded-lg border border-gray-100"
+                        class="product-viewer relative h-[600px] rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md shadow-xl transition-transform duration-300 hover:scale-102"
                     >
-                        <div class="card-body p-8">
-                            <h2
-                                class="card-title text-center text-2xl mb-6 font-semibold text-gray-800 flex justify-center items-center"
+                        <div>
+                            <img
+                                src="/mnt/media_storage/generated/fashion/hempdress_20241208225736.webp"
+                                alt="3D model of an elegant hemp fabric dress"
+                                data-product-image="hemp_dress"
+                                class="product-image"
+                            />
+                            <img
+                                src="/mnt/media_storage/generated/fashion/recycleddenimjacket_20241208225745.webp"
+                                alt="3D model of a recycled denim jacket"
+                                data-product-image="recycled_denim_jacket"
+                                class="product-image"
+                            />
+                            <img
+                                src="/mnt/media_storage/generated/fashion/bambooshirt_20241208225755.webp"
+                                alt="3D model of a bamboo fabric t-shirt"
+                                data-product-image="bamboo_shirt"
+                                class="product-image"
+                            />
+                            <img
+                                src="/mnt/media_storage/generated/fashion/organicwoolsweater_20241208225804.webp"
+                                alt="3D model of an organic wool cable knit sweater"
+                                data-product-image="organic_wool_sweater"
+                                class="product-image"
+                            />
+                        </div>
+
+                        <!-- Controls -->
+                        <div
+                            class="controls absolute bottom-4 left-4 space-x-4"
+                        >
+                            <button
+                                class="btn bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-full transition-all duration-300 flex items-center space-x-2"
+                                data-control="previous"
                             >
-                                <i
-                                    class="fas fa-calendar-check mr-3 text-blue-500"
-                                ></i>
-                                Book Your Appointment
-                            </h2>
-
-                            <form
-                                id="bookingForm"
-                                class="space-y-4"
-                                data-booking-form=""
+                                <i class="fa-solid fa-chevron-left"></i>
+                                <span>Previous</span>
+                            </button>
+                            <button
+                                class="btn bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-full transition-all duration-300 flex items-center space-x-2"
+                                data-control="next"
                             >
-                                <div class="form-control">
-                                    <label class="label cursor-pointer">
-                                        <span
-                                            class="label-text text-gray-700 font-medium"
-                                            >Service Type</span
-                                        >
-                                        <span class="text-red-500">*</span>
-                                    </label>
-                                    <select
-                                        name="service"
-                                        class="select select-bordered w-full bg-white transition-all duration-300 hover:border-blue-400"
-                                        required=""
-                                    >
-                                        <option value="">
-                                            Select a service
-                                        </option>
-                                        <option value="grooming">
-                                            Grooming
-                                        </option>
-                                        <option value="sitting">
-                                            Dog Sitting
-                                        </option>
-                                        <option value="daycare">
-                                            Day Care
-                                        </option>
-                                    </select>
-                                    <span
-                                        class="text-sm text-red-500 hidden"
-                                        data-error="service"
-                                    ></span>
-                                </div>
-
-                                <div class="form-control">
-                                    <label class="label cursor-pointer">
-                                        <span
-                                            class="label-text text-gray-700 font-medium"
-                                            >Preferred Date</span
-                                        >
-                                        <span class="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="date"
-                                        name="date"
-                                        class="input input-bordered w-full bg-white transition-all duration-300 hover:border-blue-400"
-                                        required=""
-                                        min="2024-01-01"
-                                    />
-                                    <span
-                                        class="text-sm text-red-500 hidden"
-                                        data-error="date"
-                                    ></span>
-                                </div>
-
-                                <div class="form-control">
-                                    <label class="label cursor-pointer">
-                                        <span
-                                            class="label-text text-gray-700 font-medium"
-                                            >Your Name</span
-                                        >
-                                        <span class="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        placeholder="Enter your full name"
-                                        class="input input-bordered w-full bg-white transition-all duration-300 hover:border-blue-400"
-                                        required=""
-                                    />
-                                    <span
-                                        class="text-sm text-red-500 hidden"
-                                        data-error="name"
-                                    ></span>
-                                </div>
-
-                                <div class="form-control">
-                                    <label class="label cursor-pointer">
-                                        <span
-                                            class="label-text text-gray-700 font-medium"
-                                            >Your Email</span
-                                        >
-                                        <span class="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        placeholder="your.email@example.com"
-                                        class="input input-bordered w-full bg-white transition-all duration-300 hover:border-blue-400"
-                                        required=""
-                                    />
-                                    <span
-                                        class="text-sm text-red-500 hidden"
-                                        data-error="email"
-                                    ></span>
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    class="btn btn-primary w-full mt-6 transition-all duration-300 hover:bg-blue-600 flex items-center justify-center gap-2"
-                                >
-                                    <i class="fas fa-paper-plane"></i>
-                                    Schedule Now
-                                </button>
-
-                                <p
-                                    class="text-center text-sm text-gray-500 mt-4"
-                                >
-                                    <i
-                                        class="fas fa-shield-alt text-blue-500 mr-2"
-                                    ></i>
-                                    Your information is secure and encrypted
-                                </p>
-                            </form>
+                                <span>Next</span>
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
                         </div>
                     </div>
+                </div>
+            </section>
+            <section class="py-16 bg-sage-100">
+                <div class="container mx-auto px-4">
+                    <h2 class="text-3xl font-bold text-center mb-12">
+                        Community Impact
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Video Card 1 -->
+                        <div
+                            class="video-card rounded-xl overflow-hidden shadow-lg transform hover:scale-105 transition duration-300"
+                        >
+                            <div class="relative">
+                                <img
+                                    src="/mnt/media_storage/generated/lifestyle/hometestimonialrecording_20241208225919.webp"
+                                    alt="Young woman recording a video testimonial at home using her smartphone mounted on a small tripod"
+                                    class="w-full aspect-video object-cover"
+                                />
+                                <video
+                                    class="w-full aspect-video object-cover hidden"
+                                    data-src="testimonial1.mp4"
+                                    controls=""
+                                    preload="none"
+                                >
+                                    <source type="video/mp4" />
+                                </video>
+                                <div class="overlay">
+                                    <i
+                                        class="fa-solid fa-circle-play text-white text-5xl opacity-80 hover:opacity-100 transition-opacity"
+                                    ></i>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-white">
+                                <p
+                                    class="text-gray-800 flex items-center gap-2"
+                                >
+                                    <i
+                                        class="fa-solid fa-user text-sage-600"
+                                    ></i>
+                                    <span>@sarah_reviews</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Video Card 2 -->
+                        <div
+                            class="video-card rounded-xl overflow-hidden shadow-lg transform hover:scale-105 transition duration-300"
+                        >
+                            <div class="relative">
+                                <img
+                                    src="/mnt/media_storage/generated/business/professionaltestimonialsetup_20241208225928.webp"
+                                    alt="Middle-aged man recording a professional testimonial with a DSLR camera setup"
+                                    class="w-full aspect-video object-cover"
+                                />
+                                <video
+                                    class="w-full aspect-video object-cover hidden"
+                                    data-src="testimonial2.mp4"
+                                    controls=""
+                                    preload="none"
+                                >
+                                    <source type="video/mp4" />
+                                </video>
+                                <div class="overlay">
+                                    <i
+                                        class="fa-solid fa-circle-play text-white text-5xl opacity-80 hover:opacity-100 transition-opacity"
+                                    ></i>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-white">
+                                <p
+                                    class="text-gray-800 flex items-center gap-2"
+                                >
+                                    <i
+                                        class="fa-solid fa-user text-sage-600"
+                                    ></i>
+                                    <span>@business_mike</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Video Card 3 -->
+                        <div
+                            class="video-card rounded-xl overflow-hidden shadow-lg transform hover:scale-105 transition duration-300"
+                        >
+                            <div class="relative">
+                                <img
+                                    src="/mnt/media_storage/generated/lifestyle/outdoortestimonialcapture_20241208225938.webp"
+                                    alt="Senior couple recording a testimonial video outdoors using a tablet"
+                                    class="w-full aspect-video object-cover"
+                                />
+                                <video
+                                    class="w-full aspect-video object-cover hidden"
+                                    data-src="testimonial3.mp4"
+                                    controls=""
+                                    preload="none"
+                                >
+                                    <source type="video/mp4" />
+                                </video>
+                                <div class="overlay">
+                                    <i
+                                        class="fa-solid fa-circle-play text-white text-5xl opacity-80 hover:opacity-100 transition-opacity"
+                                    ></i>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-white">
+                                <p
+                                    class="text-gray-800 flex items-center gap-2"
+                                >
+                                    <i
+                                        class="fa-solid fa-user text-sage-600"
+                                    ></i>
+                                    <span>@active_seniors</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <div class="fixed bottom-6 right-6 z-50">
+                <!-- Chat Toggle Button -->
+                <button
+                    data-chat-toggle=""
+                    class="chat-toggle bg-emerald-600 hover:bg-emerald-700 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-transform duration-300 hover:-translate-y-1"
+                    aria-label="Toggle Chat Window"
+                >
+                    <i class="fa-solid fa-comments text-2xl"></i>
+                </button>
+
+                <!-- Chat Window -->
+                <div
+                    class="chat-window transform transition-all duration-300 absolute bottom-20 right-0 w-96 bg-white rounded-lg shadow-2xl hidden"
+                >
+                    <!-- Chat Header -->
+                    <header
+                        class="chat-header p-4 bg-emerald-600 text-white rounded-t-lg flex items-center justify-between"
+                    >
+                        <div class="flex items-center gap-3">
+                            <img
+                                src="/mnt/media_storage/generated/technology/aiassistantavatar_20241208230046.webp"
+                                alt="AI Assistant Avatar"
+                                class="w-8 h-8 rounded-full object-cover"
+                            />
+                            <h3 class="font-bold">Eco-Style Assistant</h3>
+                        </div>
+                        <button
+                            data-chat-close=""
+                            class="text-white hover:text-emerald-200 transition-colors"
+                            aria-label="Close Chat"
+                        >
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </header>
+
+                    <!-- Chat Messages Container -->
+                    <div
+                        class="chat-messages p-4 h-96 overflow-y-auto"
+                        data-message-list=""
+                    >
+                        <!-- Example AI Message -->
+                        <div class="flex gap-3 mb-4">
+                            <img
+                                src="/mnt/media_storage/generated/technology/aiassistantavatar_20241208230046.webp"
+                                alt="AI Assistant Avatar"
+                                class="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                            />
+                            <div
+                                class="bg-emerald-100 rounded-lg p-3 max-w-[80%]"
+                            >
+                                <p class="text-gray-800">
+                                    Hello! How can I help you with sustainable
+                                    fashion today?
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Example User Message -->
+                        <div class="flex gap-3 mb-4 justify-end">
+                            <div class="bg-gray-100 rounded-lg p-3 max-w-[80%]">
+                                <p class="text-gray-800">
+                                    Hi! I'm looking for eco-friendly clothing
+                                    options.
+                                </p>
+                            </div>
+                            <img
+                                src="/mnt/media_storage/generated/art_and_design/useravatar_20241208230055.webp"
+                                alt="User Avatar"
+                                class="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                            />
+                        </div>
+                    </div>
+
+                    <!-- Chat Input Area -->
+                    <footer class="chat-input p-4 border-t border-gray-200">
+                        <form data-chat-form="" class="flex gap-2">
+                            <input
+                                type="text"
+                                class="w-full px-4 py-2 rounded-full border border-gray-300 focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 outline-none"
+                                placeholder="Ask about our sustainable fashion..."
+                                data-message-input=""
+                            />
+                            <button
+                                type="submit"
+                                class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 rounded-full transition-colors"
+                                aria-label="Send Message"
+                            >
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </footer>
                 </div>
             </div>
         </div>
@@ -1307,269 +2398,421 @@
         <script>
             // Global State Management
 
-            // Testimonials Section State Management
-            // Manage carousel state
-            let currentSlide = 0;
-            const state = {
+            // Hero Section State Management
+            // State management for counter animation
+            const counterState = {
+                animated: new Set(),
                 isAnimating: false,
+
+                markAnimated(counterId) {
+                    this.animated.add(counterId);
+                },
+
+                hasBeenAnimated(counterId) {
+                    return this.animated.has(counterId);
+                },
+
+                setAnimating(status) {
+                    this.isAnimating = status;
+                },
             };
 
-            function updateCurrentSlide(index) {
-                if (state.isAnimating) return;
+            // 3D Product Showcase State Management
+            const viewerState = {
+                isRotating: false,
+                lastMousePosition: { x: 0, y: 0 },
+                zoomLevel: 1,
+                modelLoaded: false,
 
-                const carousel = document.querySelector('.carousel');
-                const slideContainer =
-                    carousel.querySelector('.carousel-slides');
-                const slides =
-                    slideContainer.querySelectorAll('.carousel-slide');
-                const totalSlides = slides.length;
+                updateRotation(isRotating) {
+                    this.isRotating = isRotating;
+                },
 
-                state.isAnimating = true;
-                currentSlide = (index + totalSlides) % totalSlides;
+                updateMousePosition(x, y) {
+                    this.lastMousePosition = { x, y };
+                },
 
-                // Update slide position
-                slideContainer.style.transform = `translateX(-${
-                    currentSlide * 100
-                }%)`;
+                updateZoom(delta) {
+                    this.zoomLevel = Math.max(
+                        0.5,
+                        Math.min(3, this.zoomLevel + delta)
+                    );
+                },
 
-                // Update indicators
-                updateIndicators(currentSlide);
-
-                // Reset animation lock after transition
-                setTimeout(() => {
-                    state.isAnimating = false;
-                }, 500);
-            }
-
-            function nextSlide() {
-                updateCurrentSlide(currentSlide + 1);
-            }
-
-            function prevSlide() {
-                updateCurrentSlide(currentSlide - 1);
-            }
-
-            function updateIndicators(index) {
-                const indicators = document.querySelectorAll(
-                    '.carousel-indicator'
-                );
-                indicators.forEach((indicator, i) => {
-                    indicator.classList.toggle('active', i === index);
-                });
-            }
-
-            // Booking Section State Management
-            // Form state management
-            const formState = {
-                submitted: false,
-                errors: {},
+                setModelLoaded(loaded) {
+                    this.modelLoaded = loaded;
+                },
             };
 
-            function updateFormState(newState) {
-                Object.assign(formState, newState);
-                renderFormErrors();
+            // Testimonials State Management
+            // Video player state management
+            const videoPlayerState = {
+                isPlaying: false,
+                currentTime: 0,
+                volume: 1,
+                isMuted: false,
+                playbackRate: 1,
 
-                if (formState.submitted) {
-                    renderSuccessMessage();
-                }
-            }
+                updateState(video) {
+                    this.isPlaying = !video.paused;
+                    this.currentTime = video.currentTime;
+                    this.volume = video.volume;
+                    this.isMuted = video.muted;
+                    this.playbackRate = video.playbackRate;
+                },
+            };
 
-            function renderFormErrors() {
-                // Clear existing error messages
-                document
-                    .querySelectorAll('.error-message')
-                    .forEach((el) => el.remove());
+            // Chatbot State Management
+            // Chat state management
+            const chatState = {
+                isOpen: false,
+                messages: [],
 
-                // Display new error messages
-                Object.entries(formState.errors).forEach(([field, message]) => {
-                    const input = document.querySelector(`[name="${field}"]`);
-                    if (input) {
-                        const errorDiv = document.createElement('div');
-                        errorDiv.className = 'error-message';
-                        errorDiv.textContent = message;
-                        input.parentNode.insertBefore(
-                            errorDiv,
-                            input.nextSibling
+                setState(newState) {
+                    Object.assign(this, newState);
+                    this.notifyListeners();
+                },
+
+                listeners: [],
+
+                subscribe(listener) {
+                    this.listeners.push(listener);
+                    return () => {
+                        this.listeners = this.listeners.filter(
+                            (l) => l !== listener
                         );
-                    }
-                });
-            }
+                    };
+                },
 
-            function renderSuccessMessage() {
-                const form = document.querySelector('form');
-                form.innerHTML =
-                    '<div class="success-message">Form submitted successfully!</div>';
-            }
+                notifyListeners() {
+                    this.listeners.forEach((listener) => listener(this));
+                },
+
+                addMessage(message) {
+                    this.messages.push({
+                        id: Date.now(),
+                        text: message,
+                        timestamp: new Date(),
+                    });
+                    this.notifyListeners();
+                },
+            };
 
             // Section-specific Logic
 
-            // Testimonials Section Section Logic
-            // Initialize carousel functionality
-            function initCarousel() {
-                const carousel = document.querySelector('.carousel');
-                const slideContainer =
-                    carousel.querySelector('.carousel-slides');
-                const slides =
-                    slideContainer.querySelectorAll('.carousel-slide');
-                const totalSlides = slides.length;
+            // Hero Section Section Logic
+            // Counter animation function
+            function animateCounter(element, target, duration) {
+                let start = 0;
+                const increment = target / (duration / 16);
+                const timer = setInterval(() => {
+                    start += increment;
+                    element.textContent = Math.floor(start);
+                    if (start >= target) {
+                        element.textContent = target;
+                        clearInterval(timer);
+                    }
+                }, 16);
+            }
 
-                // Set up auto-scroll
-                let autoScrollInterval = setInterval(nextSlide, 5000);
+            // Smooth scroll function
+            function smoothScroll(target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                });
+            }
 
-                // Reset interval on manual navigation
-                function resetInterval() {
-                    clearInterval(autoScrollInterval);
-                    autoScrollInterval = setInterval(nextSlide, 5000);
-                }
+            // Initialize counter animations when elements are in viewport
+            function initCounterAnimations() {
+                const counters = document.querySelectorAll('.counter');
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            const target = parseInt(
+                                entry.target.dataset.target
+                            );
+                            animateCounter(entry.target, target, 2000);
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                });
 
-                // Expose methods for event handlers
-                window.carouselActions = {
-                    next: () => {
-                        nextSlide();
-                        resetInterval();
-                    },
-                    prev: () => {
-                        prevSlide();
-                        resetInterval();
-                    },
-                    goToSlide: (index) => {
-                        updateCurrentSlide(index);
-                        resetInterval();
-                    },
+                counters.forEach((counter) => observer.observe(counter));
+            }
+
+            // 3D Product Showcase Section Logic
+            // Initialize 3D viewer
+            const initViewer = () => {
+                const viewer = new ModelViewer({
+                    container: document.getElementById('model-container'),
+                    antialias: true,
+                });
+
+                viewer.loadModel('path/to/3d-model.glb');
+                viewer.setCamera({
+                    position: [0, 0, 5],
+                    target: [0, 0, 0],
+                });
+
+                return viewer;
+            };
+
+            // Camera controls
+            const setupControls = (viewer) => {
+                const controls = new OrbitControls(
+                    viewer.camera,
+                    viewer.container
+                );
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.05;
+                controls.rotateSpeed = 0.8;
+                controls.zoomSpeed = 1.2;
+
+                return controls;
+            };
+
+            // Testimonials Section Logic
+            // Video lazy loading implementation
+            document.addEventListener('DOMContentLoaded', () => {
+                const videoElements =
+                    document.querySelectorAll('video[data-src]');
+
+                const lazyLoadVideo = (entries, observer) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            const video = entry.target;
+                            video.src = video.dataset.src;
+                            video.load();
+                            observer.unobserve(video);
+                        }
+                    });
                 };
-            }
 
-            // Initialize when DOM is ready
-            document.addEventListener('DOMContentLoaded', initCarousel);
+                const videoObserver = new IntersectionObserver(lazyLoadVideo, {
+                    root: null,
+                    threshold: 0.1,
+                });
 
-            // Booking Section Section Logic
-            // Form validation and submission handling
-            function validateForm(formData) {
-                const errors = {};
+                videoElements.forEach((video) => {
+                    videoObserver.observe(video);
+                });
+            });
 
-                // Validate each field
-                for (const [key, value] of formData.entries()) {
-                    if (!value.trim()) {
-                        errors[key] = 'This field is required';
-                    }
+            // Chatbot Section Logic
+            // Initialize chat functionality
+            function initializeChat() {
+                const chatWindow = document.querySelector('.chat-window');
+                const messageList = document.querySelector('.message-list');
+                const messageInput = document.querySelector('.message-input');
+
+                // Toggle chat window visibility
+                function toggleChatWindow() {
+                    chatWindow.classList.toggle('hidden');
                 }
 
-                // Email validation if present
-                const email = formData.get('email');
-                if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                    errors.email = 'Please enter a valid email address';
+                // Send message function
+                function sendMessage(message) {
+                    if (message.trim() === '') return;
+
+                    const messageElement = createMessageElement(message);
+                    messageList.appendChild(messageElement);
+                    messageList.scrollTop = messageList.scrollHeight;
                 }
 
-                return errors;
-            }
-
-            async function handleSubmit(event) {
-                event.preventDefault();
-
-                const form = event.target;
-                const formData = new FormData(form);
-                const errors = validateForm(formData);
-
-                if (Object.keys(errors).length === 0) {
-                    try {
-                        const response = await submitForm(formData);
-                        updateFormState({ submitted: true, errors: {} });
-                    } catch (error) {
-                        updateFormState({
-                            submitted: false,
-                            errors: {
-                                submit: 'Failed to submit form. Please try again.',
-                            },
-                        });
-                    }
-                } else {
-                    updateFormState({ submitted: false, errors });
+                // Create message element
+                function createMessageElement(message) {
+                    const div = document.createElement('div');
+                    div.classList.add('message');
+                    div.textContent = message;
+                    return div;
                 }
+
+                return {
+                    toggleChatWindow,
+                    sendMessage,
+                };
             }
 
             // Event Delegations
 
-            // Testimonials Section Event Delegation
-            // Event delegation for carousel controls
-            document.addEventListener('click', (event) => {
-                const target = event.target;
-
-                // Next button
-                if (target.matches('.carousel-next')) {
-                    carouselActions.next();
-                }
-
-                // Previous button
-                if (target.matches('.carousel-prev')) {
-                    carouselActions.prev();
-                }
-
-                // Indicators
-                if (target.matches('.carousel-indicator')) {
-                    const index = Array.from(
-                        target.parentNode.children
-                    ).indexOf(target);
-                    carouselActions.goToSlide(index);
+            // Hero Section Event Delegation
+            // Event delegation for smooth scroll
+            document.addEventListener('click', (e) => {
+                const scrollLink = e.target.closest('[data-scroll]');
+                if (scrollLink) {
+                    e.preventDefault();
+                    const targetId = scrollLink.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        smoothScroll(targetElement);
+                    }
                 }
             });
 
-            // Touch events for swipe functionality
-            let touchStartX = 0;
-            let touchEndX = 0;
+            // Initialize animations on page load
+            document.addEventListener('DOMContentLoaded', () => {
+                initCounterAnimations();
+            });
 
-            document.querySelector('.carousel').addEventListener(
-                'touchstart',
-                (e) => {
-                    touchStartX = e.changedTouches[0].screenX;
-                },
-                { passive: true }
-            );
+            // Reinitialize counter animations on dynamic content updates
+            document.addEventListener('contentUpdated', () => {
+                initCounterAnimations();
+            });
 
-            document.querySelector('.carousel').addEventListener(
-                'touchend',
-                (e) => {
-                    touchEndX = e.changedTouches[0].screenX;
-                    handleSwipe();
-                },
-                { passive: true }
-            );
+            // 3D Product Showcase Event Delegation
+            // Touch and mouse event handlers
+            const setupEventListeners = (viewer, controls) => {
+                const container = viewer.container;
 
-            function handleSwipe() {
-                const swipeThreshold = 50;
-                const diff = touchStartX - touchEndX;
+                container.addEventListener('mousedown', (e) => {
+                    viewerState.updateRotation(true);
+                    viewerState.updateMousePosition(e.clientX, e.clientY);
+                });
 
-                if (Math.abs(diff) > swipeThreshold) {
-                    if (diff > 0) {
-                        carouselActions.next();
+                container.addEventListener('mousemove', (e) => {
+                    if (viewerState.isRotating) {
+                        const deltaX =
+                            e.clientX - viewerState.lastMousePosition.x;
+                        const deltaY =
+                            e.clientY - viewerState.lastMousePosition.y;
+                        controls.rotate(deltaX * 0.005, deltaY * 0.005);
+                        viewerState.updateMousePosition(e.clientX, e.clientY);
+                    }
+                });
+
+                container.addEventListener('mouseup', () => {
+                    viewerState.updateRotation(false);
+                });
+
+                container.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    viewerState.updateZoom(e.deltaY * -0.001);
+                    viewer.camera.zoom = viewerState.zoomLevel;
+                    viewer.camera.updateProjectionMatrix();
+                });
+
+                // Touch events
+                container.addEventListener('touchstart', (e) => {
+                    if (e.touches.length === 1) {
+                        viewerState.updateRotation(true);
+                        viewerState.updateMousePosition(
+                            e.touches[0].clientX,
+                            e.touches[0].clientY
+                        );
+                    }
+                });
+
+                container.addEventListener('touchmove', (e) => {
+                    if (e.touches.length === 1 && viewerState.isRotating) {
+                        const deltaX =
+                            e.touches[0].clientX -
+                            viewerState.lastMousePosition.x;
+                        const deltaY =
+                            e.touches[0].clientY -
+                            viewerState.lastMousePosition.y;
+                        controls.rotate(deltaX * 0.005, deltaY * 0.005);
+                        viewerState.updateMousePosition(
+                            e.touches[0].clientX,
+                            e.touches[0].clientY
+                        );
+                    }
+                });
+
+                container.addEventListener('touchend', () => {
+                    viewerState.updateRotation(false);
+                });
+            };
+
+            // Testimonials Event Delegation
+            // Video player controls event delegation
+            document.addEventListener('click', (event) => {
+                const target = event.target;
+                const video = target
+                    .closest('.video-container')
+                    ?.querySelector('video');
+
+                if (!video) return;
+
+                if (target.matches('.play-pause-btn')) {
+                    if (video.paused) {
+                        video.play();
                     } else {
-                        carouselActions.prev();
+                        video.pause();
+                    }
+                    videoPlayerState.updateState(video);
+                }
+
+                if (target.matches('.mute-btn')) {
+                    video.muted = !video.muted;
+                    videoPlayerState.updateState(video);
+                }
+
+                if (target.matches('.fullscreen-btn')) {
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                    } else {
+                        video.requestFullscreen();
                     }
                 }
-            }
+            });
 
-            // Booking Section Event Delegation
-            // Event delegation for form handling
-            document.addEventListener('DOMContentLoaded', () => {
-                const form = document.querySelector('form');
+            // Progress bar handling
+            document.addEventListener('input', (event) => {
+                const target = event.target;
+                const video = target
+                    .closest('.video-container')
+                    ?.querySelector('video');
 
-                if (form) {
-                    form.addEventListener('submit', handleSubmit);
+                if (!video) return;
 
-                    // Real-time validation on input
-                    form.addEventListener('input', (event) => {
-                        const input = event.target;
-                        const formData = new FormData();
-                        formData.append(input.name, input.value);
-
-                        const fieldErrors = validateForm(formData);
-                        updateFormState({
-                            errors: {
-                                ...formState.errors,
-                                [input.name]: fieldErrors[input.name],
-                            },
-                        });
-                    });
+                if (target.matches('.progress-bar')) {
+                    const time = (target.value / 100) * video.duration;
+                    video.currentTime = time;
+                    videoPlayerState.updateState(video);
                 }
+
+                if (target.matches('.volume-slider')) {
+                    video.volume = target.value;
+                    videoPlayerState.updateState(video);
+                }
+            });
+
+            // Chatbot Event Delegation
+            // Event delegation for chat interactions
+            document.addEventListener('DOMContentLoaded', () => {
+                const chat = initializeChat();
+
+                // Toggle button click handler
+                document
+                    .querySelector('.chat-toggle')
+                    .addEventListener('click', () => {
+                        chatState.setState({ isOpen: !chatState.isOpen });
+                        chat.toggleChatWindow();
+                    });
+
+                // Message form submission
+                document
+                    .querySelector('.chat-form')
+                    .addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        const input = e.target.querySelector('.message-input');
+                        const message = input.value;
+
+                        if (message.trim()) {
+                            chatState.addMessage(message);
+                            chat.sendMessage(message);
+                            input.value = '';
+                        }
+                    });
+
+                // Close button handler
+                document
+                    .querySelector('.chat-close')
+                    .addEventListener('click', () => {
+                        chatState.setState({ isOpen: false });
+                        chat.toggleChatWindow();
+                    });
             });
         </script>
     </body>

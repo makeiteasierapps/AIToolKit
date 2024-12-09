@@ -48,7 +48,6 @@ class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         public_paths = ['/auth/login', '/auth/register', '/auth/token', 
                        '/static/', '/favicon.ico', '/auth/refresh']
-        
         if any(request.url.path.startswith(path) for path in public_paths):
             return await call_next(request)
 
