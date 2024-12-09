@@ -6,3 +6,4 @@ class User(BaseModel):
     username: str
     api_request_count: int
     disabled: bool = False
+    hashed_password: str

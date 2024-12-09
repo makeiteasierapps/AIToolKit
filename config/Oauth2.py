@@ -46,7 +46,6 @@ async def get_user(db, username: str) -> User | None:
         if user_dict:
             user_dict["user_id"] = str(user_dict["_id"])
             user_dict.pop("_id")
-            user_dict.pop("hashed_password")
             print(user_dict)
             return User(**user_dict)
         return None
@@ -57,7 +56,7 @@ async def get_user(db, username: str) -> User | None:
 async def authenticate_user(db, username: str, password: str):
     user = await get_user(db, username)
     print(user)
-    if not user or not verify_password(password, user["hashed_password"]):
+    if not user or not verify_password(password, user.hashed_password):
         return False
     return user
 

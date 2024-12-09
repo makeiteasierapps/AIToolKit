@@ -5,7 +5,7 @@ import time
 from typing import List, Dict, Literal
 import json
 from dspy import InputField, OutputField, Signature, ChainOfThought, context, Predict
-from llm_untils import execute_llm_call, initialize_llm
+from llm_utils import execute_llm_call, initialize_llm
 from SSHManager import SSHManager
 from ImageGenManager import ImageGenerator
 COMPONENT_SCAFFOLD = '''
@@ -108,7 +108,7 @@ class ComponentStructure(Signature):
     image_details = InputField(desc='use the image paths provided, use all of the images in your response')
     markup = OutputField(desc='Response should contain HTML with Tailwind classes')
 
-strong_lm = initialize_llm('4o-mini', 'sonnet')
+strong_lm = initialize_llm('haiku', 'sonnet')
 
 async def component_builder_pipeline(prompt, db):
     start = time.time()
@@ -163,7 +163,6 @@ async def component_builder_pipeline(prompt, db):
                 })
 
             # Generate images
-            print(section)
             if 'image_requirements' in section:
                 section_images = await generate_section_image_details(
                     image_instructions=section['image_requirements']
@@ -216,14 +215,15 @@ async def component_builder_pipeline(prompt, db):
         section_logic=section_logic
     )
     
-    # Add timestamp to each image and insert into MongoDB
-    current_time = datetime.now(timezone.utc)
-    image_documents = [
-        {**image, "created_at": current_time} 
-        for image in images
-    ]
-    
-    await db.get_collection('generated_images').insert_many(image_documents)
+    # Add timestamp to each image and insert into MongoDB if images exist
+    if images:
+        current_time = datetime.now(timezone.utc)
+        image_documents = [
+            {**image, "created_at": current_time} 
+            for image in images
+        ]
+        
+        await db.get_collection('generated_images').insert_many(image_documents)
 
     # Final outputs
     yield format_sse({

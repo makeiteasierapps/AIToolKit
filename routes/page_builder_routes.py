@@ -1,5 +1,6 @@
+import asyncio
 from fastapi import APIRouter, Request, Depends, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel
 from typing import Annotated
 from UserModel import User
@@ -7,6 +8,7 @@ from config.logging_config import setup_logging
 from bson import ObjectId
 from datetime import datetime, timezone
 from config.Oauth2 import get_current_user
+from component_builder import component_builder_pipeline
 logger = setup_logging()
 
 class WebsiteDescription(BaseModel):
@@ -93,9 +95,9 @@ async def start_pipeline(
     
     # Validate input
     if not description.website_description.strip():
-        return StreamingResponse(
-            iter(['data: {"type": "error", "message": "Please provide a website description"}\n\n']),
-            media_type="text/event-stream"
+        return JSONResponse(
+            status_code=400,
+            content={"message": "Please provide a website description"}
         )
 
     # Check API request limit
@@ -103,9 +105,13 @@ async def start_pipeline(
     current_count = user_stats["api_request_count"] if user_stats else 0
     
     if current_count >= MAX_API_REQUESTS:
-        return StreamingResponse(
-            iter(['data: {"type": "error", "message": "You have reached your API request limit"}\n\n']),
-            media_type="text/event-stream"
+        return JSONResponse(
+            status_code=429,
+            content={
+                "message": "You have reached your API request limit",
+                "remaining_requests": 0,
+                "max_requests": MAX_API_REQUESTS
+            }
         )
     
     # Increment the request count
@@ -120,18 +126,22 @@ async def start_pipeline(
 
     async def generate():
         try:
-            # Send initial message with request count info
-            remaining = MAX_API_REQUESTS - (current_count + 1)
-            yield f'data: {{"type": "info", "remaining_requests": {remaining}}}\n\n'
-            
             # Process the actual page building
-            async for html_update in request.app.state.component_builder_pipeline(description.website_description, db):
-                yield f"data: {html_update}\n\n"
+            async for html_update in component_builder_pipeline(description.website_description, db):
+                if not html_update.startswith('data: '):
+                    html_update = f'data: {html_update}'
+                yield f"{html_update}\n\n"
+                # Add a small delay to prevent buffering issues
+                await asyncio.sleep(0.1)
         except Exception as e:
             yield f'data: {{"type": "error", "message": "Pipeline error: {str(e)}"}}\n\n'
 
     return StreamingResponse(
         generate(),
         media_type="text/event-stream",
-        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
+        }
     )

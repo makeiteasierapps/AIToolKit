@@ -1,12 +1,9 @@
-import { buildPage, saveThumbnail, showProgressOverlay, hideProgressOverlay, startNewMessageGroup } from './storage.js';
+import { pageBuilder } from './PageBuilder.js';
 import { createThumbnail, loadSavedThumbnails } from './thumbnailManager.js';
-
-
-
+import { showError, hideError } from './utils.js';
 async function handleSubmitDescription() {
     const submitButton = document.getElementById('submit-description');
     submitButton.disabled = true;
-    hideError();
     try {
         const description = document.getElementById(
             'website-description'
@@ -19,31 +16,14 @@ async function handleSubmitDescription() {
 
         // Reset progress containers
         document.getElementById('progress-stream').innerHTML = '';
-        startNewMessageGroup();
-        const response = await buildPage(description);
-
-        if (!response.ok) {
-            throw new Error(
-                `Server returned ${response.status}: ${response.statusText}`
-            );
-        }
-
-        showProgressOverlay();
+        await pageBuilder.buildPage(description);
     } catch (error) {
         console.error('Error submitting description:', error);
         showError(`Failed to generate website: ${error.message}`);
     } finally {
         submitButton.disabled = false;
         document.getElementById('website-description').value = '';
-        hideProgressOverlay();
     }
-}
-
-function updatePreviewIframe(htmlContent) {
-    const iframe = document.getElementById('preview');
-    iframe.contentWindow.document.open();
-    iframe.contentWindow.document.write(htmlContent);
-    iframe.contentWindow.document.close();
 }
 
 function download(filename, text) {

@@ -8,7 +8,6 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse, JSONResponse
 from MongoDbClient import MongoDbClient
-from component_builder import component_builder_pipeline
 
 def get_server_config():
     return {
@@ -103,7 +102,6 @@ class ServerConfig:
         mongo_client = MongoDbClient.get_instance("ai-toolkit")
         self.app.state.db = mongo_client.db
         self.app.state.templates = Jinja2Templates(directory="templates")
-        self.app.state.component_builder_pipeline = component_builder_pipeline
 
     def configure(self):
         self.app.add_middleware(AuthMiddleware)

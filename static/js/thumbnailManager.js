@@ -1,4 +1,4 @@
-import { deleteThumbnail, getSavedThumbnails } from './storage.js';
+import { pageBuilder } from './PageBuilder.js';
 
 export const SPINNER_TEMPLATE = `
     <div class="spinner-border" role="status">
@@ -94,7 +94,7 @@ export async function createThumbnail(
 }
 
 export async function loadSavedThumbnails() {
-    const savedThumbnails = getSavedThumbnails();
+    const savedThumbnails = await pageBuilder.getSavedThumbnails();
     const container = document.getElementById('thumbnails-container');
 
     for (const thumbnailData of savedThumbnails) {

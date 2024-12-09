@@ -48,7 +48,7 @@ async def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    token_pair = create_token_pair({"sub": user["username"]})
+    token_pair = create_token_pair({"sub": user.username})
     
     # Set the access token in cookie
     response.set_cookie(
