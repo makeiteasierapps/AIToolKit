@@ -1,11 +1,11 @@
 import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
-from config.logging_config import setup_logging
-from config.server_config import ServerConfig, run_server
-from routes.site_routes import site_router
-from routes.auth_routes import auth_routes
-from routes.page_builder_routes import page_builder_router
+from fastapi import FastAPI 
+from backend.config.logging_config import setup_logging
+from backend.config.server_config import ServerConfig, run_server
+from backend.routes.site_routes import site_router
+from backend.routes.auth_routes import auth_routes
+from backend.routes.page_builder_routes import page_builder_router
 
 logger = setup_logging()
 

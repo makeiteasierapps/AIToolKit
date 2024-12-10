@@ -5,7 +5,7 @@ from dspy import ChainOfThought, context, Predict
 from backend.core.ssh_manager import SSHManager
 from backend.services.image_gen.image_gen_manager import ImageGenerator
 from backend.services.page_builder.signatures import PageBuilderSignatures as Sigs
-from page_builder.builder_utils import format_sse, clean_markup, create_component_scaffold
+from backend.services.page_builder.builder_utils import format_sse, clean_markup, create_component_scaffold
 from backend.utils.llm_utils import execute_llm_call, initialize_llm
 
 logger = logging.getLogger('app.component_builder')

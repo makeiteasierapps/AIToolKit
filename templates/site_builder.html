@@ -1,98 +1,96 @@
 {% extends "base.html" %} {% block title %}Page Builder{% endblock %} {% block
 extra_css %}
 <link href="/static/css/main.css" rel="stylesheet" />
-<link href="/static/css/thumbnail.css" rel="stylesheet" />
-<link href="/static/css/preview.css" rel="stylesheet" />
-<link href="/static/css/progress.css" rel="stylesheet" />
-<link href="/static/css/descriptionTextArea.css" rel="stylesheet" />
+<link href="/static/css/components/thumbnail.css" rel="stylesheet" />
+<link href="/static/css/components/preview.css" rel="stylesheet" />
+<link href="/static/css/components/progress.css" rel="stylesheet" />
+<link href="/static/css/components/descriptionTextArea.css" rel="stylesheet" />
 <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
 />
 {% endblock %} {% block content %}
 <div class="main-container">
-    <h1>Page Builder</h1>
+  <h1>Page Builder</h1>
 
-    <!-- Description Input Section -->
-    <div class="input-group description-input-group">
-        <textarea
-            class="form-control"
-            id="website-description"
-            rows="3"
-            required
-            placeholder="Describe your page..."
-        ></textarea>
-        <button id="submit-description" class="btn" title="Generate">
-            <i class="bi bi-arrow-right"></i>
-        </button>
-    </div>
+  <!-- Description Input Section -->
+  <div class="input-group description-input-group">
+    <textarea
+      class="form-control"
+      id="website-description"
+      rows="3"
+      required
+      placeholder="Describe your page..."
+    ></textarea>
+    <button id="submit-description" class="btn" title="Generate">
+      <i class="bi bi-arrow-right"></i>
+    </button>
+  </div>
 
-    <!-- Thumbnails Section -->
-    <div class="thumbnails-wrapper collapsed">
-        <button class="thumbnails-toggle" aria-label="Toggle thumbnails">
-            <i class="bi bi-chevron-up"></i>
-            <span>Saved Pages</span>
-        </button>
-        <div id="thumbnails-container">
-            <!-- Add the template here -->
-            <template id="thumbnail-template">
-                <div class="thumbnail-wrapper">
-                    <span class="thumbnail-title"></span>
-                    <div class="thumbnail">
-                        <img
-                            class="thumbnail-img"
-                            width="180"
-                            height="135"
-                            style="display: none"
-                        />
-                        <div class="spinner-border" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <button class="delete-button" title="Delete thumbnail">
-                            ×
-                        </button>
-                    </div>
-                </div>
-            </template>
-        </div>
-    </div>
-
-    <!-- Preview Section -->
-    <div id="preview-container">
-        <div class="action-buttons">
-            <button
-                id="save-html"
-                class="btn btn-outline-primary btn-sm"
-                title="Download HTML"
-            >
-                <i class="bi bi-download me-1"></i>
-                Export HTML
-            </button>
-            <button
-                id="save-page"
-                class="btn btn-outline-success btn-sm"
-                title="Save to My Pages"
-            >
-                <i class="bi bi-bookmark-plus me-1"></i>
-                Save to My Pages
-            </button>
-        </div>
-
-        <div id="save-overlay" class="d-none">
+  <!-- Thumbnails Section -->
+  <div class="thumbnails-wrapper collapsed">
+    <button class="thumbnails-toggle" aria-label="Toggle thumbnails">
+      <i class="bi bi-chevron-up"></i>
+      <span>Saved Pages</span>
+    </button>
+    <div id="thumbnails-container">
+      <!-- Add the template here -->
+      <template id="thumbnail-template">
+        <div class="thumbnail-wrapper">
+          <span class="thumbnail-title"></span>
+          <div class="thumbnail">
+            <img
+              class="thumbnail-img"
+              width="180"
+              height="135"
+              style="display: none"
+            />
             <div class="spinner-border" role="status">
-                <span class="visually-hidden">Saving...</span>
+              <span class="visually-hidden">Loading...</span>
             </div>
+            <button class="delete-button" title="Delete thumbnail">×</button>
+          </div>
         </div>
-
-        <div id="progress-overlay" class="d-none">
-            <div class="progress-content">
-                <h5 class="text-center">Building Your Website</h5>
-                <div id="progress-stream"></div>
-            </div>
-        </div>
-
-        <iframe id="preview"></iframe>
+      </template>
     </div>
+  </div>
+
+  <!-- Preview Section -->
+  <div id="preview-container">
+    <div class="action-buttons">
+      <button
+        id="save-html"
+        class="btn btn-outline-primary btn-sm"
+        title="Download HTML"
+      >
+        <i class="bi bi-download me-1"></i>
+        Export HTML
+      </button>
+      <button
+        id="save-page"
+        class="btn btn-outline-success btn-sm"
+        title="Save to My Pages"
+      >
+        <i class="bi bi-bookmark-plus me-1"></i>
+        Save to My Pages
+      </button>
+    </div>
+
+    <div id="save-overlay" class="d-none">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Saving...</span>
+      </div>
+    </div>
+
+    <div id="progress-overlay" class="d-none">
+      <div class="progress-content">
+        <h5 class="text-center">Building Your Website</h5>
+        <div id="progress-stream"></div>
+      </div>
+    </div>
+
+    <iframe id="preview"></iframe>
+  </div>
 </div>
 {% endblock %} {% block extra_js %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.3/html2canvas.min.js"></script>

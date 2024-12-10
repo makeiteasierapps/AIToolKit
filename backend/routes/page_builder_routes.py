@@ -3,12 +3,12 @@ from fastapi import APIRouter, Request, Depends, HTTPException
 from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel
 from typing import Annotated
-from models.UserModel import User
-from config.logging_config import setup_logging
 from bson import ObjectId
 from datetime import datetime, timezone
-from config.Oauth2 import get_current_user
-from page_builder.page_builder import page_builder_pipeline
+from backend.models.UserModel import User
+from backend.config.logging_config import setup_logging
+from backend.config.Oauth2 import get_current_user
+from backend.services.page_builder.page_builder import page_builder_pipeline
 logger = setup_logging()
 
 class WebsiteDescription(BaseModel):

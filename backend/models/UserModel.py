@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from bson import ObjectId
 
 class User(BaseModel):
     user_id: str

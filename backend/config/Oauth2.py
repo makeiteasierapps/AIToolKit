@@ -7,8 +7,8 @@ from fastapi.security import OAuth2PasswordBearer
 import jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
-from config.logging_config import setup_logging
-from models.UserModel import User
+from backend.config.logging_config import setup_logging
+from backend.models.UserModel import User
 
 logger = setup_logging()
 

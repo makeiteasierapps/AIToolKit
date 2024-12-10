@@ -3,12 +3,12 @@ from pydantic import BaseModel
 from fastapi.responses import Response
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
-from config.Oauth2 import (
+from backend.config.Oauth2 import (
     get_password_hash, 
     get_current_user, authenticate_user, refresh_access_token, create_token_pair
 )
-from models.UserModel import User
-from config.logging_config import setup_logging
+from backend.models.UserModel import User
+from backend.config.logging_config import setup_logging
 
 logger = setup_logging()
 auth_routes = APIRouter(prefix="/auth", tags=["authentication"])

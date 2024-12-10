@@ -9,6 +9,7 @@ from fastapi.requests import Request
 from fastapi.responses import RedirectResponse, JSONResponse
 from backend.core.MongoDbClient import MongoDbClient
 
+
 def get_server_config():
     return {
         "bind": "0.0.0.0:8000",
@@ -36,7 +37,7 @@ def run_server(app):
 
     if IS_LOCAL_DEV:
         uvicorn.run(
-            "app:app",
+            "backend.main:app",
             host="0.0.0.0",
             port=8000,
             reload=True
@@ -76,12 +77,14 @@ class ServerConfig:
         self.app = app
 
     def setup_static_files(self):
-        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        # Get the project root (one level up from backend folder)
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         IS_LOCAL_DEV = os.getenv("IS_LOCAL_DEV", "false") == "true"
 
         # Mount static files directory
-        self.app.mount("/static", StaticFiles(directory=os.path.join(project_root, "static")), name="static")
-        
+        static_dir = os.path.join(project_root, "static")
+        self.app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
         # Set media storage path based on environment
         if IS_LOCAL_DEV:
             media_path = os.path.join(project_root, "mnt", "media_storage", "generated")
@@ -91,6 +94,7 @@ class ServerConfig:
         # Create directory if it doesn't exist
         os.makedirs(media_path, exist_ok=True)
 
+        # Mount media directory
         self.app.mount(
             "/mnt/media_storage/generated",
             StaticFiles(directory=media_path),
