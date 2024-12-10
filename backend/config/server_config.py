@@ -7,7 +7,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse, JSONResponse
-from MongoDbClient import MongoDbClient
+from backend.core.MongoDbClient import MongoDbClient
 
 def get_server_config():
     return {

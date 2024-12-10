@@ -2,11 +2,11 @@ from datetime import datetime, timezone
 import logging
 import time
 from dspy import ChainOfThought, context, Predict
-from SSHManager import SSHManager
-from ImageGenManager import ImageGenerator
-from page_builder.PageBuilderSignatures import PageBuilderSignatures as Sigs
+from backend.core.ssh_manager import SSHManager
+from backend.services.image_gen.image_gen_manager import ImageGenerator
+from backend.services.page_builder.signatures import PageBuilderSignatures as Sigs
 from page_builder.builder_utils import format_sse, clean_markup, create_component_scaffold
-from llm_utils import execute_llm_call, initialize_llm
+from backend.utils.llm_utils import execute_llm_call, initialize_llm
 
 logger = logging.getLogger('app.component_builder')
 ssh_manager = SSHManager(is_dev_mode=True, logger=logger)
