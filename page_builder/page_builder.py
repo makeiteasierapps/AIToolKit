@@ -5,7 +5,7 @@ from dspy import ChainOfThought, context, Predict
 from SSHManager import SSHManager
 from ImageGenManager import ImageGenerator
 from page_builder.PageBuilderSignatures import PageBuilderSignatures as Sigs
-from builder_utils import format_sse, clean_markup, create_component_scaffold
+from page_builder.builder_utils import format_sse, clean_markup, create_component_scaffold
 from llm_utils import execute_llm_call, initialize_llm
 
 logger = logging.getLogger('app.component_builder')
