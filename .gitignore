@@ -3,7 +3,7 @@
 /venv
 *.log
 logs/
-
+test.html
 app.log
 
 /mnt
