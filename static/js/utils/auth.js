@@ -1,12 +1,8 @@
 const API_ROUTES = {
     LOGIN: '/auth/token',
-    REFRESH: '/auth/refresh',
     REGISTER: '/auth/register',
     LOGOUT: '/auth/logout',
-    VALIDATE: '/auth/validate',
 };
-
-const redirectTo = (path) => (window.location.href = path);
 
 class ApiError extends Error {
     constructor(message, status) {
@@ -14,6 +10,7 @@ class ApiError extends Error {
         this.status = status;
     }
 }
+
 class ApiClient {
     static async request(url, options = {}) {
         const defaultOptions = {
@@ -24,28 +21,10 @@ class ApiClient {
             credentials: 'include',
         };
         try {
-            let response = await fetch(url, { ...defaultOptions, ...options });
-            if (response.status === 401) {
-                const refreshToken = localStorage.getItem('refresh_token');
-                if (refreshToken) {
-                    try {
-                        const newToken = await Auth.refreshToken();
-                        if (newToken) {
-                            // Retry the original request
-                            response = await fetch(url, {
-                                ...defaultOptions,
-                                ...options,
-                            });
-                        }
-                    } catch (refreshError) {
-                        // If refresh fails, redirect to login
-                        Auth.handleAuthFailure();
-                        throw refreshError;
-                    }
-                } else {
-                    Auth.handleAuthFailure();
-                }
-            }
+            const response = await fetch(url, {
+                ...defaultOptions,
+                ...options,
+            });
             const data = await response.json();
             if (!response.ok) {
                 throw new ApiError(
@@ -60,71 +39,30 @@ class ApiClient {
         }
     }
 }
+
 class Auth {
-    static async refreshToken() {
-        try {
-            const refreshToken = localStorage.getItem('refresh_token');
-            if (!refreshToken) return null;
-            const data = await ApiClient.request(API_ROUTES.REFRESH, {
-                method: 'POST',
-                body: JSON.stringify({ token: refreshToken }),
-            });
-            return data.access_token;
-        } catch {
-            this.handleAuthFailure();
-            return null;
-        }
-    }
     static async login(username, password) {
         const formData = new URLSearchParams({ username, password });
-        const response = await ApiClient.request(API_ROUTES.LOGIN, {
+        await ApiClient.request(API_ROUTES.LOGIN, {
             method: 'POST',
             body: formData,
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         });
-        if (response.status === 'success') {
-            localStorage.setItem('refresh_token', response.refresh_token);
-            redirectTo('/');
-        }
     }
+
     static async signup(formData) {
         const data = Object.fromEntries(formData.entries());
-        const response = await ApiClient.request(API_ROUTES.REGISTER, {
+        await ApiClient.request(API_ROUTES.REGISTER, {
             method: 'POST',
             body: JSON.stringify(data),
         });
-        if (response.status === 'success') {
-            localStorage.setItem('refresh_token', response.refresh_token);
-            redirectTo('/');
-        }
     }
+
     static async logout() {
-        try {
-            await ApiClient.request(API_ROUTES.LOGOUT, { method: 'POST' });
-        } finally {
-            localStorage.removeItem('refresh_token');
-            redirectTo('/auth/login');
-        }
-    }
-    static async validateSession() {
-        try {
-            // Make a lightweight request to validate the current session
-            await ApiClient.request(API_ROUTES.VALIDATE, {
-                method: 'GET',
-            });
-            return true;
-        } catch (error) {
-            if (error.status === 401) {
-                this.handleAuthFailure();
-            }
-            return false;
-        }
-    }
-    static handleAuthFailure() {
-        localStorage.removeItem('refresh_token');
-        redirectTo('/auth/login');
+        await ApiClient.request(API_ROUTES.LOGOUT, { method: 'POST' });
     }
 }
+
 class FormValidator {
     static passwordRegex =
         /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
@@ -386,10 +324,6 @@ class AuthUI {
     }
 }
 // Initialize
-document.addEventListener('DOMContentLoaded', async () => {
-    if (!window.location.pathname.includes('/auth/')) {
-        console.log('validating session');
-        await Auth.validateSession();
-    }
+document.addEventListener('DOMContentLoaded', () => {
     AuthUI.init();
 });

@@ -97,7 +97,7 @@ async def get_current_user(
 def create_token_pair(user_data: dict):
     access_token = create_access_token(
         data=user_data,
-        expires_delta=timedelta(hours=3)
+        expires_delta=timedelta(seconds=10)
     )
 
     refresh_token = create_access_token(
@@ -112,7 +112,21 @@ def create_token_pair(user_data: dict):
     )
 
 def refresh_access_token(refresh_token: str):
-    payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
-    if payload.get("type") != "refresh":
+    try:
+        print("Decoding refresh token...")
+        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+        print(f"Payload type: {payload.get('type')}")
+        
+        if payload.get("type") != "refresh":
+            print("Invalid token type")
+            raise HTTPException(status_code=400, detail="Invalid refresh token")
+            
+        new_token = create_access_token(data={"sub": payload["sub"]})
+        print(f"Created new token: {new_token}")
+        return new_token
+    except jwt.exceptions.InvalidTokenError as e:
+        print(f"JWT decode error: {str(e)}")
         raise HTTPException(status_code=400, detail="Invalid refresh token")
-    return create_access_token(data={"sub": payload["sub"]})
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        raise

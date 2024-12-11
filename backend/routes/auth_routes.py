@@ -49,7 +49,7 @@ async def login_for_access_token(
     
     token_pair = create_token_pair({"sub": user.username})
     
-    # Set the access token in cookie
+    # Set both tokens in cookies
     response.set_cookie(
         key="access_token",
         value=f"Bearer {token_pair.access_token}",
@@ -58,33 +58,15 @@ async def login_for_access_token(
         samesite="strict"
     )
     
-    return {
-        "status": "success",
-        "refresh_token": token_pair.refresh_token
-    }
-
-@auth_routes.post("/refresh")
-async def refresh_token(
-    request: RefreshTokenRequest,
-    response: Response
-):
-    try:
-        new_access_token = refresh_access_token(request.token)
-        response.set_cookie(
-            key="access_token",
-            value=f"Bearer {new_access_token}",
-            httponly=True,
-            secure=True,
-            samesite="strict"
-        )
-        return {"access_token": new_access_token, "token_type": "bearer"}
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid refresh token"
-        )
+    response.set_cookie(
+        key="refresh_token",
+        value=token_pair.refresh_token,
+        httponly=True,
+        secure=True,
+        samesite="strict"
+    )
+    
+    return {"status": "success"}
 
 @auth_routes.post("/register")
 async def register_user(
@@ -126,6 +108,7 @@ async def register_user(
 @auth_routes.post("/logout")
 async def logout(response: Response):
     response.delete_cookie(key="access_token")
+    response.delete_cookie(key="refresh_token")
     return {"status": "success"}
 
 @auth_routes.get("/me")

@@ -1,14 +1,17 @@
 import os
 import gunicorn.app.base
 import uvicorn
-from fastapi import FastAPI, status
+from fastapi import FastAPI, status, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse, JSONResponse
 from backend.core.MongoDbClient import MongoDbClient
+from backend.config.Oauth2 import (refresh_access_token)
+from backend.config.logging_config import setup_logging
 
+logger = setup_logging()
 
 def get_server_config():
     return {
@@ -54,8 +57,29 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
         # Check for token in cookies
         access_token = request.cookies.get('access_token')
+        refresh_token = request.cookies.get('refresh_token')
         if not access_token or not access_token.startswith('Bearer '):
-            # If no valid token and requesting HTML page, redirect to login
+            if refresh_token and request.headers.get('accept', '').startswith('text/html'):
+                try:
+                    # Attempt to refresh the token
+                    new_token = await refresh_access_token(refresh_token)
+                    response = RedirectResponse(
+                        url=request.url.path,  # Redirect to the same page
+                        status_code=status.HTTP_302_FOUND
+                    )
+                    response.set_cookie(
+                        key="access_token",
+                        value=f"Bearer {new_token}",
+                        httponly=True,
+                        secure=True,
+                        samesite="lax"
+                    )
+                    return response
+                except Exception:
+                    # If refresh fails, redirect to login
+                    return RedirectResponse(url='/auth/login')
+            
+            # If no refresh token or not HTML request
             if request.headers.get('accept', '').startswith('text/html'):
                 return RedirectResponse(url='/auth/login')
             
@@ -65,12 +89,44 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 content={"detail": "Not authenticated"}
             )
         
-        # Add the token to the request headers for downstream middleware/dependencies
-        request.headers.__dict__["_list"].append(
-            (b'authorization', access_token.encode())
-        )
+        try:
+            # Add the token to the request headers for downstream middleware/dependencies
+            request.headers.__dict__["_list"].append(
+                (b'authorization', access_token.encode())
+            )
             
-        return await call_next(request)
+            # Attempt to process the request
+            response = await call_next(request)
+            
+            if response.status_code == status.HTTP_401_UNAUTHORIZED and refresh_token:
+                try:
+                    new_token = refresh_access_token(refresh_token)
+                    response = RedirectResponse(
+                        url=request.url.path,
+                        status_code=status.HTTP_302_FOUND
+                    )
+                    response.set_cookie(
+                        key="access_token",
+                        value=f"Bearer {new_token}",
+                        httponly=True,
+                        secure=True,
+                        samesite="lax"
+                    )
+                    return response
+                except Exception as e:
+                    logger.error(f"Error refreshing token: {str(e)}")
+                    if request.headers.get('accept', '').startswith('text/html'):
+                        return RedirectResponse(url='/auth/login')
+                    return JSONResponse(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        content={"detail": "Not authenticated"}
+                    )
+            
+            return response
+            
+        except HTTPException as e:
+            # Handle other exceptions
+            raise e
 
 class ServerConfig:
     def __init__(self, app: FastAPI):
@@ -90,9 +146,6 @@ class ServerConfig:
             media_path = os.path.join(project_root, "mnt", "media_storage", "generated")
         else:
             media_path = "/mnt/media_storage/generated"
-
-        # Create directory if it doesn't exist
-        os.makedirs(media_path, exist_ok=True)
 
         # Mount media directory
         self.app.mount(
