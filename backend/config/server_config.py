@@ -62,7 +62,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
             if refresh_token and request.headers.get('accept', '').startswith('text/html'):
                 try:
                     # Attempt to refresh the token
-                    new_token = await refresh_access_token(refresh_token)
+                    new_token = refresh_access_token(refresh_token)
                     response = RedirectResponse(
                         url=request.url.path,  # Redirect to the same page
                         status_code=status.HTTP_302_FOUND
