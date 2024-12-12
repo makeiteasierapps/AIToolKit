@@ -54,21 +54,30 @@ async def get_user(db, username: str) -> User | None:
         return None
 
 async def authenticate_user(db, username: str, password: str):
-    user = await get_user(db, username)
-    print(user)
-    if not user or not verify_password(password, user.hashed_password):
+    try:
+        user = await get_user(db, username)
+        if not user or not verify_password(password, user.hashed_password):
+            return False
+        return user
+    except Exception as e:
+        logger.error(f"Authentication error: {str(e)}")
         return False
-    return user
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    try:
+        to_encode = data.copy()
+        if expires_delta:
+            expire = datetime.now(timezone.utc) + expires_delta
+        else:
+            expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+        to_encode.update({"exp": expire})
+        return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    except Exception as e:
+        logger.error(f"Token creation error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not create token"
+        )
 
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
@@ -95,38 +104,42 @@ async def get_current_user(
     return user
 
 def create_token_pair(user_data: dict):
-    access_token = create_access_token(
-        data=user_data,
-        expires_delta=timedelta(seconds=10)
-    )
+    try:
+        access_token = create_access_token(
+            data=user_data,
+            expires_delta=timedelta(minutes=30)
+        )
 
-    refresh_token = create_access_token(
-        data={"sub": user_data["sub"], "type": "refresh"},
-        expires_delta=timedelta(days=7)
-    )
+        refresh_token = create_access_token(
+            data={"sub": user_data["sub"], "type": "refresh"},
+            expires_delta=timedelta(days=7)
+        )
 
-    return TokenPair(
-        access_token=access_token,
-        refresh_token=refresh_token,
-        token_type="bearer"
-    )
+        return TokenPair(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            token_type="bearer"
+        )
+    except Exception as e:
+        logger.error(f"Token pair creation error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not create token pair"
+        )
 
 def refresh_access_token(refresh_token: str):
     try:
-        print("Decoding refresh token...")
         payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
-        print(f"Payload type: {payload.get('type')}")
-        
+
         if payload.get("type") != "refresh":
-            print("Invalid token type")
+            logger.error("Invalid token type")
             raise HTTPException(status_code=400, detail="Invalid refresh token")
-            
+
         new_token = create_access_token(data={"sub": payload["sub"]})
-        print(f"Created new token: {new_token}")
         return new_token
     except jwt.exceptions.InvalidTokenError as e:
-        print(f"JWT decode error: {str(e)}")
+        logger.error(f"JWT decode error: {str(e)}")
         raise HTTPException(status_code=400, detail="Invalid refresh token")
     except Exception as e:
-        print(f"Unexpected error: {str(e)}")
+        logger.error(f"Unexpected error: {str(e)}")
         raise
