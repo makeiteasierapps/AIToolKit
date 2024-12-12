@@ -1,15 +1,14 @@
-const API_ROUTES = {
-    LOGIN: '/auth/token',
-    REGISTER: '/auth/register',
-    LOGOUT: '/auth/logout',
-};
-
 class ApiError extends Error {
     constructor(message, status) {
         super(message);
         this.status = status;
     }
 }
+const API_ROUTES = {
+    LOGIN: '/auth/token',
+    REGISTER: '/auth/register',
+    LOGOUT: '/auth/logout',
+};
 
 class ApiClient {
     static async request(url, options = {}) {
@@ -39,30 +38,34 @@ class ApiClient {
         }
     }
 }
-
+const redirectTo = (path) => (window.location.href = path);
 class Auth {
     static async login(username, password) {
         const formData = new URLSearchParams({ username, password });
-        await ApiClient.request(API_ROUTES.LOGIN, {
+        const response = await ApiClient.request(API_ROUTES.LOGIN, {
             method: 'POST',
             body: formData,
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         });
+        if (response.status === 'success') {
+            redirectTo('/');
+        }
     }
-
     static async signup(formData) {
         const data = Object.fromEntries(formData.entries());
-        await ApiClient.request(API_ROUTES.REGISTER, {
+        const response = await ApiClient.request(API_ROUTES.REGISTER, {
             method: 'POST',
             body: JSON.stringify(data),
         });
+        if (response.status === 'success') {
+            redirectTo('/');
+        }
     }
-
     static async logout() {
         await ApiClient.request(API_ROUTES.LOGOUT, { method: 'POST' });
+        redirectTo('/auth/login');
     }
 }
-
 class FormValidator {
     static passwordRegex =
         /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
