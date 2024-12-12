@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse
 from typing import  Annotated
 from backend.config.logging_config import setup_logging
-from backend.config.Oauth2 import get_current_user
+from backend.middleware.Oauth2 import get_current_user
 from backend.models.UserModel import User
 
 logger = setup_logging()

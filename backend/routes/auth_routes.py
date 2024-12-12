@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from fastapi.responses import Response
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
-from backend.config.Oauth2 import (
+from backend.middleware.Oauth2 import (
     get_password_hash, 
     get_current_user, authenticate_user, refresh_access_token, create_token_pair
 )

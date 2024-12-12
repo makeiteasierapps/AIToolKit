@@ -7,7 +7,7 @@ from bson import ObjectId
 from datetime import datetime, timezone
 from backend.models.UserModel import User
 from backend.config.logging_config import setup_logging
-from backend.config.Oauth2 import get_current_user
+from backend.middleware.Oauth2 import get_current_user
 from backend.services.page_builder.page_builder import page_builder_pipeline
 logger = setup_logging()
 

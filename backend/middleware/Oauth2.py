@@ -107,7 +107,7 @@ def create_token_pair(user_data: dict):
     try:
         access_token = create_access_token(
             data=user_data,
-            expires_delta=timedelta(minutes=30)
+            expires_delta=timedelta(seconds=10)
         )
 
         refresh_token = create_access_token(

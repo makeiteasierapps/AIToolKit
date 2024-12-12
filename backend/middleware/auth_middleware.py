@@ -2,7 +2,7 @@ from fastapi import status, HTTPException
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse, JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
-from backend.config.Oauth2 import refresh_access_token
+from backend.middleware.Oauth2 import refresh_access_token
 from backend.config.logging_config import setup_logging
 
 logger = setup_logging()
