@@ -46,7 +46,6 @@ async def get_user(db, username: str) -> User | None:
         if user_dict:
             user_dict["user_id"] = str(user_dict["_id"])
             user_dict.pop("_id")
-            print(user_dict)
             return User(**user_dict)
         return None
     except Exception as e:
