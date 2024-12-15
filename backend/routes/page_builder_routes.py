@@ -21,12 +21,12 @@ page_builder_router = APIRouter()
 def get_db(request: Request):
     return request.app.state.db
 
-@page_builder_router.get("/api/thumbnails")
+@page_builder_router.get("/thumbnails")
 async def get_thumbnails(user: User = Depends(get_current_user), db = Depends(get_db)):
     thumbnails = await db.thumbnails.find({"user_id": user.user_id}).to_list(length=None)
     return [{**t, "_id": str(t["_id"])} for t in thumbnails]
 
-@page_builder_router.post("/api/thumbnails")
+@page_builder_router.post("/thumbnails")
 async def save_thumbnail(
     thumbnail_data: dict,
     user: User = Depends(get_current_user),
@@ -43,7 +43,7 @@ async def save_thumbnail(
     new_thumbnail["_id"] = str(new_thumbnail["_id"])
     return new_thumbnail
 
-@page_builder_router.delete("/api/thumbnails/{thumbnail_id}")
+@page_builder_router.delete("/thumbnails/{thumbnail_id}")
 async def delete_thumbnail(
     thumbnail_id: str,
     user: User = Depends(get_current_user),
@@ -58,34 +58,6 @@ async def delete_thumbnail(
         raise HTTPException(status_code=404, detail="Thumbnail not found")
     
     return {"message": "Thumbnail deleted"}
-
-@page_builder_router.post("/api/requests")
-async def handle_request(
-    user: User = Depends(get_current_user), 
-    db = Depends(get_db)
-):
-    user_stats = await db.users.find_one({"_id": ObjectId(user.user_id)})
-    current_count = user_stats["api_request_count"] if user_stats else 0
-    
-    if current_count >= MAX_API_REQUESTS:
-        raise HTTPException(
-            status_code=403,
-            detail="You have reached your API request limit"
-        )
-    
-    await db.users.update_one(
-        {"_id": ObjectId(user.user_id)},
-        {
-            "$inc": {"api_request_count": 1},
-            "$setOnInsert": {"created_at": datetime.now(timezone.utc)}
-        },
-        upsert=True
-    )
-    
-    return {
-        "count": current_count + 1,
-        "remaining": MAX_API_REQUESTS - (current_count + 1)
-    }
 
 @page_builder_router.post("/page_builder")
 async def start_pipeline(

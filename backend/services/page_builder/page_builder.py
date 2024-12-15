@@ -3,7 +3,7 @@ import logging
 import time
 import asyncio
 import uuid
-from typing import Dict, List, Any, Optional, Generator
+from typing import Dict, List, Any, Optional, AsyncGenerator
 from dataclasses import dataclass
 from dspy import ChainOfThought, context, Predict
 from backend.core.ssh_manager import SSHManager
@@ -20,11 +20,11 @@ logger = logging.getLogger('app.component_builder')
 
 # Configuration settings
 IS_DEV_MODE = True
-ADVANCED_LM_MODEL_NAME = 'haiku'
-ADVANCED_LM_STYLE = 'sonnet'
+LLM = 'haiku'
+STRONG_LLM = 'sonnet'
 
 ssh_manager = SSHManager(is_dev_mode=IS_DEV_MODE, logger=logger)
-advanced_language_model = initialize_llm(ADVANCED_LM_MODEL_NAME, ADVANCED_LM_STYLE)
+strong_llm = initialize_llm(LLM, STRONG_LLM)
 
 @dataclass
 class PipelineResult:
@@ -32,7 +32,7 @@ class PipelineResult:
     result: Any = None
     progress_message: Optional[Dict] = None
 
-async def page_builder_pipeline(prompt: str, db) -> Generator[str, None, None]:
+async def page_builder_pipeline(prompt: str, db) -> AsyncGenerator[str, None]:
     """Build a web page based on the given prompt."""
     pipeline_id = uuid.uuid4()
     pipeline_logger = logging.getLogger(f'app.component_builder.pipeline_{pipeline_id}')
@@ -46,7 +46,6 @@ async def page_builder_pipeline(prompt: str, db) -> Generator[str, None, None]:
 
         parts = []
         styles = []
-        section_markups = []
         images = []
 
         # Design components
@@ -66,21 +65,12 @@ async def page_builder_pipeline(prompt: str, db) -> Generator[str, None, None]:
         async for result in process_sections(parts, styles, pipeline_logger):
             if result.progress_message:
                 yield format_sse(result.progress_message)
-                if result.progress_message.get("type") == "section_complete":
-                    section_markups.append(result.progress_message["content"])
             if result.result:
                 images = result.result
 
-        # Assemble final output
-        final_output = assemble_page(styles, section_markups)
         await save_images_to_db(images, db)
 
         # Final outputs
-        yield format_sse({
-            "type": "component_complete",
-            "content": final_output,
-            "image_placeholders": images,
-        })
         yield format_sse({
             "type": "pipeline_complete",
             "build_time": time.time() - start_time,
@@ -92,15 +82,6 @@ async def page_builder_pipeline(prompt: str, db) -> Generator[str, None, None]:
         yield format_sse({"type": "error", "message": str(e)})
 
 async def analyze_complexity(prompt: str) -> str:
-    """
-    Analyze the complexity of the user's prompt.
-
-    Args:
-        prompt (str): The user's input describing the desired page.
-
-    Returns:
-        str: Complexity level ('simple' or 'complex').
-    """
     try:
         complexity_analysis = await execute_llm_call(
             Predict(Sigs.ComplexityAnalyzer),
@@ -111,8 +92,7 @@ async def analyze_complexity(prompt: str) -> str:
     except Exception as e:
         raise Exception(f"Error analyzing complexity: {str(e)}") from e
 
-async def design_components(prompt: str, complexity_level: str) -> Generator[PipelineResult, None, None]:
-    """Design components or sections based on the prompt and complexity level."""
+async def design_components(prompt: str, complexity_level: str) -> AsyncGenerator[PipelineResult, None]:
     parts = []
     styles = []
     name_key = ''
@@ -122,7 +102,7 @@ async def design_components(prompt: str, complexity_level: str) -> Generator[Pip
             yield PipelineResult(
                 progress_message={"type": "progress", "message": "🚧 Breaking down complex request..."}
             )
-            with context(lm=advanced_language_model):
+            with context(lm=strong_llm):
                 web_app_architect = await execute_llm_call(
                     ChainOfThought(Sigs.WebAppArchitect),
                     description=prompt,
@@ -137,7 +117,7 @@ async def design_components(prompt: str, complexity_level: str) -> Generator[Pip
             yield PipelineResult(
                 progress_message={"type": "progress", "message": "🏗️ Designing component..."}
             )
-            with context(lm=advanced_language_model):
+            with context(lm=strong_llm):
                 component_architect = await execute_llm_call(
                     ChainOfThought(Sigs.WebComponentArchitect),
                     description=prompt,
@@ -158,19 +138,9 @@ async def process_sections(
     parts: List[Dict[str, Any]],
     styles: List[str],
     pipeline_logger: logging.Logger,
-) -> Generator[PipelineResult, None, None]:
-    """
-    Process each section concurrently.
-
-    Args:
-        parts (List[Dict[str, Any]]): List of component or section specifications.
-        styles (List[str]): List of CSS styles.
-        pipeline_logger (logging.Logger): Logger for the pipeline.
-
-    Yields:
-        PipelineResult: Progress messages and results.
-    """
+) -> AsyncGenerator[PipelineResult, None]:
     images = []
+    cumulative_markups = []
     
     for index, section in enumerate(parts, 1):
         try:
@@ -187,8 +157,14 @@ async def process_sections(
             
             if isinstance(result, dict):
                 images.extend(result.get('images', []))
+                cumulative_markups.append(result['markup'])
+                current_scaffold = create_component_scaffold(
+                    styles=f"<style>{' '.join(styles)}</style>",
+                    markup=cumulative_markups,
+                )
+
                 yield PipelineResult(
-                    progress_message={"type": "section_complete", "content": result['markup']}
+                    progress_message={"type": "section_complete", "content": current_scaffold}
                 )
             
         except Exception as e:
@@ -225,14 +201,8 @@ async def process_section(
             section_style=section_style,
             image_details=section_images,
         )
-
-        # Create component
-        current_component = create_component_scaffold(
-            styles=f"<style>{' '.join(styles)}</style>",
-            markup=[markup],
-        )
         return {
-            'markup': markup,  # Return the raw markup
+            'markup': markup,
             'images': images
         }
     except Exception as e:
@@ -240,15 +210,6 @@ async def process_section(
         raise e
 
 def append_style(styles_list: List[str], section_name: str, css_rules: str, transitions: str) -> None:
-    """
-    Append CSS styles for a section to the styles list.
-
-    Args:
-        styles_list (List[str]): List of CSS styles.
-        section_name (str): Name of the section.
-        css_rules (str): CSS rules for the section.
-        transitions (str): CSS transitions for the section.
-    """
     styles_list.append(f"""
     /* {section_name} */
     {css_rules}
@@ -259,16 +220,6 @@ async def generate_section_style(
     style_instructions: str,
     global_css: str,
 ) -> Dict[str, str]:
-    """
-    Generate context-aware styles for a section.
-
-    Args:
-        style_instructions (str): Instructions for the section styles.
-        global_css (str): Existing global CSS styles.
-
-    Returns:
-        Dict[str, str]: CSS rules and transitions for the section.
-    """
     try:
         style_response = await execute_llm_call(
             Predict(Sigs.SectionStyle),
@@ -283,20 +234,11 @@ async def generate_section_style(
         raise Exception(f"Error generating section styles: {str(e)}") from e
 
 async def generate_section_image_details(image_instructions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """
-    Generate image details for a section.
-
-    Args:
-        image_instructions (List[Dict[str, Any]]): Instructions for image generation.
-
-    Returns:
-        List[Dict[str, Any]]: List of generated image details.
-    """
     if not image_instructions:
         return []
 
     try:
-        with context(lm=advanced_language_model):
+        with context(lm=strong_llm):
             image_response = await execute_llm_call(
                 ChainOfThought(Sigs.SectionImageDetails),
                 image_instructions=image_instructions,
@@ -337,20 +279,8 @@ async def build_page_section(
     section_style: Dict[str, str],
     image_details: Optional[List[Dict[str, Any]]] = None,
 ) -> str:
-    """
-    Build a complete section including structure with positioned image placeholders
-    and context-aware accessibility features.
-
-    Args:
-        layout_structure (str): The layout structure of the section.
-        section_style (Dict[str, str]): CSS rules and transitions for the section.
-        image_details (List[Dict[str, Any]], optional): Details of images to include.
-
-    Returns:
-        str: Cleaned HTML markup of the section.
-    """
     try:
-        with context(lm=advanced_language_model):
+        with context(lm=strong_llm):
             structure_response = await execute_llm_call(
                 ChainOfThought(Sigs.ComponentStructure),
                 layout_structure=layout_structure,
@@ -365,35 +295,7 @@ async def build_page_section(
         logger.error(f"Error in build_page_section: {str(e)}", exc_info=True)
         raise Exception(f"Error building section structure: {str(e)}") from e
 
-def assemble_page(styles: List[str], markups: List[str]) -> str:
-    """
-    Assemble the final HTML page.
-
-    Args:
-        styles (List[str]): List of CSS styles.
-        markups (List[str]): List of HTML markups.
-
-    Returns:
-        str: Final HTML content of the page.
-    """
-    # Combine all styles into a single style block
-    combined_styles = f"<style>\n{' '.join(styles)}\n</style>"
-    
-    # Create the final scaffold with all section markups
-    final_output = create_component_scaffold(
-        styles=combined_styles,
-        markup=markups,
-    )
-    return final_output
-
 async def save_images_to_db(images: List[Dict[str, Any]], db) -> None:
-    """
-    Save generated images to the database.
-
-    Args:
-        images (List[Dict[str, Any]]): List of image details.
-        db: Database connection object.
-    """
     if images:
         current_time = datetime.now(timezone.utc)
         image_documents = [

@@ -6,7 +6,7 @@ export const SPINNER_TEMPLATE = `
 
 // Thumbnail storage functions
 export async function saveThumbnail(thumbnailData) {
-    const response = await fetch('/api/thumbnails', {
+    const response = await fetch('/thumbnails', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -17,13 +17,13 @@ export async function saveThumbnail(thumbnailData) {
 }
 
 export async function deleteThumbnail(thumbnailId) {
-    await fetch(`/api/thumbnails/${thumbnailId}`, {
+    await fetch(`/thumbnails/${thumbnailId}`, {
         method: 'DELETE',
     });
 }
 
 async function getSavedThumbnails() {
-    const response = await fetch('/api/thumbnails');
+    const response = await fetch('/thumbnails');
     const data = await response.json();
     return data;
 }
