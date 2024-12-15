@@ -31,7 +31,7 @@ class PageBuilderSignatures:
             "layout_structure",
             "image_requirements",
             "css_style_and_animation_instructions",
-        ], str]] = OutputField(desc='CSS and Animations should be simple and elegant') 
+        ], str]] = OutputField(desc='CSS and Animations should be simple and elegant. image_requirements should contain how many images are needed') 
         global_css = OutputField(desc='CSS and Animations should be simple and elegant')
     class SectionImageDetails(Signature):
         """Create image details that will be used to generate images"""

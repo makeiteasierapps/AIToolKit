@@ -16,7 +16,7 @@ class ImageGenerator:
     def __init__(self, ssh_manager):
         self.ssh_manager = ssh_manager
         self.storage_path = '/mnt/media_storage/generated'
-        lm = LM(model='openai/gpt-4o-mini')
+        lm = LM(model='anthropic/gpt-4o-mini')
         configure(lm=lm)
         self.is_dev_mode = os.getenv("LOCAL_DEV", "false") == "true"
 

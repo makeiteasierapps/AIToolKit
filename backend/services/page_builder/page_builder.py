@@ -24,7 +24,7 @@ LLM = 'haiku'
 STRONG_LLM = 'sonnet'
 
 ssh_manager = SSHManager(is_dev_mode=IS_DEV_MODE, logger=logger)
-strong_llm = initialize_llm(LLM, STRONG_LLM)
+lm, strong_lm = initialize_llm(LLM, STRONG_LLM)
 
 @dataclass
 class PipelineResult:
@@ -83,10 +83,11 @@ async def page_builder_pipeline(prompt: str, db) -> AsyncGenerator[str, None]:
 
 async def analyze_complexity(prompt: str) -> str:
     try:
-        complexity_analysis = await execute_llm_call(
-            Predict(Sigs.ComplexityAnalyzer),
-            description=prompt,
-        )
+        with context(lm=lm):   
+            complexity_analysis = await execute_llm_call(
+                Predict(Sigs.ComplexityAnalyzer),
+                description=prompt,
+            )
         complexity_level = complexity_analysis.complexity_level.lower()
         return complexity_level
     except Exception as e:
@@ -102,7 +103,7 @@ async def design_components(prompt: str, complexity_level: str) -> AsyncGenerato
             yield PipelineResult(
                 progress_message={"type": "progress", "message": "🚧 Breaking down complex request..."}
             )
-            with context(lm=strong_llm):
+            with context(lm=strong_lm):
                 web_app_architect = await execute_llm_call(
                     ChainOfThought(Sigs.WebAppArchitect),
                     description=prompt,
@@ -117,7 +118,7 @@ async def design_components(prompt: str, complexity_level: str) -> AsyncGenerato
             yield PipelineResult(
                 progress_message={"type": "progress", "message": "🏗️ Designing component..."}
             )
-            with context(lm=strong_llm):
+            with context(lm=strong_lm):
                 component_architect = await execute_llm_call(
                     ChainOfThought(Sigs.WebComponentArchitect),
                     description=prompt,
@@ -221,11 +222,12 @@ async def generate_section_style(
     global_css: str,
 ) -> Dict[str, str]:
     try:
-        style_response = await execute_llm_call(
-            Predict(Sigs.SectionStyle),
-            style_instructions=style_instructions,
-            global_css=global_css,
-        )
+        with context(lm=lm): 
+            style_response = await execute_llm_call(
+                Predict(Sigs.SectionStyle),
+                style_instructions=style_instructions,
+                global_css=global_css,
+            )
         return {
             'css_rules': style_response.css_rules,
             'transitions': style_response.transitions,
@@ -238,7 +240,7 @@ async def generate_section_image_details(image_instructions: List[Dict[str, Any]
         return []
 
     try:
-        with context(lm=strong_llm):
+        with context(lm=strong_lm):
             image_response = await execute_llm_call(
                 ChainOfThought(Sigs.SectionImageDetails),
                 image_instructions=image_instructions,
@@ -251,7 +253,7 @@ async def generate_section_image_details(image_instructions: List[Dict[str, Any]
         image_tasks = []
         for image in image_response.image_details:
             image_name = image['image_name']
-            # Run the blocking operation in an executor
+
             image_tasks.append(loop.run_in_executor(
                 None,
                 image_generator.generate_image,
@@ -280,7 +282,7 @@ async def build_page_section(
     image_details: Optional[List[Dict[str, Any]]] = None,
 ) -> str:
     try:
-        with context(lm=strong_llm):
+        with context(lm=strong_lm):
             structure_response = await execute_llm_call(
                 ChainOfThought(Sigs.ComponentStructure),
                 layout_structure=layout_structure,

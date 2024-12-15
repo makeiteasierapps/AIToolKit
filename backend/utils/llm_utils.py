@@ -22,7 +22,8 @@ MODEL_DICT = {
 }
 
 # Initialize LLM configurations
-def initialize_llm(lm='4o-mini', strong_lm='4o-mini'):
+def initialize_llm(lm, strong_lm):
+    logger.info(f"Initializing LLM with {lm} and {strong_lm}")
     # Verify API keys are present
     required_keys = ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "REPLICATE_API_TOKEN"]
     for key in required_keys:
@@ -32,9 +33,8 @@ def initialize_llm(lm='4o-mini', strong_lm='4o-mini'):
     # Initialize LLM instances using the provided model names
     lm_instance = LM(MODEL_DICT[lm]['model'], max_tokens=MODEL_DICT[lm]['max_tokens'], cache=False)
     strong_lm_instance = LM(MODEL_DICT[strong_lm]['model'], max_tokens=MODEL_DICT[strong_lm]['max_tokens'], cache=False)
-    configure(lm=lm_instance)
     
-    return strong_lm_instance
+    return lm_instance, strong_lm_instance
 
 @retry(
     retry=retry_if_exception_type(InternalServerError),
